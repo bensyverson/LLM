@@ -9,13 +9,18 @@ import Foundation
 
 public extension LLM.OpenAICompatibleAPI {
 	func chatCompletion(with body: Data) async throws -> ChatCompletionResponse {
-		let url = baseURL.appending(components: "v1", "chat", "completions")
+		let url = baseURL.appending(component: chatEndpoint)
 
 		var request = URLRequest(url: url, timeoutInterval: 120)
 		request.httpMethod = "POST"
 		request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-		if let apiKey {
+		switch authenticationMethod {
+		case .bearer(let apiKey):
 			request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+		case .xApiKey(let apiKey):
+			request.addValue(apiKey, forHTTPHeaderField: "x-api-key")
+		default:
+			break
 		}
 		request.httpBody = body
 
@@ -30,7 +35,9 @@ public extension LLM.OpenAICompatibleAPI {
 			throw OpenAIError.badResponseCode(statusCode)
 		}
 		do {
-			return try JSONDecoder().decode(ChatCompletionResponse.self, from: data)
+			let decoder = JSONDecoder()
+			decoder.dataDecodingStrategy = .base64
+			return try decoder.decode(ChatCompletionResponse.self, from: data)
 		} catch {
 			print("Couldn't decode \(String(bytes: data, encoding: .utf8)!)")
 			print(error)
@@ -44,8 +51,13 @@ public extension LLM.OpenAICompatibleAPI {
 		var request = URLRequest(url: url, timeoutInterval: 120)
 		request.httpMethod = "POST"
 		request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-		if let apiKey {
+		switch authenticationMethod {
+		case .bearer(let apiKey):
 			request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+		case .xApiKey(let apiKey):
+			request.addValue(apiKey, forHTTPHeaderField: "x-api-key")
+		default:
+			break
 		}
 		request.httpBody = body
 

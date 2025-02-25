@@ -16,7 +16,7 @@ public extension LLM {
 		private let minDelay: TimeInterval
 		private var lastResetDate: Date
 
-		init(
+		public init(
 			maxRequests: Int = 2,
 			maxTokens: Int = 10000,
 			interval: TimeInterval = 1.0,
@@ -29,7 +29,7 @@ public extension LLM {
 			self.lastResetDate = Date()
 		}
 
-		func acquire(tokens: Int) async throws {
+		public func acquire(tokens: Int) async throws {
 			let now = Date()
 			if requestCount == -1 {
 #if DEBUG
@@ -63,7 +63,10 @@ public extension LLM {
 #endif
 			requestCount += 1
 			tokenCount += tokens
-			try await Task.sleep(for: .seconds(minDelay))
+			let _: () = try await Task(priority: .userInitiated) {
+				try await Task.sleep(for: .seconds(minDelay))
+			}.value
+//			try await Task.sleep(for: .seconds(minDelay))
 		}
 	}
 }

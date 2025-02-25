@@ -9,21 +9,33 @@ import Foundation
 
 public extension LLM {
 	enum ModelType: String, Friendly {
-		case fastest, highestInteractive, highestNonInteractive
+		case fast, flagship
+	}
+
+	enum InferenceType: String, Friendly {
+		case direct, reasoning
 	}
 }
 
 public extension LLM.Provider {
-	func model(type: LLM.ModelType) -> LLM.OpenAICompatibleAPI.ModelName {
+	func model(
+		type: LLM.ModelType,
+		inference: LLM.InferenceType
+	) -> LLM.OpenAICompatibleAPI.ModelName {
 		switch self {
 		case .openAI(apiKey: _):
 			switch type {
-			case .fastest:
-				return .gpt4oMini
-			case .highestInteractive:
-				return .gpt4o
-			case .highestNonInteractive:
-				return .o1preview
+			case .fast:
+				return inference == .direct ? .gpt4oMini : .o3mini
+			case .flagship:
+				return inference == .direct ? .gpt4o : .o1
+			}
+		case .anthropic(apiKey: _):
+			switch type {
+			case .fast:
+				return inference == .direct ? .claude35HaikuLatest : .claude37SonnetLatest
+			case .flagship:
+				return .claude37SonnetLatest
 			}
 		case .lmStudio:
 			return .placeholder

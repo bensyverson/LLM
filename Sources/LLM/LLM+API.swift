@@ -10,7 +10,7 @@ import Foundation
 public extension LLM {
 	func embedding(
 		input: String,
-		model: ModelType = .fastest,
+		model: ModelType = .fast,
 		dimensions: Int? = nil
 	) async throws -> [Float] {
 		let api = providerApi
@@ -19,7 +19,7 @@ public extension LLM {
 
 		let request = OpenAICompatibleAPI.EmbeddingRequest(
 			input: input,
-			model: model == .highestInteractive ? .textEmbedding3Large : .textEmbedding3Small,
+			model: model == .flagship ? .textEmbedding3Large : .textEmbedding3Small,
 			encoding_format: .float,
 			dimensions: dimensions
 		)
@@ -34,42 +34,21 @@ public extension LLM {
 		}
 	}
 
-	func chat(
-		systemPrompt: String,
-		user: String,
-		model: ModelType = .fastest,
-		temperature: Double = 0.7,
-		frequency_penalty: Double? = nil,
-		repeat_penalty: Double = 1.0,
-		top_p: Double = 0.95,
-		maxTokens: Int? = 512,
-		stopTokens: [String] = []
-	) async throws -> String {
+	func chat(configuration: ChatConfiguration) async throws -> OpenAICompatibleAPI.ChatCompletionResponse {
 		let api = providerApi
-
-		let tokenCount = Int(Double((systemPrompt + user).count) / 2.0) // over-estimate the token count
+		let tokenCount = Int(Double((configuration.systemPrompt + configuration.user).count) / 2.0)
 		try await chatRateLimiter.acquire(tokens: tokenCount)
 
-		let request = OpenAICompatibleAPI.ChatCompletion(
-			model: provider.model(type: model),
-			messages: [
-				.init(content: systemPrompt, role: .system),
-				.init(content: user, role: .user)
-			],
-			response_format: nil,
-			temperature: temperature,
-			frequency_penalty: frequency_penalty,
-			top_p: top_p,
-			max_tokens: maxTokens,
-			stop: stopTokens
-		)
+		let request = configuration.request(for: provider)
+		let jsonData = try JSONEncoder().encode(request)
+		return try await api.chatCompletion(with: jsonData)
+	}
 
-		let encoder = JSONEncoder()
-		let json = try encoder.encode(request)
-
+	func chat(configuration: ChatConfiguration) async throws -> String {
 		do {
-			let response = try await api.chatCompletion(with: json)
-			guard let content = response.choices.first?.message.content else {
+			let response: OpenAICompatibleAPI.ChatCompletionResponse = try await chat(configuration: configuration)
+
+			guard let content = response.content?.first(where: { $0.type == .text })?.text ?? response.choices?.first?.message.content else {
 				print("Couldn't parse response")
 				print(response)
 				throw LLMError.parseResponse(response)

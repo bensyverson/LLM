@@ -11,6 +11,8 @@ public extension LLM {
 	enum Provider: Friendly {
 		/// This will send requests to OpenAI's API (https://api.openai.com/)
 		case openAI(apiKey: String)
+		/// This will send requests to Anthropic's API
+		case anthropic(apiKey: String)
 		/// This sends requests to localhost:1234, the default port for LM Studio
 		case lmStudio
 		/// This sends requests to localhost:port
@@ -23,7 +25,7 @@ public extension LLM {
 			case .openAI(apiKey: _):
 				return RateLimiter(maxRequests: 8000, maxTokens: 1_500_000, interval: 60) // Tier 3
 			default:
-				return RateLimiter(maxRequests: 10000, interval: 0.1)
+				return RateLimiter(maxRequests: 5, interval: 1.0) // Tier 1 Anthropic
 			}
 		}
 
@@ -41,10 +43,19 @@ public extension LLM {
 		switch provider {
 		case .openAI(let apiKey):
 			return OpenAICompatibleAPI.openAI(apiKey: apiKey)
+		case .anthropic(let apiKey):
+			return OpenAICompatibleAPI.anthropic(apiKey: apiKey)
 		case .lmStudio:
 			return OpenAICompatibleAPI.localhost(port: 1234)
 		case .other(let url, apiKey: let apiKey):
-			return OpenAICompatibleAPI(baseURL: url, apiKey: apiKey)
+			if let apiKey {
+				return OpenAICompatibleAPI(
+					baseURL: url,
+					authMethod: .bearer(apiKey: apiKey)
+				)
+			} else {
+				return OpenAICompatibleAPI(baseURL: url)
+			}
 		case .localhost(let port):
 			return OpenAICompatibleAPI.localhost(port: port)
 		}

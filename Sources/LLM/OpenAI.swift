@@ -19,6 +19,10 @@ public extension LLM {
 			case gpt4oMini = "gpt-4o-mini"
 			case o1preview = "o1-preview"
 			case o1mini = "o1-mini"
+			case o1 = "o1"
+			case o3mini = "o3-mini"
+			case claude37SonnetLatest = "claude-3-7-sonnet-latest"
+			case claude35HaikuLatest = "claude-3-5-haiku-latest"
 		}
 
 		public enum OpenAIError: Error {
@@ -26,13 +30,31 @@ public extension LLM {
 			case badResponse(URLResponse)
 			case badResponseCode(Int)
 		}
+
+		public enum AuthenticationMethod: Friendly {
+			case none
+			case bearer(apiKey: String)
+			case xApiKey(apiKey: String)
+		}
+
 		public var baseURL: URL
-		public var apiKey: String? = nil
+		public var authenticationMethod: AuthenticationMethod
+		public var chatEndpoint: String
+		public var headers: [String: String]?
 
 		public static func openAI(apiKey: String) -> Self {
 			.init(
 				baseURL: URL(string: "https://api.openai.com/")!,
-				apiKey: apiKey
+				authMethod: .bearer(apiKey: apiKey)
+			)
+		}
+
+		public static func anthropic(apiKey: String) -> Self {
+			.init(
+				baseURL: URL(string: "https://api.anthropic.com/")!,
+				authMethod: .xApiKey(apiKey: apiKey),
+				chatEndpoint: "v1/messages",
+				headers: ["anthropic-version": "2023-06-01"]
 			)
 		}
 
@@ -40,9 +62,16 @@ public extension LLM {
 			.init(baseURL: URL(string: "http://localhost:\(port)/")!)
 		}
 
-		public init(baseURL: URL, apiKey: String? = nil) {
+		public init(
+			baseURL: URL,
+			authMethod: AuthenticationMethod = .none,
+			chatEndpoint: String = "v1/chat/completions",
+			headers: [String: String]? = nil
+		) {
 			self.baseURL = baseURL
-			self.apiKey = apiKey
+			self.authenticationMethod = authMethod
+			self.chatEndpoint = chatEndpoint
+			self.headers = headers
 		}
 	}
 }
