@@ -50,4 +50,7 @@ public extension LLM.Provider {
 	var isAnthropic: Bool {
 		self.simpleProvider == .anthropic
 	}
+	var isOpenAI: Bool {
+		self.simpleProvider == .openAI
+	}
 }

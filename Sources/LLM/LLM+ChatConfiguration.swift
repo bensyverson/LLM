@@ -55,10 +55,11 @@ public extension LLM {
 public extension LLM.ChatConfiguration {
 	func request(for provider: LLM.Provider) -> LLM.OpenAICompatibleAPI.ChatCompletion {
 		let isAnthropic = provider.isAnthropic
-		let skipTemp = isAnthropic && inference == .reasoning
+		let isOpenAI = provider.isOpenAI
+		let skipTemp = inference == .reasoning
 		let skipTopP = skipTemp
 		let skipFreq = isAnthropic
-
+		let maxCompletionTokens = (maxTokens ?? 0) + (maxReasoningTokens ?? 0)
 		let thinking: LLM.OpenAICompatibleAPI.ChatCompletion.Thinking? = (isAnthropic && inference == .reasoning) ? .init(budget_tokens: maxReasoningTokens ?? 1024) : nil
 		return LLM.OpenAICompatibleAPI.ChatCompletion(
 			model: provider.model(
@@ -73,7 +74,8 @@ public extension LLM.ChatConfiguration {
 			temperature: skipTemp ? nil : temperature,
 			frequency_penalty: skipFreq ? nil : frequencyPenalty,
 			top_p: skipTopP ? nil : topP,
-			max_tokens: maxTokens,
+			max_tokens: isOpenAI ? nil : maxTokens,
+			max_completion_tokens: isOpenAI && maxCompletionTokens > 0 ? maxCompletionTokens : nil,
 			stop: isAnthropic ? nil : stopTokens,
 			stop_sequences: isAnthropic ? stopTokens : nil,
 			thinking: thinking,

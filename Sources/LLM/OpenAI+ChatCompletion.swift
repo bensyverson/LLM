@@ -43,6 +43,7 @@ public extension LLM.OpenAICompatibleAPI {
 		public var frequency_penalty: Double? = nil
 		public var top_p: Double? = 1.0
 		public var max_tokens: Int? = nil
+		public var max_completion_tokens: Int? = nil
 		public var stop: [String]? = ["###"]
 		public var stop_sequences: [String]? = nil
 		public var thinking: Thinking? = nil
@@ -56,6 +57,7 @@ public extension LLM.OpenAICompatibleAPI {
 			frequency_penalty: Double? = nil,
 			top_p: Double? = nil,
 			max_tokens: Int? = nil,
+			max_completion_tokens: Int? = nil,
 			stop: [String]? = nil,
 			stop_sequences: [String]? = nil,
 			thinking: Thinking? = nil,
@@ -68,6 +70,7 @@ public extension LLM.OpenAICompatibleAPI {
 			self.frequency_penalty = frequency_penalty
 			self.top_p = top_p
 			self.max_tokens = max_tokens
+			self.max_completion_tokens = max_completion_tokens
 			self.stop = stop
 			self.stop_sequences = stop_sequences
 			self.thinking = thinking
