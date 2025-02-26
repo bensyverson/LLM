@@ -14,6 +14,9 @@ public extension LLM.OpenAICompatibleAPI {
 		var request = URLRequest(url: url, timeoutInterval: 120)
 		request.httpMethod = "POST"
 		request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+		for (header, headerValue) in headers ?? [:] {
+			request.addValue(headerValue, forHTTPHeaderField: header)
+		}
 		switch authenticationMethod {
 		case .bearer(let apiKey):
 			request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
