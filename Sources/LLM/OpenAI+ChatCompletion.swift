@@ -37,6 +37,7 @@ public extension LLM.OpenAICompatibleAPI {
 			case low, medium, high
 		}
 		public var model: ModelName = .gpt35turbo
+		public var system: String? = nil
 		public var messages: [ChatMessage]
 		public var response_format: JsonObject? = JsonObject()
 		public var temperature: Double? = 1.0
@@ -51,6 +52,7 @@ public extension LLM.OpenAICompatibleAPI {
 
 		public init(
 			model: LLM.OpenAICompatibleAPI.ModelName = .gpt35turbo,
+			system: String? = nil,
 			messages: [LLM.OpenAICompatibleAPI.ChatMessage],
 			response_format: LLM.OpenAICompatibleAPI.ChatCompletion.JsonObject? = JsonObject(),
 			temperature: Double? = nil,
@@ -64,6 +66,7 @@ public extension LLM.OpenAICompatibleAPI {
 			reasoning_effort: ReasoningEffort? = nil
 		) {
 			self.model = model
+			self.system = system
 			self.messages = messages
 			self.response_format = response_format
 			self.temperature = temperature

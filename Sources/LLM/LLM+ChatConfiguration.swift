@@ -61,15 +61,20 @@ public extension LLM.ChatConfiguration {
 		let skipFreq = isAnthropic
 		let maxCompletionTokens = (maxTokens ?? 0) + (maxReasoningTokens ?? 0)
 		let thinking: LLM.OpenAICompatibleAPI.ChatCompletion.Thinking? = (isAnthropic && inference == .reasoning) ? .init(budget_tokens: maxReasoningTokens ?? 1024) : nil
+
+		let messages: [LLM.OpenAICompatibleAPI.ChatMessage] = isAnthropic ? [
+			LLM.OpenAICompatibleAPI.ChatMessage(content: user, role: .user)
+		] : [
+			LLM.OpenAICompatibleAPI.ChatMessage(content: systemPrompt, role: .system),
+			LLM.OpenAICompatibleAPI.ChatMessage(content: user, role: .user)
+		]
 		return LLM.OpenAICompatibleAPI.ChatCompletion(
 			model: provider.model(
 				type: modelType,
 				inference: inference
 			),
-			messages: [
-				.init(content: systemPrompt, role: .system),
-				.init(content: user, role: .user)
-			],
+			system: isAnthropic ? systemPrompt : nil,
+			messages: messages,
 			response_format: nil,
 			temperature: skipTemp ? nil : temperature,
 			frequency_penalty: skipFreq ? nil : frequencyPenalty,
