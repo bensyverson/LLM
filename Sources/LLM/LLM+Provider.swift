@@ -25,7 +25,7 @@ public extension LLM {
 			case .openAI(apiKey: _):
 				return RateLimiter(maxRequests: 8000, maxTokens: 1_500_000, interval: 60) // Tier 3
 			default:
-				return RateLimiter(maxRequests: 5, interval: 1.0) // Tier 1 Anthropic
+				return RateLimiter(maxRequests: 40, maxTokens: 8_000, interval: 60.0) // Tier 1 Anthropic
 			}
 		}
 
