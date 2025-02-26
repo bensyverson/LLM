@@ -9,7 +9,7 @@ import Foundation
 
 public extension LLM.OpenAICompatibleAPI {
 	func chatCompletion(with body: Data) async throws -> ChatCompletionResponse {
-		let url = baseURL.appending(component: chatEndpoint)
+		let url = baseURL.appending(path: chatEndpoint)
 
 		var request = URLRequest(url: url, timeoutInterval: 120)
 		request.httpMethod = "POST"
