@@ -19,6 +19,7 @@ public extension LLM {
 		public var topP: Double?
 		public var maxTokens: Int?
 		public var maxReasoningTokens: Int?
+		public var reasoningEffort: LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort?
 		public var stopTokens: [String]?
 
 		public init(
@@ -32,6 +33,7 @@ public extension LLM {
 			topP: Double? = nil,
 			maxTokens: Int? = nil,
 			maxReasoningTokens: Int? = nil,
+			reasoningEffort: LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort? = nil,
 			stopTokens: [String]? = nil
 		) {
 			self.systemPrompt = systemPrompt
@@ -44,6 +46,7 @@ public extension LLM {
 			self.topP = topP
 			self.maxTokens = maxTokens
 			self.maxReasoningTokens = maxReasoningTokens
+			self.reasoningEffort = reasoningEffort
 			self.stopTokens = stopTokens
 		}
 	}
@@ -56,7 +59,7 @@ public extension LLM.ChatConfiguration {
 		let skipTopP = skipTemp
 		let skipFreq = isAnthropic
 
-		let thinking: LLM.OpenAICompatibleAPI.ChatCompletion.Thinking? = inference == .reasoning ? .init(budget_tokens: maxReasoningTokens ?? 1024) : nil
+		let thinking: LLM.OpenAICompatibleAPI.ChatCompletion.Thinking? = (isAnthropic && inference == .reasoning) ? .init(budget_tokens: maxReasoningTokens ?? 1024) : nil
 		return LLM.OpenAICompatibleAPI.ChatCompletion(
 			model: provider.model(
 				type: modelType,
@@ -73,7 +76,8 @@ public extension LLM.ChatConfiguration {
 			max_tokens: maxTokens,
 			stop: isAnthropic ? nil : stopTokens,
 			stop_sequences: isAnthropic ? stopTokens : nil,
-			thinking: thinking
+			thinking: thinking,
+			reasoning_effort: isAnthropic ? nil : reasoningEffort
 		)
 	}
 }

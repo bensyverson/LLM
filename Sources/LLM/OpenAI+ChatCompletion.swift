@@ -33,6 +33,9 @@ public extension LLM.OpenAICompatibleAPI {
 				self.budget_tokens = budget_tokens
 			}
 		}
+		public enum ReasoningEffort: String, Codable, Sendable {
+			case low, medium, high
+		}
 		public var model: ModelName = .gpt35turbo
 		public var messages: [ChatMessage]
 		public var response_format: JsonObject? = JsonObject()
@@ -43,6 +46,7 @@ public extension LLM.OpenAICompatibleAPI {
 		public var stop: [String]? = ["###"]
 		public var stop_sequences: [String]? = nil
 		public var thinking: Thinking? = nil
+		public var reasoning_effort: ReasoningEffort? = nil
 
 		public init(
 			model: LLM.OpenAICompatibleAPI.ModelName = .gpt35turbo,
@@ -54,7 +58,8 @@ public extension LLM.OpenAICompatibleAPI {
 			max_tokens: Int? = nil,
 			stop: [String]? = nil,
 			stop_sequences: [String]? = nil,
-			thinking: Thinking? = nil
+			thinking: Thinking? = nil,
+			reasoning_effort: ReasoningEffort? = nil
 		) {
 			self.model = model
 			self.messages = messages
@@ -66,6 +71,7 @@ public extension LLM.OpenAICompatibleAPI {
 			self.stop = stop
 			self.stop_sequences = stop_sequences
 			self.thinking = thinking
+			self.reasoning_effort = reasoning_effort
 		}
 	}
 
