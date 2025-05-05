@@ -26,9 +26,9 @@ public extension LLM.Provider {
 		case .openAI(apiKey: _):
 			switch type {
 			case .fast:
-				return inference == .direct ? .gpt4oMini : .o3mini
+				return inference == .direct ? .gpt41Mini : .o4mini
 			case .flagship:
-				return inference == .direct ? .gpt4o : .o1
+				return inference == .direct ? .gpt41 : .o3
 			}
 		case .anthropic(apiKey: _):
 			switch type {
