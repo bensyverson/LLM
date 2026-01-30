@@ -478,3 +478,89 @@ enum FixtureError: Error {
     #expect(toolCalls?[0].function.name == "func1")
     #expect(toolCalls?[1].function.name == "func2")
 }
+
+// MARK: - Cache Usage Tests
+
+@Test func chatCompletionResponse_anthropicCacheUsage() throws {
+    let json = """
+    {
+      "id": "msg_cache_test",
+      "model": "claude-opus-4-5",
+      "content": [
+        {
+          "type": "text",
+          "text": "Hello!"
+        }
+      ],
+      "usage": {
+        "input_tokens": 100,
+        "output_tokens": 50,
+        "cache_creation_input_tokens": 80,
+        "cache_read_input_tokens": 20
+      }
+    }
+    """.data(using: .utf8)!
+
+    let decoder = JSONDecoder()
+    let response = try decoder.decode(LLM.OpenAICompatibleAPI.ChatCompletionResponse.self, from: json)
+
+    #expect(response.usage.input_tokens == 100)
+    #expect(response.usage.output_tokens == 50)
+    #expect(response.usage.cache_creation_input_tokens == 80)
+    #expect(response.usage.cache_read_input_tokens == 20)
+}
+
+@Test func chatCompletionResponse_openAICacheUsage() throws {
+    let json = """
+    {
+      "id": "chatcmpl-cache",
+      "model": "gpt-5.2",
+      "choices": [
+        {
+          "index": 0,
+          "message": {"role": "assistant", "content": "Hello!"},
+          "finish_reason": "stop"
+        }
+      ],
+      "usage": {
+        "prompt_tokens": 100,
+        "completion_tokens": 50,
+        "total_tokens": 150,
+        "prompt_tokens_details": {
+          "cached_tokens": 80
+        }
+      }
+    }
+    """.data(using: .utf8)!
+
+    let decoder = JSONDecoder()
+    let response = try decoder.decode(LLM.OpenAICompatibleAPI.ChatCompletionResponse.self, from: json)
+
+    #expect(response.usage.prompt_tokens == 100)
+    #expect(response.usage.completion_tokens == 50)
+    #expect(response.usage.total_tokens == 150)
+    #expect(response.usage.prompt_tokens_details?.cached_tokens == 80)
+}
+
+@Test func chatCompletionResponse_noCacheUsage() throws {
+    let json = """
+    {
+      "id": "test",
+      "model": "gpt-5.2",
+      "choices": [],
+      "usage": {
+        "prompt_tokens": 100,
+        "completion_tokens": 50,
+        "total_tokens": 150
+      }
+    }
+    """.data(using: .utf8)!
+
+    let decoder = JSONDecoder()
+    let response = try decoder.decode(LLM.OpenAICompatibleAPI.ChatCompletionResponse.self, from: json)
+
+    // Cache fields should be nil when not present
+    #expect(response.usage.cache_creation_input_tokens == nil)
+    #expect(response.usage.cache_read_input_tokens == nil)
+    #expect(response.usage.prompt_tokens_details == nil)
+}

@@ -330,3 +330,156 @@ import Foundation
         #expect(decoded == effort)
     }
 }
+
+// MARK: - CacheControl Tests
+
+@Test func cacheControl_defaults() {
+    let cache = LLM.OpenAICompatibleAPI.CacheControl()
+    #expect(cache.type == .ephemeral)
+    #expect(cache.ttl == nil)
+}
+
+@Test func cacheControl_withTTL() {
+    let cache = LLM.OpenAICompatibleAPI.CacheControl(ttl: .oneHour)
+    #expect(cache.type == .ephemeral)
+    #expect(cache.ttl == .oneHour)
+}
+
+@Test func cacheControl_ttlRawValues() {
+    #expect(LLM.OpenAICompatibleAPI.CacheControl.TTL.fiveMinutes.rawValue == "5m")
+    #expect(LLM.OpenAICompatibleAPI.CacheControl.TTL.oneHour.rawValue == "1h")
+}
+
+@Test func cacheControl_codable_roundTrip() throws {
+    let cache = LLM.OpenAICompatibleAPI.CacheControl(ttl: .oneHour)
+
+    let encoder = JSONEncoder()
+    let decoder = JSONDecoder()
+
+    let data = try encoder.encode(cache)
+    let decoded = try decoder.decode(LLM.OpenAICompatibleAPI.CacheControl.self, from: data)
+
+    #expect(decoded.type == cache.type)
+    #expect(decoded.ttl == cache.ttl)
+}
+
+@Test func cacheControl_jsonSerialization() throws {
+    let cache = LLM.OpenAICompatibleAPI.CacheControl(ttl: .fiveMinutes)
+
+    let encoder = JSONEncoder()
+    let data = try encoder.encode(cache)
+    let jsonString = String(data: data, encoding: .utf8)!
+
+    #expect(jsonString.contains("\"type\":\"ephemeral\""))
+    #expect(jsonString.contains("\"ttl\":\"5m\""))
+}
+
+// MARK: - SystemContentBlock Tests
+
+@Test func systemContentBlock_defaults() {
+    let block = LLM.OpenAICompatibleAPI.SystemContentBlock(text: "Hello")
+    #expect(block.type == "text")
+    #expect(block.text == "Hello")
+    #expect(block.cache_control == nil)
+}
+
+@Test func systemContentBlock_withCacheControl() {
+    let cache = LLM.OpenAICompatibleAPI.CacheControl(ttl: .oneHour)
+    let block = LLM.OpenAICompatibleAPI.SystemContentBlock(text: "System", cache_control: cache)
+
+    #expect(block.type == "text")
+    #expect(block.text == "System")
+    #expect(block.cache_control?.type == .ephemeral)
+    #expect(block.cache_control?.ttl == .oneHour)
+}
+
+@Test func systemContentBlock_codable_roundTrip() throws {
+    let cache = LLM.OpenAICompatibleAPI.CacheControl(ttl: .fiveMinutes)
+    let block = LLM.OpenAICompatibleAPI.SystemContentBlock(text: "Test prompt", cache_control: cache)
+
+    let encoder = JSONEncoder()
+    let decoder = JSONDecoder()
+
+    let data = try encoder.encode(block)
+    let decoded = try decoder.decode(LLM.OpenAICompatibleAPI.SystemContentBlock.self, from: data)
+
+    #expect(decoded.type == block.type)
+    #expect(decoded.text == block.text)
+    #expect(decoded.cache_control?.type == block.cache_control?.type)
+    #expect(decoded.cache_control?.ttl == block.cache_control?.ttl)
+}
+
+@Test func systemContentBlock_jsonSerialization() throws {
+    let cache = LLM.OpenAICompatibleAPI.CacheControl(ttl: .oneHour)
+    let block = LLM.OpenAICompatibleAPI.SystemContentBlock(text: "Be helpful", cache_control: cache)
+
+    let encoder = JSONEncoder()
+    let data = try encoder.encode(block)
+    let jsonString = String(data: data, encoding: .utf8)!
+
+    #expect(jsonString.contains("\"type\":\"text\""))
+    #expect(jsonString.contains("\"text\":\"Be helpful\""))
+    #expect(jsonString.contains("cache_control"))
+    #expect(jsonString.contains("ephemeral"))
+}
+
+// MARK: - ChatCompletion with SystemBlocks Tests
+
+@Test func chatCompletion_withSystemBlocks_encodesAsArray() throws {
+    let cache = LLM.OpenAICompatibleAPI.CacheControl(ttl: .fiveMinutes)
+    let blocks = [LLM.OpenAICompatibleAPI.SystemContentBlock(text: "You are helpful", cache_control: cache)]
+
+    let completion = LLM.OpenAICompatibleAPI.ChatCompletion(
+        model: .claude45Opus,
+        system: nil,
+        systemBlocks: blocks,
+        messages: [LLM.OpenAICompatibleAPI.ChatMessage(content: "Hello", role: .user)]
+    )
+
+    let encoder = JSONEncoder()
+    let data = try encoder.encode(completion)
+    let jsonString = String(data: data, encoding: .utf8)!
+
+    // System should be encoded as an array, not a string
+    #expect(jsonString.contains("\"system\":[{"))
+    #expect(jsonString.contains("\"type\":\"text\""))
+    #expect(jsonString.contains("\"text\":\"You are helpful\""))
+    #expect(jsonString.contains("cache_control"))
+}
+
+@Test func chatCompletion_withStringSystem_encodesAsString() throws {
+    let completion = LLM.OpenAICompatibleAPI.ChatCompletion(
+        model: .claude45Opus,
+        system: "You are helpful",
+        systemBlocks: nil,
+        messages: [LLM.OpenAICompatibleAPI.ChatMessage(content: "Hello", role: .user)]
+    )
+
+    let encoder = JSONEncoder()
+    let data = try encoder.encode(completion)
+    let jsonString = String(data: data, encoding: .utf8)!
+
+    // System should be encoded as a string
+    #expect(jsonString.contains("\"system\":\"You are helpful\""))
+    #expect(!jsonString.contains("cache_control"))
+}
+
+@Test func chatCompletion_withBothSystemTypes_prefersBlocks() throws {
+    let blocks = [LLM.OpenAICompatibleAPI.SystemContentBlock(text: "Block system")]
+
+    let completion = LLM.OpenAICompatibleAPI.ChatCompletion(
+        model: .claude45Opus,
+        system: "String system",  // Should be ignored when blocks are present
+        systemBlocks: blocks,
+        messages: [LLM.OpenAICompatibleAPI.ChatMessage(content: "Hello", role: .user)]
+    )
+
+    let encoder = JSONEncoder()
+    let data = try encoder.encode(completion)
+    let jsonString = String(data: data, encoding: .utf8)!
+
+    // Should use blocks, not string
+    #expect(jsonString.contains("\"system\":[{"))
+    #expect(jsonString.contains("Block system"))
+    #expect(!jsonString.contains("String system"))
+}

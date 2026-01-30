@@ -21,6 +21,8 @@ public extension LLM {
 		public var maxReasoningTokens: Int?
 		public var reasoningEffort: LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort?
 		public var stopTokens: [String]?
+		public var enableCaching: Bool = false
+		public var cacheTTL: LLM.OpenAICompatibleAPI.CacheControl.TTL? = nil
 
 		public init(
 			systemPrompt: String,
@@ -34,7 +36,9 @@ public extension LLM {
 			maxTokens: Int? = nil,
 			maxReasoningTokens: Int? = nil,
 			reasoningEffort: LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort? = nil,
-			stopTokens: [String]? = nil
+			stopTokens: [String]? = nil,
+			enableCaching: Bool = false,
+			cacheTTL: LLM.OpenAICompatibleAPI.CacheControl.TTL? = nil
 		) {
 			self.systemPrompt = systemPrompt
 			self.user = user
@@ -48,6 +52,8 @@ public extension LLM {
 			self.maxReasoningTokens = maxReasoningTokens
 			self.reasoningEffort = reasoningEffort
 			self.stopTokens = stopTokens
+			self.enableCaching = enableCaching
+			self.cacheTTL = cacheTTL
 		}
 	}
 }
@@ -80,9 +86,20 @@ public extension LLM.ChatConfiguration {
 			LLM.OpenAICompatibleAPI.ChatMessage(content: systemPrompt, role: .system),
 			LLM.OpenAICompatibleAPI.ChatMessage(content: user, role: .user)
 		]
+
+		// Build system prompt - use array format with cache_control for Anthropic when caching enabled
+		let systemString: String? = (isAnthropic && !enableCaching) ? systemPrompt : (isAnthropic ? nil : nil)
+		let systemBlocks: [LLM.OpenAICompatibleAPI.SystemContentBlock]? = (isAnthropic && enableCaching) ? [
+			LLM.OpenAICompatibleAPI.SystemContentBlock(
+				text: systemPrompt,
+				cache_control: LLM.OpenAICompatibleAPI.CacheControl(ttl: cacheTTL)
+			)
+		] : nil
+
 		return LLM.OpenAICompatibleAPI.ChatCompletion(
 			model: model,
-			system: isAnthropic ? systemPrompt : nil,
+			system: systemString,
+			systemBlocks: systemBlocks,
 			messages: messages,
 			response_format: nil,
 			temperature: skipTemp ? nil : temperature,

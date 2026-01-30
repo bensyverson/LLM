@@ -107,7 +107,7 @@ import Foundation
 @Test func providerModel_anthropic_fast_reasoning() {
     let provider = LLM.Provider.anthropic(apiKey: "test-key")
     let model = provider.model(type: .fast, inference: .reasoning)
-    #expect(model == .claude45Sonnet)
+    #expect(model == .claude45Haiku)
 }
 
 @Test func providerModel_anthropic_flagship_direct() {

@@ -319,7 +319,7 @@ import Foundation
     let provider = LLM.Provider.anthropic(apiKey: "test")
     let request = conversation.request(for: provider)
 
-    #expect(request.model == .claude45Sonnet)
+    #expect(request.model == .claude45Haiku)
 }
 
 @Test func conversationRequest_anthropic_selectsCorrectModel_flagship() {
@@ -481,4 +481,87 @@ import Foundation
     #expect(config.maxReasoningTokens == 500)
     #expect(config.reasoningEffort == .medium)
     #expect(config.stopTokens == ["END"])
+}
+
+// MARK: - Caching Tests
+
+@Test func conversationConfiguration_cachingDefaults() {
+    let config = LLM.ConversationConfiguration()
+
+    #expect(config.enableCaching == false)
+    #expect(config.cacheTTL == nil)
+}
+
+@Test func conversationConfiguration_cachingEnabled() {
+    let config = LLM.ConversationConfiguration(
+        enableCaching: true,
+        cacheTTL: .oneHour
+    )
+
+    #expect(config.enableCaching == true)
+    #expect(config.cacheTTL == .oneHour)
+}
+
+@Test func conversationRequest_anthropic_cachingDisabled_usesStringSystem() {
+    let config = LLM.ConversationConfiguration(enableCaching: false)
+    let conversation = LLM.Conversation(
+        systemPrompt: "You are helpful",
+        configuration: config
+    ).addingUserMessage("Hello")
+
+    let provider = LLM.Provider.anthropic(apiKey: "test")
+    let request = conversation.request(for: provider)
+
+    #expect(request.system == "You are helpful")
+    #expect(request.systemBlocks == nil)
+}
+
+@Test func conversationRequest_anthropic_cachingEnabled_usesSystemBlocks() {
+    let config = LLM.ConversationConfiguration(enableCaching: true)
+    let conversation = LLM.Conversation(
+        systemPrompt: "You are helpful",
+        configuration: config
+    ).addingUserMessage("Hello")
+
+    let provider = LLM.Provider.anthropic(apiKey: "test")
+    let request = conversation.request(for: provider)
+
+    #expect(request.system == nil)
+    #expect(request.systemBlocks != nil)
+    #expect(request.systemBlocks?.count == 1)
+    #expect(request.systemBlocks?[0].text == "You are helpful")
+    #expect(request.systemBlocks?[0].cache_control != nil)
+}
+
+@Test func conversationRequest_anthropic_cachingEnabled_withTTL() {
+    let config = LLM.ConversationConfiguration(
+        enableCaching: true,
+        cacheTTL: .fiveMinutes
+    )
+    let conversation = LLM.Conversation(
+        systemPrompt: "System",
+        configuration: config
+    ).addingUserMessage("Hi")
+
+    let provider = LLM.Provider.anthropic(apiKey: "test")
+    let request = conversation.request(for: provider)
+
+    #expect(request.systemBlocks?[0].cache_control?.ttl == .fiveMinutes)
+}
+
+@Test func conversationRequest_openAI_cachingHasNoEffect() {
+    let config = LLM.ConversationConfiguration(enableCaching: true)
+    let conversation = LLM.Conversation(
+        systemPrompt: "You are helpful",
+        configuration: config
+    ).addingUserMessage("Hello")
+
+    let provider = LLM.Provider.openAI(apiKey: "test")
+    let request = conversation.request(for: provider)
+
+    // OpenAI doesn't use system field or systemBlocks
+    #expect(request.system == nil)
+    #expect(request.systemBlocks == nil)
+    #expect(request.messages[0].role == .system)
+    #expect(request.messages[0].content == "You are helpful")
 }

@@ -8,6 +8,40 @@
 import Foundation
 
 public extension LLM.OpenAICompatibleAPI {
+	// MARK: - Cache Control (Anthropic)
+
+	struct CacheControl: Codable, Sendable {
+		public enum CacheType: String, Codable, Sendable {
+			case ephemeral
+		}
+		public enum TTL: String, Codable, Sendable {
+			case fiveMinutes = "5m"
+			case oneHour = "1h"
+		}
+		public var type: CacheType = .ephemeral
+		public var ttl: TTL?
+
+		public init(type: CacheType = .ephemeral, ttl: TTL? = nil) {
+			self.type = type
+			self.ttl = ttl
+		}
+	}
+
+	// System content block for Anthropic's array-based system prompt with caching
+	struct SystemContentBlock: Codable {
+		public var type: String = "text"
+		public var text: String
+		public var cache_control: CacheControl?
+
+		public init(text: String, cache_control: CacheControl? = nil) {
+			self.type = "text"
+			self.text = text
+			self.cache_control = cache_control
+		}
+	}
+
+	// MARK: - Chat Completion
+
 	struct ChatCompletion: Codable {
 		public struct JsonObject: Codable {
 			public enum ObjectType: String, Codable {
@@ -38,6 +72,7 @@ public extension LLM.OpenAICompatibleAPI {
 		}
 		public var model: ModelName = .gpt35turbo
 		public var system: String? = nil
+		public var systemBlocks: [SystemContentBlock]? = nil  // For Anthropic caching
 		public var messages: [ChatMessage]
 		public var response_format: JsonObject? = JsonObject()
 		public var temperature: Double? = 1.0
@@ -55,6 +90,7 @@ public extension LLM.OpenAICompatibleAPI {
 		public init(
 			model: LLM.OpenAICompatibleAPI.ModelName = .gpt35turbo,
 			system: String? = nil,
+			systemBlocks: [SystemContentBlock]? = nil,
 			messages: [LLM.OpenAICompatibleAPI.ChatMessage],
 			response_format: LLM.OpenAICompatibleAPI.ChatCompletion.JsonObject? = JsonObject(),
 			temperature: Double? = nil,
@@ -71,6 +107,7 @@ public extension LLM.OpenAICompatibleAPI {
 		) {
 			self.model = model
 			self.system = system
+			self.systemBlocks = systemBlocks
 			self.messages = messages
 			self.response_format = response_format
 			self.temperature = temperature
@@ -84,6 +121,40 @@ public extension LLM.OpenAICompatibleAPI {
 			self.reasoning_effort = reasoning_effort
 			self.tools = tools
 			self.tool_choice = tool_choice
+		}
+
+		// Custom encoding to handle Anthropic's array-based system prompt
+		enum CodingKeys: String, CodingKey {
+			case model, system, messages, response_format, temperature
+			case frequency_penalty, top_p, max_tokens, max_completion_tokens
+			case stop, stop_sequences, thinking, reasoning_effort, tools, tool_choice
+		}
+
+		public func encode(to encoder: Encoder) throws {
+			var container = encoder.container(keyedBy: CodingKeys.self)
+			try container.encode(model, forKey: .model)
+
+			// For Anthropic with caching, use systemBlocks (array format)
+			// Otherwise use standard string system prompt
+			if let blocks = systemBlocks {
+				try container.encode(blocks, forKey: .system)
+			} else if let system = system {
+				try container.encode(system, forKey: .system)
+			}
+
+			try container.encode(messages, forKey: .messages)
+			try container.encodeIfPresent(response_format, forKey: .response_format)
+			try container.encodeIfPresent(temperature, forKey: .temperature)
+			try container.encodeIfPresent(frequency_penalty, forKey: .frequency_penalty)
+			try container.encodeIfPresent(top_p, forKey: .top_p)
+			try container.encodeIfPresent(max_tokens, forKey: .max_tokens)
+			try container.encodeIfPresent(max_completion_tokens, forKey: .max_completion_tokens)
+			try container.encodeIfPresent(stop, forKey: .stop)
+			try container.encodeIfPresent(stop_sequences, forKey: .stop_sequences)
+			try container.encodeIfPresent(thinking, forKey: .thinking)
+			try container.encodeIfPresent(reasoning_effort, forKey: .reasoning_effort)
+			try container.encodeIfPresent(tools, forKey: .tools)
+			try container.encodeIfPresent(tool_choice, forKey: .tool_choice)
 		}
 	}
 
@@ -143,6 +214,17 @@ public extension LLM.OpenAICompatibleAPI {
 			public let total_tokens: Int?
 			public let input_tokens: Int?
 			public let output_tokens: Int?
+
+			// Anthropic cache fields
+			public let cache_creation_input_tokens: Int?
+			public let cache_read_input_tokens: Int?
+
+			// OpenAI cache fields (nested in prompt_tokens_details)
+			public let prompt_tokens_details: PromptTokensDetails?
+
+			public struct PromptTokensDetails: Friendly {
+				public let cached_tokens: Int?
+			}
 		}
 
 		public struct Choice: Friendly {
