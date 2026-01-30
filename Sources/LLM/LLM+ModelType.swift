@@ -34,7 +34,7 @@ public extension LLM.Provider {
 		case .anthropic(apiKey: _):
 			switch type {
 			case .fast:
-				return inference == .direct ? .claude45Haiku : .claude45Sonnet
+				return .claude45Haiku
 			case .flagship:
 				return .claude45Opus
 			}
