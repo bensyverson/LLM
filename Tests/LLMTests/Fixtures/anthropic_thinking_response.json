@@ -1,0 +1,30 @@
+{
+    "model": "claude-3-7-sonnet-20250219",
+    "id": "msg_01M7MwaYnoewXejsrpJp45sh",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+        {
+            "type": "thinking",
+            "thinking": "To find the sum of 15 and 27, I'll add the numbers together.\n\n15 + 27 = 42\n\nSo the answer is 42.",
+            "signature": "ErcBCkgICxgCIkDJxHMUFKEALlE3FyM4ZI0xFNzwLnDDri3p946wrtg5Y3AryqHHYfHv33ljC1frCmPJ4ri/Gs+1Gwf1+zV4l2DGKAESDGhF8lDqWsUktZsW2hoMhwgWGc8LNALnu2s4IjB6h7zwwf5djyba+ui+XUDwTJ9LEps80qpmAZ2YKzT3y0qWfll6kg3wSEX8k+5lCyoqHZIjFqRIP/F+yrUgid1DGf5maOsOjA1w7uughAJeGAI="
+        },
+        {
+            "type": "text",
+            "text": "15 + 27 = 42"
+        }
+    ],
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "usage": {
+        "input_tokens": 45,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 57,
+        "service_tier": "standard"
+    }
+}

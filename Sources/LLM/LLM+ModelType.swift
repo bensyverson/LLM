@@ -24,18 +24,19 @@ public extension LLM.Provider {
 	) -> LLM.OpenAICompatibleAPI.ModelName {
 		switch self {
 		case .openAI(apiKey: _):
+			// GPT-5 models have native reasoning via reasoning_effort parameter
 			switch type {
 			case .fast:
-				return inference == .direct ? .gpt41Mini : .o4mini
+				return .gpt5Mini
 			case .flagship:
-				return inference == .direct ? .gpt41 : .o3
+				return .gpt52
 			}
 		case .anthropic(apiKey: _):
 			switch type {
 			case .fast:
-				return inference == .direct ? .claude35HaikuLatest : .claude37SonnetLatest
+				return inference == .direct ? .claude45Haiku : .claude45Sonnet
 			case .flagship:
-				return .claude37SonnetLatest
+				return .claude45Opus
 			}
 		case .lmStudio:
 			return .placeholder

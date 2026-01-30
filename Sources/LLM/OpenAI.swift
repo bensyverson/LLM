@@ -26,8 +26,29 @@ public extension LLM {
 			case o3 = "o3"
 			case o3mini = "o3-mini"
 			case o4mini = "o4-mini"
+			// OpenAI GPT-5 family (2026 - all have native reasoning)
+			case gpt52 = "gpt-5.2"           // Flagship
+			case gpt5Mini = "gpt-5-mini"     // Fast, cost-efficient
+			case gpt5Nano = "gpt-5-nano"     // Fastest, most cost-efficient
+			// Anthropic Claude 4.5
+			case claude45Opus = "claude-opus-4-5"
+			case claude45Sonnet = "claude-sonnet-4-5"
+			case claude45Haiku = "claude-haiku-4-5"
+			// Anthropic Claude 4
+			case claude4Opus = "claude-opus-4"
+			case claude4Sonnet = "claude-sonnet-4"
+			// Legacy Anthropic models
 			case claude37SonnetLatest = "claude-3-7-sonnet-latest"
 			case claude35HaikuLatest = "claude-3-5-haiku-latest"
+
+			public var isGPT5: Bool {
+				switch self {
+				case .gpt52, .gpt5Mini, .gpt5Nano:
+					return true
+				default:
+					return false
+				}
+			}
 		}
 
 		public enum OpenAIError: Error {

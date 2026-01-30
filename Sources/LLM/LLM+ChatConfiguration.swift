@@ -56,12 +56,23 @@ public extension LLM.ChatConfiguration {
 	func request(for provider: LLM.Provider) -> LLM.OpenAICompatibleAPI.ChatCompletion {
 		let isAnthropic = provider.isAnthropic
 		let isOpenAI = provider.isOpenAI
+		let model = provider.model(type: modelType, inference: inference)
+		let isGPT5 = model.isGPT5
+		// For GPT-5 models with reasoning, skip temperature/topP; for older o-series, also skip
 		let skipTemp = inference == .reasoning
 		let skipTopP = skipTemp
 		let skipFreq = isAnthropic
 		let maxReasoningTokenCount = inference == .reasoning ? maxReasoningTokens ?? 1024 : 0
 		let maxCompletionTokens = (maxTokens ?? 0) + maxReasoningTokenCount
 		let thinking: LLM.OpenAICompatibleAPI.ChatCompletion.Thinking? = (isAnthropic && inference == .reasoning) ? .init(budget_tokens: maxReasoningTokenCount) : nil
+
+		// For GPT-5 models with .reasoning inference, auto-set reasoning_effort if not specified
+		let effectiveReasoningEffort: LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort? = {
+			if isOpenAI && inference == .reasoning && isGPT5 {
+				return reasoningEffort ?? .high
+			}
+			return reasoningEffort
+		}()
 
 		let messages: [LLM.OpenAICompatibleAPI.ChatMessage] = isAnthropic ? [
 			LLM.OpenAICompatibleAPI.ChatMessage(content: user, role: .user)
@@ -70,10 +81,7 @@ public extension LLM.ChatConfiguration {
 			LLM.OpenAICompatibleAPI.ChatMessage(content: user, role: .user)
 		]
 		return LLM.OpenAICompatibleAPI.ChatCompletion(
-			model: provider.model(
-				type: modelType,
-				inference: inference
-			),
+			model: model,
 			system: isAnthropic ? systemPrompt : nil,
 			messages: messages,
 			response_format: nil,
@@ -85,7 +93,7 @@ public extension LLM.ChatConfiguration {
 			stop: isAnthropic ? nil : stopTokens,
 			stop_sequences: isAnthropic ? stopTokens : nil,
 			thinking: thinking,
-			reasoning_effort: isAnthropic ? nil : reasoningEffort
+			reasoning_effort: isAnthropic ? nil : effectiveReasoningEffort
 		)
 	}
 }

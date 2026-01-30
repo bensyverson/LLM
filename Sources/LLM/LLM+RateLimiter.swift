@@ -32,7 +32,7 @@ public extension LLM {
 		public func acquire(tokens: Int) async throws {
 			let now = Date()
 			if requestCount == -1 {
-#if DEBUG
+#if DEBUG_RATE
 				print("🥇 First run. Resetting Date and request count.")
 #endif
 				lastResetDate = now
@@ -42,14 +42,14 @@ public extension LLM {
 			let elapsed = now.timeIntervalSince(lastResetDate)
 			if requestCount >= maxRequests || tokenCount >= maxTokens {
 				if elapsed >= interval {
-#if DEBUG
+#if DEBUG_RATE
 					print("⏰ \(elapsed)s elapsed; resetting Date and request count.")
 #endif
 					lastResetDate = now
 					requestCount = 0
 					tokenCount = 0
 				} else {
-#if DEBUG
+#if DEBUG_RATE
 					print("🛑 Rate limited (\(requestCount) vs \(maxRequests), \(elapsed)s elapsed) at \(Date().description)")
 #endif
 					let delay = interval - elapsed
@@ -58,7 +58,7 @@ public extension LLM {
 					return
 				}
 			}
-#if DEBUG
+#if DEBUG_RATE
 			print("✅ Passing request (\(requestCount) vs \(maxRequests), \(elapsed)s elapsed) at \(Date().description)")
 #endif
 			requestCount += 1

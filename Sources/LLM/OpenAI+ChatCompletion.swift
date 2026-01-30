@@ -34,7 +34,7 @@ public extension LLM.OpenAICompatibleAPI {
 			}
 		}
 		public enum ReasoningEffort: String, Codable, Sendable {
-			case low, medium, high
+			case none, low, medium, high, xhigh, minimal
 		}
 		public var model: ModelName = .gpt35turbo
 		public var system: String? = nil
@@ -49,6 +49,8 @@ public extension LLM.OpenAICompatibleAPI {
 		public var stop_sequences: [String]? = nil
 		public var thinking: Thinking? = nil
 		public var reasoning_effort: ReasoningEffort? = nil
+		public var tools: [ToolDefinition]? = nil
+		public var tool_choice: ToolChoice? = nil
 
 		public init(
 			model: LLM.OpenAICompatibleAPI.ModelName = .gpt35turbo,
@@ -63,7 +65,9 @@ public extension LLM.OpenAICompatibleAPI {
 			stop: [String]? = nil,
 			stop_sequences: [String]? = nil,
 			thinking: Thinking? = nil,
-			reasoning_effort: ReasoningEffort? = nil
+			reasoning_effort: ReasoningEffort? = nil,
+			tools: [ToolDefinition]? = nil,
+			tool_choice: ToolChoice? = nil
 		) {
 			self.model = model
 			self.system = system
@@ -78,6 +82,8 @@ public extension LLM.OpenAICompatibleAPI {
 			self.stop_sequences = stop_sequences
 			self.thinking = thinking
 			self.reasoning_effort = reasoning_effort
+			self.tools = tools
+			self.tool_choice = tool_choice
 		}
 	}
 
@@ -86,10 +92,28 @@ public extension LLM.OpenAICompatibleAPI {
 	}
 
 	struct ChatMessage: Friendly {
-		public var content: String
+		public var content: String?
 		public var role: Role
 		public var name: String?
+		public var tool_calls: [ToolCall]?
+		public var tool_call_id: String?
 
+		// Full initializer
+		public init(
+			content: String?,
+			role: Role,
+			name: String? = nil,
+			tool_calls: [ToolCall]? = nil,
+			tool_call_id: String? = nil
+		) {
+			self.content = content
+			self.role = role
+			self.name = name
+			self.tool_calls = tool_calls
+			self.tool_call_id = tool_call_id
+		}
+
+		// Backward-compatible convenience init
 		public init(
 			content: String,
 			role: Role,
@@ -98,6 +122,13 @@ public extension LLM.OpenAICompatibleAPI {
 			self.content = content
 			self.role = role
 			self.name = name
+			self.tool_calls = nil
+			self.tool_call_id = nil
+		}
+
+		// Helper to get content length (for token estimation)
+		public var contentLength: Int {
+			content?.count ?? 0
 		}
 	}
 
@@ -117,17 +148,26 @@ public extension LLM.OpenAICompatibleAPI {
 		public struct Choice: Friendly {
 			public let index: Int
 			public let message: ChatMessage
+			public let finish_reason: String?
 		}
 
 		// Anthropic Content
 		public struct Content: Friendly {
 			public enum ContentType: String, Friendly {
-				case text, thinking, redacted_thinking
+				case text, thinking, redacted_thinking, tool_use, tool_result
 			}
 			public var type: ContentType
 			public var text: String?
+			public var thinking: String?  // Anthropic thinking content
 			public var data: Data?
 			public var signature: String?
+			// Tool use fields (Anthropic)
+			public var id: String?
+			public var name: String?
+			public var input: [String: String]?
+			// Tool result fields (Anthropic)
+			public var tool_use_id: String?
+			public var content: String?
 		}
 
 		public let id: String?

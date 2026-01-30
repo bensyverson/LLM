@@ -60,4 +60,47 @@ public extension LLM {
 			throw error
 		}
 	}
+
+	// MARK: - Conversation API
+
+	func chat(conversation: Conversation) async throws -> ConversationResponse {
+		let api = providerApi
+		let messageTextLength = conversation.messages.reduce(0) { total, msg in
+			total + msg.contentLength
+		}
+		let tokenCount = Int(Double(conversation.systemPrompt.count + messageTextLength) / 2.0)
+		try await chatRateLimiter.acquire(tokens: tokenCount)
+
+		let request = conversation.request(for: provider)
+		let jsonData = try JSONEncoder().encode(request)
+		let response = try await api.chatCompletion(with: jsonData)
+
+		guard let text = response.content?.first(where: { $0.type == .text })?.text ?? response.choices?.first?.message.content else {
+			throw LLMError.parseResponse(response)
+		}
+
+		let updatedConversation = conversation.addingAssistantMessage(text)
+		return ConversationResponse(text: text, conversation: updatedConversation, rawResponse: response)
+	}
+
+	func startConversation(
+		systemPrompt: String,
+		userMessage: String,
+		configuration: ConversationConfiguration = .init()
+	) async throws -> ConversationResponse {
+		let conversation = Conversation(
+			systemPrompt: systemPrompt,
+			messages: [OpenAICompatibleAPI.ChatMessage(content: userMessage, role: .user)],
+			configuration: configuration
+		)
+		return try await chat(conversation: conversation)
+	}
+
+	func continueConversation(
+		_ conversation: Conversation,
+		userMessage: String
+	) async throws -> ConversationResponse {
+		let updated = conversation.addingUserMessage(userMessage)
+		return try await chat(conversation: updated)
+	}
 }

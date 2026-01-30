@@ -22,7 +22,10 @@ let package = Package(
             name: "LLM"),
         .testTarget(
             name: "LLMTests",
-            dependencies: ["LLM"]
+            dependencies: ["LLM"],
+            resources: [
+                .copy("Fixtures")
+            ]
         ),
     ]
 )
