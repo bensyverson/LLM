@@ -70,7 +70,21 @@ public extension LLM.ChatConfiguration {
 		let skipTopP = skipTemp
 		let skipFreq = isAnthropic
 		let maxReasoningTokenCount = inference == .reasoning ? maxReasoningTokens ?? 1024 : 0
-		let maxCompletionTokens = (maxTokens ?? 0) + maxReasoningTokenCount
+		// Token budget calculation differs between providers:
+		// - OpenAI: reasoning + output share max_completion_tokens budget
+		// - Anthropic: reasoning (budget_tokens) is separate from output (max_tokens)
+		let maxCompletionTokens: Int = {
+			if isAnthropic {
+				// Anthropic: only use maxTokens for output (thinking has separate budget)
+				return maxTokens ?? 0
+			} else if isGPT5 && inference == .reasoning && maxTokens == nil {
+				// GPT-5 with reasoning: if user doesn't specify maxTokens, don't set a limit
+				return 0
+			} else {
+				// OpenAI non-GPT5 or with explicit maxTokens: combine reasoning + output
+				return (maxTokens ?? 0) + maxReasoningTokenCount
+			}
+		}()
 		let thinking: LLM.OpenAICompatibleAPI.ChatCompletion.Thinking? = (isAnthropic && inference == .reasoning) ? .init(budget_tokens: maxReasoningTokenCount) : nil
 
 		// For GPT-5 models with .reasoning inference, auto-set reasoning_effort if not specified

@@ -92,11 +92,27 @@ public extension LLM.Conversation {
 		let isOpenAI = provider.isOpenAI
 		let model = provider.model(type: configuration.modelType, inference: configuration.inference)
 		let isGPT5 = model.isGPT5
-		let skipTemp = configuration.inference == .reasoning
+		// For GPT-5 models, always skip temperature/topP (they only support default values)
+		// For older o-series reasoning models, also skip
+		let skipTemp = isGPT5 || configuration.inference == .reasoning
 		let skipTopP = skipTemp
 		let skipFreq = isAnthropic
 		let maxReasoningTokenCount = configuration.inference == .reasoning ? configuration.maxReasoningTokens ?? 1024 : 0
-		let maxCompletionTokens = (configuration.maxTokens ?? 0) + maxReasoningTokenCount
+		// Token budget calculation differs between providers:
+		// - OpenAI: reasoning + output share max_completion_tokens budget
+		// - Anthropic: reasoning (budget_tokens) is separate from output (max_tokens)
+		let maxCompletionTokens: Int = {
+			if isAnthropic {
+				// Anthropic: only use maxTokens for output (thinking has separate budget)
+				return configuration.maxTokens ?? 0
+			} else if isGPT5 && configuration.inference == .reasoning && configuration.maxTokens == nil {
+				// GPT-5 with reasoning: if user doesn't specify maxTokens, don't set a limit
+				return 0
+			} else {
+				// OpenAI non-GPT5 or with explicit maxTokens: combine reasoning + output
+				return (configuration.maxTokens ?? 0) + maxReasoningTokenCount
+			}
+		}()
 		let thinking: LLM.OpenAICompatibleAPI.ChatCompletion.Thinking? = (isAnthropic && configuration.inference == .reasoning) ? .init(budget_tokens: maxReasoningTokenCount) : nil
 
 		// For GPT-5 models with .reasoning inference, auto-set reasoning_effort if not specified
