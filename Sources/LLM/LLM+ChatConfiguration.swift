@@ -69,6 +69,7 @@ public extension LLM.ChatConfiguration {
 		let skipTemp = isGPT5 || inference == .reasoning
 		let skipTopP = skipTemp
 		let skipFreq = isAnthropic
+		let skipStop = isGPT5  // GPT-5 doesn't support stop parameter
 		let maxReasoningTokenCount = inference == .reasoning ? maxReasoningTokens ?? 1024 : 0
 		// Token budget calculation differs between providers:
 		// - OpenAI: reasoning + output share max_completion_tokens budget
@@ -122,7 +123,7 @@ public extension LLM.ChatConfiguration {
 			top_p: skipTopP ? nil : topP,
 			max_tokens: isOpenAI ? nil : maxCompletionTokens,
 			max_completion_tokens: isOpenAI && maxCompletionTokens > 0 ? maxCompletionTokens : nil,
-			stop: isAnthropic ? nil : stopTokens,
+			stop: (isAnthropic || skipStop) ? nil : stopTokens,
 			stop_sequences: isAnthropic ? stopTokens : nil,
 			thinking: thinking,
 			reasoning_effort: isAnthropic ? nil : effectiveReasoningEffort
