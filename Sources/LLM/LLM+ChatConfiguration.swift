@@ -64,8 +64,9 @@ public extension LLM.ChatConfiguration {
 		let isOpenAI = provider.isOpenAI
 		let model = provider.model(type: modelType, inference: inference)
 		let isGPT5 = model.isGPT5
-		// For GPT-5 models with reasoning, skip temperature/topP; for older o-series, also skip
-		let skipTemp = inference == .reasoning
+		// For GPT-5 models, always skip temperature/topP (they only support default values)
+		// For older o-series reasoning models, also skip
+		let skipTemp = isGPT5 || inference == .reasoning
 		let skipTopP = skipTemp
 		let skipFreq = isAnthropic
 		let maxReasoningTokenCount = inference == .reasoning ? maxReasoningTokens ?? 1024 : 0
