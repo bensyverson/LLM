@@ -94,6 +94,10 @@ public extension LLM.OpenAICompatibleAPI {
         public var tools: [ToolDefinition]? = nil
         public var tool_choice: ToolChoice? = nil
 
+        /// When true, tools are encoded in Anthropic's format (name/description/input_schema)
+        /// rather than OpenAI's (type/function wrapper). Set by `request(for:)`.
+        public var useAnthropicToolFormat: Bool = false
+
         public init(
             model: LLM.OpenAICompatibleAPI.ModelName = .gpt35turbo,
             system: String? = nil,
@@ -149,7 +153,11 @@ public extension LLM.OpenAICompatibleAPI {
                 try container.encode(system, forKey: .system)
             }
 
-            try container.encode(messages, forKey: .messages)
+            if useAnthropicToolFormat {
+                try container.encode(AnthropicMessageConverter.convert(messages), forKey: .messages)
+            } else {
+                try container.encode(messages, forKey: .messages)
+            }
             try container.encodeIfPresent(response_format, forKey: .response_format)
             try container.encodeIfPresent(temperature, forKey: .temperature)
             try container.encodeIfPresent(frequency_penalty, forKey: .frequency_penalty)
@@ -160,8 +168,17 @@ public extension LLM.OpenAICompatibleAPI {
             try container.encodeIfPresent(stop_sequences, forKey: .stop_sequences)
             try container.encodeIfPresent(thinking, forKey: .thinking)
             try container.encodeIfPresent(reasoning_effort, forKey: .reasoning_effort)
-            try container.encodeIfPresent(tools, forKey: .tools)
-            try container.encodeIfPresent(tool_choice, forKey: .tool_choice)
+            if useAnthropicToolFormat, let tools {
+                let anthropicTools = tools.map { AnthropicToolDefinition(from: $0) }
+                try container.encode(anthropicTools, forKey: .tools)
+            } else {
+                try container.encodeIfPresent(tools, forKey: .tools)
+            }
+            if useAnthropicToolFormat, let tool_choice {
+                try container.encode(AnthropicToolChoice(from: tool_choice), forKey: .tool_choice)
+            } else {
+                try container.encodeIfPresent(tool_choice, forKey: .tool_choice)
+            }
         }
     }
 

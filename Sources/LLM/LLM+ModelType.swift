@@ -36,7 +36,7 @@ public extension LLM.Provider {
             case .fast:
                 return .claude45Haiku
             case .flagship:
-                return .claude45Opus
+                return .claude46Opus
             }
         case .lmStudio:
             return .placeholder

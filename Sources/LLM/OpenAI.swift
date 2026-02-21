@@ -30,6 +30,9 @@ public extension LLM {
             case gpt52 = "gpt-5.2" // Flagship
             case gpt5Mini = "gpt-5-mini" // Fast, cost-efficient
             case gpt5Nano = "gpt-5-nano" // Fastest, most cost-efficient
+            // Anthropic Claude 4.6
+            case claude46Opus = "claude-opus-4-6"
+            case claude46Sonnet = "claude-sonnet-4-6"
             // Anthropic Claude 4.5
             case claude45Opus = "claude-opus-4-5"
             case claude45Sonnet = "claude-sonnet-4-5"

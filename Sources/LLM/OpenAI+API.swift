@@ -35,6 +35,9 @@ public extension LLM.OpenAICompatibleAPI {
         let statusCode = httpResponse.statusCode
 
         guard statusCode == 200 else {
+            if let errorBody = String(data: data, encoding: .utf8) {
+                FileHandle.standardError.write(Data("[LLM] HTTP \(statusCode): \(errorBody)\n".utf8))
+            }
             throw OpenAIError.badResponseCode(statusCode)
         }
         do {

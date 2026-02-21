@@ -134,7 +134,8 @@ public extension LLM.Conversation {
         let maxCompletionTokens: Int = {
             if isAnthropic {
                 // Anthropic: only use maxTokens for output (thinking has separate budget)
-                return configuration.maxTokens ?? 0
+                // Default to 4096 if not set, since Anthropic requires max_tokens > 0
+                return configuration.maxTokens ?? 4096
             } else if isGPT5 && configuration.inference == .reasoning && configuration.maxTokens == nil {
                 // GPT-5 with reasoning: if user doesn't specify maxTokens, don't set a limit
                 return 0
@@ -169,7 +170,7 @@ public extension LLM.Conversation {
             ),
         ] : nil
 
-        return LLM.OpenAICompatibleAPI.ChatCompletion(
+        var completion = LLM.OpenAICompatibleAPI.ChatCompletion(
             model: model,
             system: systemString,
             systemBlocks: systemBlocks,
@@ -187,5 +188,7 @@ public extension LLM.Conversation {
             tools: configuration.tools,
             tool_choice: configuration.toolChoice
         )
+        completion.useAnthropicToolFormat = isAnthropic
+        return completion
     }
 }
