@@ -5,9 +5,9 @@
 //  Tests for parsing real API response fixtures
 //
 
-import Testing
 import Foundation
 @testable import LLM
+import Testing
 
 // MARK: - Test Fixture Helper
 
@@ -68,7 +68,7 @@ enum FixtureError: Error {
 
     // Choices
     #expect(response.choices?.count == 1)
-    let choice = response.choices![0]
+    let choice = try #require(response.choices?[0])
     #expect(choice.index == 0)
     #expect(choice.message.role == .assistant)
     #expect(choice.message.content == "Hello! I'm here to help. How can I assist you today?")
@@ -123,14 +123,14 @@ enum FixtureError: Error {
 
     // Choices
     #expect(response.choices?.count == 1)
-    let choice = response.choices![0]
+    let choice = try #require(response.choices?[0])
     #expect(choice.message.content == nil)
     #expect(choice.finish_reason == "tool_calls")
 
     // Tool calls
     let toolCalls = choice.message.tool_calls
     #expect(toolCalls?.count == 1)
-    let toolCall = toolCalls![0]
+    let toolCall = try #require(toolCalls?[0])
     #expect(toolCall.id == "call_abc123")
     #expect(toolCall.type == "function")
     #expect(toolCall.function.name == "get_weather")
@@ -170,7 +170,7 @@ enum FixtureError: Error {
 
     // Content array (Anthropic format)
     #expect(response.content?.count == 1)
-    let content = response.content![0]
+    let content = try #require(response.content?[0])
     #expect(content.type == .text)
     #expect(content.text == "Hello! I'm Claude, an AI assistant. How can I help you today?")
 }
@@ -206,10 +206,10 @@ enum FixtureError: Error {
     // Content with thinking
     #expect(response.content?.count == 2)
 
-    let thinkingContent = response.content![0]
+    let thinkingContent = try #require(response.content?[0])
     #expect(thinkingContent.type == .thinking)
 
-    let textContent = response.content![1]
+    let textContent = try #require(response.content?[1])
     #expect(textContent.type == .text)
     #expect(textContent.text == "The capital of France is Paris.")
 }
@@ -249,12 +249,12 @@ enum FixtureError: Error {
 
     // Tool use content
     #expect(response.content?.count == 1)
-    let toolUse = response.content![0]
+    let toolUse = try #require(response.content?[0])
     #expect(toolUse.type == .tool_use)
     #expect(toolUse.id == "toolu_01abc123")
     #expect(toolUse.name == "get_weather")
-    #expect(toolUse.input?["location"] == "San Francisco")
-    #expect(toolUse.input?["unit"] == "celsius")
+    #expect(toolUse.input?["location"] == .string("San Francisco"))
+    #expect(toolUse.input?["unit"] == .string("celsius"))
 }
 
 // MARK: - ChatCompletionResponse Usage Tests
@@ -319,7 +319,7 @@ enum FixtureError: Error {
 // MARK: - Real Fixture File Tests
 
 @Test func parseRealOpenAIChatFixture() throws {
-    let url = Bundle.module.url(forResource: "openai_chat_response", withExtension: "json", subdirectory: "Fixtures")!
+    let url = try #require(Bundle.module.url(forResource: "openai_chat_response", withExtension: "json", subdirectory: "Fixtures"))
     let data = try Data(contentsOf: url)
     let decoder = JSONDecoder()
     let response = try decoder.decode(LLM.OpenAICompatibleAPI.ChatCompletionResponse.self, from: data)
@@ -333,7 +333,7 @@ enum FixtureError: Error {
 }
 
 @Test func parseRealOpenAIToolCallFixture() throws {
-    let url = Bundle.module.url(forResource: "openai_tool_call_response", withExtension: "json", subdirectory: "Fixtures")!
+    let url = try #require(Bundle.module.url(forResource: "openai_tool_call_response", withExtension: "json", subdirectory: "Fixtures"))
     let data = try Data(contentsOf: url)
     let decoder = JSONDecoder()
     let response = try decoder.decode(LLM.OpenAICompatibleAPI.ChatCompletionResponse.self, from: data)
@@ -346,7 +346,7 @@ enum FixtureError: Error {
 }
 
 @Test func parseRealAnthropicChatFixture() throws {
-    let url = Bundle.module.url(forResource: "anthropic_chat_response", withExtension: "json", subdirectory: "Fixtures")!
+    let url = try #require(Bundle.module.url(forResource: "anthropic_chat_response", withExtension: "json", subdirectory: "Fixtures"))
     let data = try Data(contentsOf: url)
     let decoder = JSONDecoder()
     let response = try decoder.decode(LLM.OpenAICompatibleAPI.ChatCompletionResponse.self, from: data)
@@ -360,7 +360,7 @@ enum FixtureError: Error {
 }
 
 @Test func parseRealAnthropicThinkingFixture() throws {
-    let url = Bundle.module.url(forResource: "anthropic_thinking_response", withExtension: "json", subdirectory: "Fixtures")!
+    let url = try #require(Bundle.module.url(forResource: "anthropic_thinking_response", withExtension: "json", subdirectory: "Fixtures"))
     let data = try Data(contentsOf: url)
     let decoder = JSONDecoder()
     let response = try decoder.decode(LLM.OpenAICompatibleAPI.ChatCompletionResponse.self, from: data)
@@ -379,7 +379,7 @@ enum FixtureError: Error {
 }
 
 @Test func parseRealAnthropicToolUseFixture() throws {
-    let url = Bundle.module.url(forResource: "anthropic_tool_use_response", withExtension: "json", subdirectory: "Fixtures")!
+    let url = try #require(Bundle.module.url(forResource: "anthropic_tool_use_response", withExtension: "json", subdirectory: "Fixtures"))
     let data = try Data(contentsOf: url)
     let decoder = JSONDecoder()
     let response = try decoder.decode(LLM.OpenAICompatibleAPI.ChatCompletionResponse.self, from: data)

@@ -5,9 +5,9 @@
 //  Tests for Conversation helpers and request building
 //
 
-import Testing
 import Foundation
 @testable import LLM
+import Testing
 
 // MARK: - Conversation Helper Tests
 
@@ -66,7 +66,7 @@ import Foundation
 
 @Test func conversation_originalNotMutated() {
     let original = LLM.Conversation(systemPrompt: "System")
-    let _ = original.addingUserMessage("New message")
+    _ = original.addingUserMessage("New message")
 
     #expect(original.messages.isEmpty)
 }
@@ -127,6 +127,7 @@ import Foundation
 }
 
 @Test func conversationRequest_openAI_usesStop() {
+    // GPT-5 models skip the stop parameter
     let config = LLM.ConversationConfiguration(stopTokens: ["END", "STOP"])
     let conversation = LLM.Conversation(
         systemPrompt: "System",
@@ -136,7 +137,7 @@ import Foundation
     let provider = LLM.Provider.openAI(apiKey: "test")
     let request = conversation.request(for: provider)
 
-    #expect(request.stop == ["END", "STOP"])
+    #expect(request.stop == nil)
     #expect(request.stop_sequences == nil)
 }
 
@@ -176,6 +177,7 @@ import Foundation
 }
 
 @Test func conversationRequest_openAI_direct_includesTemperatureAndTopP() {
+    // GPT-5 models (default .fast) skip temperature and topP
     let config = LLM.ConversationConfiguration(
         inference: .direct,
         temperature: 0.5,
@@ -189,8 +191,8 @@ import Foundation
     let provider = LLM.Provider.openAI(apiKey: "test")
     let request = conversation.request(for: provider)
 
-    #expect(request.temperature == 0.5)
-    #expect(request.top_p == 0.9)
+    #expect(request.temperature == nil)
+    #expect(request.top_p == nil)
 }
 
 @Test func conversationRequest_openAI_noThinking() {
@@ -348,7 +350,7 @@ import Foundation
     let encoder = JSONEncoder()
     encoder.outputFormatting = [.sortedKeys]
     let data = try encoder.encode(request)
-    let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+    let json = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
 
     // Verify model
     #expect(json["model"] as? String == "gpt-5-mini")
@@ -357,7 +359,7 @@ import Foundation
     #expect(json["system"] == nil || json["system"] is NSNull)
 
     // Verify messages array structure
-    let messages = json["messages"] as! [[String: Any]]
+    let messages = try #require(json["messages"] as? [[String: Any]])
     #expect(messages.count == 4)
 
     #expect(messages[0]["role"] as? String == "system")
@@ -384,7 +386,7 @@ import Foundation
     let encoder = JSONEncoder()
     encoder.outputFormatting = [.sortedKeys]
     let data = try encoder.encode(request)
-    let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+    let json = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
 
     // Verify model
     #expect(json["model"] as? String == "claude-haiku-4-5")
@@ -393,7 +395,7 @@ import Foundation
     #expect(json["system"] as? String == "You are a helpful assistant")
 
     // Verify messages array (should NOT include system message)
-    let messages = json["messages"] as! [[String: Any]]
+    let messages = try #require(json["messages"] as? [[String: Any]])
     #expect(messages.count == 3)
 
     #expect(messages[0]["role"] as? String == "user")
@@ -421,21 +423,22 @@ import Foundation
     // Test OpenAI serialization
     let openAIRequest = conversation.request(for: .openAI(apiKey: "test"))
     let openAIData = try JSONEncoder().encode(openAIRequest)
-    let openAIJson = try JSONSerialization.jsonObject(with: openAIData) as! [String: Any]
+    let openAIJson = try #require(JSONSerialization.jsonObject(with: openAIData) as? [String: Any])
 
     #expect(openAIJson["model"] as? String == "gpt-5.2")
     #expect(openAIJson["reasoning_effort"] as? String == "high")
-    #expect(openAIJson["max_completion_tokens"] as? Int == 3048)  // 1000 + 2048
+    #expect(openAIJson["max_completion_tokens"] as? Int == 3048) // 1000 + 2048
     #expect(openAIJson["thinking"] == nil || openAIJson["thinking"] is NSNull)
 
     // Test Anthropic serialization
     let anthropicRequest = conversation.request(for: .anthropic(apiKey: "test"))
     let anthropicData = try JSONEncoder().encode(anthropicRequest)
-    let anthropicJson = try JSONSerialization.jsonObject(with: anthropicData) as! [String: Any]
+    let anthropicJson = try #require(JSONSerialization.jsonObject(with: anthropicData) as? [String: Any])
 
     #expect(anthropicJson["model"] as? String == "claude-opus-4-5")
     #expect(anthropicJson["reasoning_effort"] == nil || anthropicJson["reasoning_effort"] is NSNull)
-    #expect(anthropicJson["max_tokens"] as? Int == 3048)
+    // Anthropic: only maxTokens for output (thinking has separate budget)
+    #expect(anthropicJson["max_tokens"] as? Int == 1000)
     let thinking = anthropicJson["thinking"] as? [String: Any]
     #expect(thinking?["type"] as? String == "enabled")
     #expect(thinking?["budget_tokens"] as? Int == 2048)

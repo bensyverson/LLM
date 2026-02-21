@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  LLM+ChatConfiguration.swift
 //  LLM
 //
 //  Created by Ben Syverson on 2025-02-24.
@@ -8,125 +8,125 @@
 import Foundation
 
 public extension LLM {
-	struct ChatConfiguration: Friendly {
-		public var systemPrompt: String
-		public var user: String
-		public var modelType: ModelType = .fast
-		public var inference: InferenceType = .direct
-		public var temperature: Double?
-		public var frequencyPenalty: Double?
-		public var repeatPenalty: Double?
-		public var topP: Double?
-		public var maxTokens: Int?
-		public var maxReasoningTokens: Int?
-		public var reasoningEffort: LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort?
-		public var stopTokens: [String]?
-		public var enableCaching: Bool = false
-		public var cacheTTL: LLM.OpenAICompatibleAPI.CacheControl.TTL? = nil
+    struct ChatConfiguration: Friendly {
+        public var systemPrompt: String
+        public var user: String
+        public var modelType: ModelType = .fast
+        public var inference: InferenceType = .direct
+        public var temperature: Double?
+        public var frequencyPenalty: Double?
+        public var repeatPenalty: Double?
+        public var topP: Double?
+        public var maxTokens: Int?
+        public var maxReasoningTokens: Int?
+        public var reasoningEffort: LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort?
+        public var stopTokens: [String]?
+        public var enableCaching: Bool = false
+        public var cacheTTL: LLM.OpenAICompatibleAPI.CacheControl.TTL?
 
-		public init(
-			systemPrompt: String,
-			user: String,
-			modelType: ModelType,
-			inference: InferenceType,
-			temperature: Double? = nil,
-			frequencyPenalty: Double? = nil,
-			repeatPenalty: Double? = nil,
-			topP: Double? = nil,
-			maxTokens: Int? = nil,
-			maxReasoningTokens: Int? = nil,
-			reasoningEffort: LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort? = nil,
-			stopTokens: [String]? = nil,
-			enableCaching: Bool = false,
-			cacheTTL: LLM.OpenAICompatibleAPI.CacheControl.TTL? = nil
-		) {
-			self.systemPrompt = systemPrompt
-			self.user = user
-			self.modelType = modelType
-			self.inference = inference
-			self.temperature = temperature
-			self.frequencyPenalty = frequencyPenalty
-			self.repeatPenalty = repeatPenalty
-			self.topP = topP
-			self.maxTokens = maxTokens
-			self.maxReasoningTokens = maxReasoningTokens
-			self.reasoningEffort = reasoningEffort
-			self.stopTokens = stopTokens
-			self.enableCaching = enableCaching
-			self.cacheTTL = cacheTTL
-		}
-	}
+        public init(
+            systemPrompt: String,
+            user: String,
+            modelType: ModelType,
+            inference: InferenceType,
+            temperature: Double? = nil,
+            frequencyPenalty: Double? = nil,
+            repeatPenalty: Double? = nil,
+            topP: Double? = nil,
+            maxTokens: Int? = nil,
+            maxReasoningTokens: Int? = nil,
+            reasoningEffort: LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort? = nil,
+            stopTokens: [String]? = nil,
+            enableCaching: Bool = false,
+            cacheTTL: LLM.OpenAICompatibleAPI.CacheControl.TTL? = nil
+        ) {
+            self.systemPrompt = systemPrompt
+            self.user = user
+            self.modelType = modelType
+            self.inference = inference
+            self.temperature = temperature
+            self.frequencyPenalty = frequencyPenalty
+            self.repeatPenalty = repeatPenalty
+            self.topP = topP
+            self.maxTokens = maxTokens
+            self.maxReasoningTokens = maxReasoningTokens
+            self.reasoningEffort = reasoningEffort
+            self.stopTokens = stopTokens
+            self.enableCaching = enableCaching
+            self.cacheTTL = cacheTTL
+        }
+    }
 }
 
 public extension LLM.ChatConfiguration {
-	func request(for provider: LLM.Provider) -> LLM.OpenAICompatibleAPI.ChatCompletion {
-		let isAnthropic = provider.isAnthropic
-		let isOpenAI = provider.isOpenAI
-		let model = provider.model(type: modelType, inference: inference)
-		let isGPT5 = model.isGPT5
-		// For GPT-5 models, always skip temperature/topP (they only support default values)
-		// For older o-series reasoning models, also skip
-		let skipTemp = isGPT5 || inference == .reasoning
-		let skipTopP = skipTemp
-		let skipFreq = isAnthropic
-		let skipStop = isGPT5  // GPT-5 doesn't support stop parameter
-		let maxReasoningTokenCount = inference == .reasoning ? maxReasoningTokens ?? 1024 : 0
-		// Token budget calculation differs between providers:
-		// - OpenAI: reasoning + output share max_completion_tokens budget
-		// - Anthropic: reasoning (budget_tokens) is separate from output (max_tokens)
-		let maxCompletionTokens: Int = {
-			if isAnthropic {
-				// Anthropic: only use maxTokens for output (thinking has separate budget)
-				return maxTokens ?? 0
-			} else if isGPT5 && inference == .reasoning && maxTokens == nil {
-				// GPT-5 with reasoning: if user doesn't specify maxTokens, don't set a limit
-				return 0
-			} else {
-				// OpenAI non-GPT5 or with explicit maxTokens: combine reasoning + output
-				return (maxTokens ?? 0) + maxReasoningTokenCount
-			}
-		}()
-		let thinking: LLM.OpenAICompatibleAPI.ChatCompletion.Thinking? = (isAnthropic && inference == .reasoning) ? .init(budget_tokens: maxReasoningTokenCount) : nil
+    func request(for provider: LLM.Provider) -> LLM.OpenAICompatibleAPI.ChatCompletion {
+        let isAnthropic = provider.isAnthropic
+        let isOpenAI = provider.isOpenAI
+        let model = provider.model(type: modelType, inference: inference)
+        let isGPT5 = model.isGPT5
+        // For GPT-5 models, always skip temperature/topP (they only support default values)
+        // For older o-series reasoning models, also skip
+        let skipTemp = isGPT5 || inference == .reasoning
+        let skipTopP = skipTemp
+        let skipFreq = isAnthropic
+        let skipStop = isGPT5 // GPT-5 doesn't support stop parameter
+        let maxReasoningTokenCount = inference == .reasoning ? maxReasoningTokens ?? 1024 : 0
+        // Token budget calculation differs between providers:
+        // - OpenAI: reasoning + output share max_completion_tokens budget
+        // - Anthropic: reasoning (budget_tokens) is separate from output (max_tokens)
+        let maxCompletionTokens: Int = {
+            if isAnthropic {
+                // Anthropic: only use maxTokens for output (thinking has separate budget)
+                return maxTokens ?? 0
+            } else if isGPT5 && inference == .reasoning && maxTokens == nil {
+                // GPT-5 with reasoning: if user doesn't specify maxTokens, don't set a limit
+                return 0
+            } else {
+                // OpenAI non-GPT5 or with explicit maxTokens: combine reasoning + output
+                return (maxTokens ?? 0) + maxReasoningTokenCount
+            }
+        }()
+        let thinking: LLM.OpenAICompatibleAPI.ChatCompletion.Thinking? = (isAnthropic && inference == .reasoning) ? .init(budget_tokens: maxReasoningTokenCount) : nil
 
-		// For GPT-5 models with .reasoning inference, auto-set reasoning_effort if not specified
-		let effectiveReasoningEffort: LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort? = {
-			if isOpenAI && inference == .reasoning && isGPT5 {
-				return reasoningEffort ?? .high
-			}
-			return reasoningEffort
-		}()
+        // For GPT-5 models with .reasoning inference, auto-set reasoning_effort if not specified
+        let effectiveReasoningEffort: LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort? = {
+            if isOpenAI && inference == .reasoning && isGPT5 {
+                return reasoningEffort ?? .high
+            }
+            return reasoningEffort
+        }()
 
-		let messages: [LLM.OpenAICompatibleAPI.ChatMessage] = isAnthropic ? [
-			LLM.OpenAICompatibleAPI.ChatMessage(content: user, role: .user)
-		] : [
-			LLM.OpenAICompatibleAPI.ChatMessage(content: systemPrompt, role: .system),
-			LLM.OpenAICompatibleAPI.ChatMessage(content: user, role: .user)
-		]
+        let messages: [LLM.OpenAICompatibleAPI.ChatMessage] = isAnthropic ? [
+            LLM.OpenAICompatibleAPI.ChatMessage(content: user, role: .user),
+        ] : [
+            LLM.OpenAICompatibleAPI.ChatMessage(content: systemPrompt, role: .system),
+            LLM.OpenAICompatibleAPI.ChatMessage(content: user, role: .user),
+        ]
 
-		// Build system prompt - use array format with cache_control for Anthropic when caching enabled
-		let systemString: String? = (isAnthropic && !enableCaching) ? systemPrompt : (isAnthropic ? nil : nil)
-		let systemBlocks: [LLM.OpenAICompatibleAPI.SystemContentBlock]? = (isAnthropic && enableCaching) ? [
-			LLM.OpenAICompatibleAPI.SystemContentBlock(
-				text: systemPrompt,
-				cache_control: LLM.OpenAICompatibleAPI.CacheControl(ttl: cacheTTL)
-			)
-		] : nil
+        // Build system prompt - use array format with cache_control for Anthropic when caching enabled
+        let systemString: String? = (isAnthropic && !enableCaching) ? systemPrompt : (isAnthropic ? nil : nil)
+        let systemBlocks: [LLM.OpenAICompatibleAPI.SystemContentBlock]? = (isAnthropic && enableCaching) ? [
+            LLM.OpenAICompatibleAPI.SystemContentBlock(
+                text: systemPrompt,
+                cache_control: LLM.OpenAICompatibleAPI.CacheControl(ttl: cacheTTL)
+            ),
+        ] : nil
 
-		return LLM.OpenAICompatibleAPI.ChatCompletion(
-			model: model,
-			system: systemString,
-			systemBlocks: systemBlocks,
-			messages: messages,
-			response_format: nil,
-			temperature: skipTemp ? nil : temperature,
-			frequency_penalty: skipFreq ? nil : frequencyPenalty,
-			top_p: skipTopP ? nil : topP,
-			max_tokens: isOpenAI ? nil : maxCompletionTokens,
-			max_completion_tokens: isOpenAI && maxCompletionTokens > 0 ? maxCompletionTokens : nil,
-			stop: (isAnthropic || skipStop) ? nil : stopTokens,
-			stop_sequences: isAnthropic ? stopTokens : nil,
-			thinking: thinking,
-			reasoning_effort: isAnthropic ? nil : effectiveReasoningEffort
-		)
-	}
+        return LLM.OpenAICompatibleAPI.ChatCompletion(
+            model: model,
+            system: systemString,
+            systemBlocks: systemBlocks,
+            messages: messages,
+            response_format: nil,
+            temperature: skipTemp ? nil : temperature,
+            frequency_penalty: skipFreq ? nil : frequencyPenalty,
+            top_p: skipTopP ? nil : topP,
+            max_tokens: isOpenAI ? nil : maxCompletionTokens,
+            max_completion_tokens: isOpenAI && maxCompletionTokens > 0 ? maxCompletionTokens : nil,
+            stop: (isAnthropic || skipStop) ? nil : stopTokens,
+            stop_sequences: isAnthropic ? stopTokens : nil,
+            thinking: thinking,
+            reasoning_effort: isAnthropic ? nil : effectiveReasoningEffort
+        )
+    }
 }

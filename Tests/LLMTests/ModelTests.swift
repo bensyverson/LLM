@@ -5,9 +5,9 @@
 //  Tests for ModelName, ModelType, InferenceType, and Provider.model()
 //
 
-import Testing
 import Foundation
 @testable import LLM
+import Testing
 
 // MARK: - ModelName Tests
 
@@ -36,7 +36,7 @@ import Foundation
 
 @Test func modelNameCodable_roundTrip() throws {
     let models: [LLM.OpenAICompatibleAPI.ModelName] = [
-        .gpt52, .gpt5Mini, .gpt4o, .claude45Opus, .o3, .placeholder
+        .gpt52, .gpt5Mini, .gpt4o, .claude45Opus, .o3, .placeholder,
     ]
 
     let encoder = JSONEncoder()
@@ -136,8 +136,8 @@ import Foundation
     #expect(provider.model(type: .flagship, inference: .reasoning) == .placeholder)
 }
 
-@Test func providerModel_other_returnsPlaceholder() {
-    let provider = LLM.Provider.other(URL(string: "https://example.com")!, apiKey: "key")
+@Test func providerModel_other_returnsPlaceholder() throws {
+    let provider = try LLM.Provider.other(#require(URL(string: "https://example.com")), apiKey: "key")
     #expect(provider.model(type: .fast, inference: .direct) == .placeholder)
     #expect(provider.model(type: .flagship, inference: .reasoning) == .placeholder)
 }

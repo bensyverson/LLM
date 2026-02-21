@@ -5,9 +5,9 @@
 //  Tests for Provider, SimpleProvider
 //
 
-import Testing
 import Foundation
 @testable import LLM
+import Testing
 
 // MARK: - Provider.isOpenAI Tests
 
@@ -16,11 +16,11 @@ import Foundation
     #expect(provider.isOpenAI == true)
 }
 
-@Test func provider_isOpenAI_falseForOthers() {
+@Test func provider_isOpenAI_falseForOthers() throws {
     #expect(LLM.Provider.anthropic(apiKey: "test").isOpenAI == false)
     #expect(LLM.Provider.lmStudio.isOpenAI == false)
     #expect(LLM.Provider.localhost(port: 8080).isOpenAI == false)
-    #expect(LLM.Provider.other(URL(string: "https://example.com")!, apiKey: nil).isOpenAI == false)
+    #expect(try LLM.Provider.other(#require(URL(string: "https://example.com")), apiKey: nil).isOpenAI == false)
 }
 
 // MARK: - Provider.isAnthropic Tests
@@ -30,11 +30,11 @@ import Foundation
     #expect(provider.isAnthropic == true)
 }
 
-@Test func provider_isAnthropic_falseForOthers() {
+@Test func provider_isAnthropic_falseForOthers() throws {
     #expect(LLM.Provider.openAI(apiKey: "test").isAnthropic == false)
     #expect(LLM.Provider.lmStudio.isAnthropic == false)
     #expect(LLM.Provider.localhost(port: 8080).isAnthropic == false)
-    #expect(LLM.Provider.other(URL(string: "https://example.com")!, apiKey: nil).isAnthropic == false)
+    #expect(try LLM.Provider.other(#require(URL(string: "https://example.com")), apiKey: nil).isAnthropic == false)
 }
 
 // MARK: - Provider.simpleProvider Tests
@@ -76,19 +76,19 @@ import Foundation
     let provider = LLM.Provider.localhost(port: 9000)
     let simple = provider.simpleProvider
 
-    if case .localhost(let port) = simple {
+    if case let .localhost(port) = simple {
         #expect(port == 9000)
     } else {
         Issue.record("Expected .localhost simple provider")
     }
 }
 
-@Test func provider_simpleProvider_other() {
-    let url = URL(string: "https://my-api.example.com")!
+@Test func provider_simpleProvider_other() throws {
+    let url = try #require(URL(string: "https://my-api.example.com"))
     let provider = LLM.Provider.other(url, apiKey: "key")
     let simple = provider.simpleProvider
 
-    if case .other(let simpleUrl) = simple {
+    if case let .other(simpleUrl) = simple {
         #expect(simpleUrl == url)
     } else {
         Issue.record("Expected .other simple provider")
@@ -101,7 +101,7 @@ import Foundation
     let simple = LLM.SimpleProvider.openAI
     let full = simple.fullProvider(using: "my-api-key")
 
-    if case .openAI(let apiKey) = full {
+    if case let .openAI(apiKey) = full {
         #expect(apiKey == "my-api-key")
     } else {
         Issue.record("Expected .openAI provider")
@@ -112,7 +112,7 @@ import Foundation
     let simple = LLM.SimpleProvider.anthropic
     let full = simple.fullProvider(using: "my-api-key")
 
-    if case .anthropic(let apiKey) = full {
+    if case let .anthropic(apiKey) = full {
         #expect(apiKey == "my-api-key")
     } else {
         Issue.record("Expected .anthropic provider")
@@ -134,19 +134,19 @@ import Foundation
     let simple = LLM.SimpleProvider.localhost(port: 5000)
     let full = simple.fullProvider(using: "ignored-key")
 
-    if case .localhost(let port) = full {
+    if case let .localhost(port) = full {
         #expect(port == 5000)
     } else {
         Issue.record("Expected .localhost provider")
     }
 }
 
-@Test func simpleProvider_fullProvider_other() {
-    let url = URL(string: "https://custom.api.com")!
+@Test func simpleProvider_fullProvider_other() throws {
+    let url = try #require(URL(string: "https://custom.api.com"))
     let simple = LLM.SimpleProvider.other(url)
     let full = simple.fullProvider(using: "my-key")
 
-    if case .other(let fullUrl, let apiKey) = full {
+    if case let .other(fullUrl, apiKey) = full {
         #expect(fullUrl == url)
         #expect(apiKey == "my-key")
     } else {
@@ -161,7 +161,7 @@ import Foundation
     let simple = original.simpleProvider
     let restored = simple.fullProvider(using: "new-key")
 
-    if case .openAI(let apiKey) = restored {
+    if case let .openAI(apiKey) = restored {
         #expect(apiKey == "new-key")
     } else {
         Issue.record("Expected .openAI provider")
@@ -173,7 +173,7 @@ import Foundation
     let simple = original.simpleProvider
     let restored = simple.fullProvider(using: "new-key")
 
-    if case .anthropic(let apiKey) = restored {
+    if case let .anthropic(apiKey) = restored {
         #expect(apiKey == "new-key")
     } else {
         Issue.record("Expected .anthropic provider")
@@ -185,7 +185,7 @@ import Foundation
     let simple = original.simpleProvider
     let restored = simple.fullProvider(using: "any-key")
 
-    if case .localhost(let port) = restored {
+    if case let .localhost(port) = restored {
         #expect(port == 7777)
     } else {
         Issue.record("Expected .localhost provider with correct port")

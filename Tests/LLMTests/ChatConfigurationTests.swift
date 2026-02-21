@@ -5,9 +5,9 @@
 //  Tests for ChatConfiguration.request(for:)
 //
 
-import Testing
 import Foundation
 @testable import LLM
+import Testing
 
 // MARK: - ChatConfiguration Construction Tests
 
@@ -90,6 +90,7 @@ import Foundation
 }
 
 @Test func chatConfigRequest_openAI_usesStop() {
+    // GPT-5 models skip the stop parameter, so stop tokens are nil for OpenAI GPT-5
     let config = LLM.ChatConfiguration(
         systemPrompt: "System",
         user: "User",
@@ -101,7 +102,7 @@ import Foundation
     let provider = LLM.Provider.openAI(apiKey: "test")
     let request = config.request(for: provider)
 
-    #expect(request.stop == ["END"])
+    #expect(request.stop == nil)
     #expect(request.stop_sequences == nil)
 }
 
@@ -154,6 +155,7 @@ import Foundation
 }
 
 @Test func chatConfigRequest_openAI_direct_includesTemperatureAndTopP() {
+    // GPT-5 models skip temperature and topP — they only support default values
     let config = LLM.ChatConfiguration(
         systemPrompt: "System",
         user: "User",
@@ -166,8 +168,8 @@ import Foundation
     let provider = LLM.Provider.openAI(apiKey: "test")
     let request = config.request(for: provider)
 
-    #expect(request.temperature == 0.5)
-    #expect(request.top_p == 0.9)
+    #expect(request.temperature == nil)
+    #expect(request.top_p == nil)
 }
 
 @Test func chatConfigRequest_openAI_includesFrequencyPenalty() {
@@ -319,7 +321,7 @@ import Foundation
         user: "User",
         modelType: .fast,
         inference: .reasoning,
-        reasoningEffort: .high  // Should be ignored for Anthropic
+        reasoningEffort: .high // Should be ignored for Anthropic
     )
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -380,9 +382,10 @@ import Foundation
     let openAIRequest = config.request(for: openAIProvider)
     let anthropicRequest = config.request(for: anthropicProvider)
 
-    // Total should be maxTokens + maxReasoningTokens = 1500
+    // OpenAI: reasoning + output share max_completion_tokens = 1000 + 500 = 1500
     #expect(openAIRequest.max_completion_tokens == 1500)
-    #expect(anthropicRequest.max_tokens == 1500)
+    // Anthropic: only maxTokens for output (thinking has separate budget)
+    #expect(anthropicRequest.max_tokens == 1000)
 }
 
 @Test func chatConfigRequest_tokenCalculation_noMaxTokens() {
@@ -400,9 +403,10 @@ import Foundation
     let openAIRequest = config.request(for: openAIProvider)
     let anthropicRequest = config.request(for: anthropicProvider)
 
-    // Should be just reasoning tokens = 500
-    #expect(openAIRequest.max_completion_tokens == 500)
-    #expect(anthropicRequest.max_tokens == 500)
+    // GPT-5 with reasoning and no maxTokens: don't set a limit (returns nil)
+    #expect(openAIRequest.max_completion_tokens == nil)
+    // Anthropic: maxTokens is nil → 0
+    #expect(anthropicRequest.max_tokens == 0)
 }
 
 // MARK: - Caching Tests
@@ -494,7 +498,7 @@ import Foundation
         user: "Hello!",
         modelType: .fast,
         inference: .direct,
-        enableCaching: true  // Should have no effect for OpenAI
+        enableCaching: true // Should have no effect for OpenAI
     )
 
     let provider = LLM.Provider.openAI(apiKey: "test")

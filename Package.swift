@@ -5,26 +5,28 @@ import PackageDescription
 
 let package = Package(
     name: "LLM",
-	platforms: [
-		.macOS(.v15),
-		.iOS(.v18)
-	],
+    platforms: [
+        .macOS(.v15),
+        .iOS(.v18),
+    ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
             name: "LLM",
-            targets: ["LLM"]),
+            targets: ["LLM"]
+        ),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "LLM"),
+            name: "LLM"
+        ),
         .testTarget(
             name: "LLMTests",
             dependencies: ["LLM"],
             resources: [
-                .copy("Fixtures")
+                .copy("Fixtures"),
             ]
         ),
     ]

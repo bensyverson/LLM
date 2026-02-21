@@ -5,9 +5,9 @@
 //  Tests for JSONSchema, ToolChoice, ToolDefinition, FunctionDefinition, ToolCall, FunctionCall
 //
 
-import Testing
 import Foundation
 @testable import LLM
+import Testing
 
 // MARK: - JSONSchema Tests
 
@@ -51,7 +51,7 @@ import Foundation
     let schema = LLM.OpenAICompatibleAPI.JSONSchema.object(
         properties: [
             "name": .string(description: "The name"),
-            "age": .integer(description: "The age")
+            "age": .integer(description: "The age"),
         ],
         required: ["name"],
         description: "A person"
@@ -67,7 +67,7 @@ import Foundation
     let addressSchema = LLM.OpenAICompatibleAPI.JSONSchema.object(
         properties: [
             "street": .string(),
-            "city": .string()
+            "city": .string(),
         ],
         required: ["street", "city"]
     )
@@ -75,7 +75,7 @@ import Foundation
     let personSchema = LLM.OpenAICompatibleAPI.JSONSchema.object(
         properties: [
             "name": .string(),
-            "address": addressSchema
+            "address": addressSchema,
         ],
         required: ["name"]
     )
@@ -122,7 +122,7 @@ import Foundation
 
     var set = Set<LLM.OpenAICompatibleAPI.JSONSchema>()
     set.insert(schema1)
-    set.insert(schema2)  // Should not increase count (equal to schema1)
+    set.insert(schema2) // Should not increase count (equal to schema1)
     set.insert(schema3)
 
     #expect(set.count == 2)
@@ -132,7 +132,7 @@ import Foundation
     let schema = LLM.OpenAICompatibleAPI.JSONSchema.object(
         properties: [
             "location": .string(description: "City name"),
-            "unit": .string(description: "Temperature unit", enum: ["celsius", "fahrenheit"])
+            "unit": .string(description: "Temperature unit", enum: ["celsius", "fahrenheit"]),
         ],
         required: ["location"]
     )
@@ -152,9 +152,9 @@ import Foundation
             "items": .array(items: .object(
                 properties: [
                     "id": .integer(),
-                    "name": .string()
+                    "name": .string(),
                 ]
-            ))
+            )),
         ]
     )
 
@@ -198,7 +198,7 @@ import Foundation
     let encoder = JSONEncoder()
     encoder.outputFormatting = .sortedKeys
     let data = try encoder.encode(choice)
-    let jsonString = String(data: data, encoding: .utf8)!
+    let jsonString = try #require(String(data: data, encoding: .utf8))
 
     // Should produce: {"function":{"name":"get_weather"},"type":"function"}
     #expect(jsonString.contains("\"type\":\"function\""))
@@ -227,9 +227,9 @@ import Foundation
     {"type":"function","function":{"name":"get_weather"}}
     """
     let decoder = JSONDecoder()
-    let choice = try decoder.decode(LLM.OpenAICompatibleAPI.ToolChoice.self, from: json.data(using: .utf8)!)
+    let choice = try decoder.decode(LLM.OpenAICompatibleAPI.ToolChoice.self, from: #require(json.data(using: .utf8)))
 
-    if case .tool(let name) = choice {
+    if case let .tool(name) = choice {
         #expect(name == "get_weather")
     } else {
         Issue.record("Expected .tool case")
@@ -241,7 +241,7 @@ import Foundation
         .auto,
         .required,
         .none,
-        .tool(name: "search")
+        .tool(name: "search"),
     ]
 
     let encoder = JSONEncoder()
@@ -277,7 +277,7 @@ import Foundation
     let params = LLM.OpenAICompatibleAPI.JSONSchema.object(
         properties: [
             "location": .string(description: "City name"),
-            "unit": .string(enum: ["celsius", "fahrenheit"])
+            "unit": .string(enum: ["celsius", "fahrenheit"]),
         ],
         required: ["location"]
     )

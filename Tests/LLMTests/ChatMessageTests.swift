@@ -5,9 +5,9 @@
 //  Tests for ChatMessage, ChatCompletion, Role enum
 //
 
-import Testing
 import Foundation
 @testable import LLM
+import Testing
 
 // MARK: - ChatMessage Tests
 
@@ -167,7 +167,7 @@ import Foundation
 
 @Test func chatCompletion_defaultValues() {
     let messages = [
-        LLM.OpenAICompatibleAPI.ChatMessage(content: "Hi", role: .user)
+        LLM.OpenAICompatibleAPI.ChatMessage(content: "Hi", role: .user),
     ]
     let completion = LLM.OpenAICompatibleAPI.ChatCompletion(messages: messages)
 
@@ -189,7 +189,7 @@ import Foundation
 
 @Test func chatCompletion_customValues() {
     let messages = [
-        LLM.OpenAICompatibleAPI.ChatMessage(content: "Hi", role: .user)
+        LLM.OpenAICompatibleAPI.ChatMessage(content: "Hi", role: .user),
     ]
     let completion = LLM.OpenAICompatibleAPI.ChatCompletion(
         model: .gpt52,
@@ -315,7 +315,7 @@ import Foundation
 
 @Test func reasoningEffort_codable_roundTrip() throws {
     let efforts: [LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort] = [
-        .none, .low, .medium, .high, .xhigh, .minimal
+        .none, .low, .medium, .high, .xhigh, .minimal,
     ]
 
     let encoder = JSONEncoder()
@@ -368,7 +368,7 @@ import Foundation
 
     let encoder = JSONEncoder()
     let data = try encoder.encode(cache)
-    let jsonString = String(data: data, encoding: .utf8)!
+    let jsonString = try #require(String(data: data, encoding: .utf8))
 
     #expect(jsonString.contains("\"type\":\"ephemeral\""))
     #expect(jsonString.contains("\"ttl\":\"5m\""))
@@ -415,7 +415,7 @@ import Foundation
 
     let encoder = JSONEncoder()
     let data = try encoder.encode(block)
-    let jsonString = String(data: data, encoding: .utf8)!
+    let jsonString = try #require(String(data: data, encoding: .utf8))
 
     #expect(jsonString.contains("\"type\":\"text\""))
     #expect(jsonString.contains("\"text\":\"Be helpful\""))
@@ -438,7 +438,7 @@ import Foundation
 
     let encoder = JSONEncoder()
     let data = try encoder.encode(completion)
-    let jsonString = String(data: data, encoding: .utf8)!
+    let jsonString = try #require(String(data: data, encoding: .utf8))
 
     // System should be encoded as an array, not a string
     #expect(jsonString.contains("\"system\":[{"))
@@ -457,7 +457,7 @@ import Foundation
 
     let encoder = JSONEncoder()
     let data = try encoder.encode(completion)
-    let jsonString = String(data: data, encoding: .utf8)!
+    let jsonString = try #require(String(data: data, encoding: .utf8))
 
     // System should be encoded as a string
     #expect(jsonString.contains("\"system\":\"You are helpful\""))
@@ -469,14 +469,14 @@ import Foundation
 
     let completion = LLM.OpenAICompatibleAPI.ChatCompletion(
         model: .claude45Opus,
-        system: "String system",  // Should be ignored when blocks are present
+        system: "String system", // Should be ignored when blocks are present
         systemBlocks: blocks,
         messages: [LLM.OpenAICompatibleAPI.ChatMessage(content: "Hello", role: .user)]
     )
 
     let encoder = JSONEncoder()
     let data = try encoder.encode(completion)
-    let jsonString = String(data: data, encoding: .utf8)!
+    let jsonString = try #require(String(data: data, encoding: .utf8))
 
     // Should use blocks, not string
     #expect(jsonString.contains("\"system\":[{"))
