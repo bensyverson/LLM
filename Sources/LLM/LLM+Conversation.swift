@@ -109,6 +109,7 @@ public extension LLM {
 
     struct ConversationResponse: Friendly {
         public let text: String?
+        public let thinking: String?
         public let toolCalls: [OpenAICompatibleAPI.ToolCall]
         public let conversation: Conversation
         public let rawResponse: OpenAICompatibleAPI.ChatCompletionResponse

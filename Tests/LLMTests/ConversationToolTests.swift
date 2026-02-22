@@ -152,6 +152,7 @@ import Testing
 @Test func conversationResponse_textCanBeNil() {
     let response = LLM.ConversationResponse(
         text: nil,
+        thinking: nil,
         toolCalls: [
             LLM.OpenAICompatibleAPI.ToolCall(
                 id: "call_1",
@@ -190,6 +191,7 @@ import Testing
 @Test func conversationResponse_textWithNoToolCalls() {
     let response = LLM.ConversationResponse(
         text: "Hello!",
+        thinking: nil,
         toolCalls: [],
         conversation: LLM.Conversation(systemPrompt: "System"),
         rawResponse: LLM.OpenAICompatibleAPI.ChatCompletionResponse(

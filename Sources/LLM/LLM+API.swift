@@ -79,6 +79,10 @@ public extension LLM {
         let text = response.content?.first(where: { $0.type == .text })?.text
             ?? response.choices?.first?.message.content
 
+        // Extract thinking content from Anthropic extended thinking blocks or OpenAI reasoning_content
+        let thinking = response.content?.first(where: { $0.type == .thinking })?.thinking
+            ?? response.choices?.first?.message.reasoning_content
+
         // Extract tool calls from OpenAI format (choices) or Anthropic format (content)
         let toolCalls: [OpenAICompatibleAPI.ToolCall] = Self.extractToolCalls(from: response)
 
@@ -102,6 +106,7 @@ public extension LLM {
 
         return ConversationResponse(
             text: text,
+            thinking: thinking,
             toolCalls: toolCalls,
             conversation: updatedConversation,
             rawResponse: response

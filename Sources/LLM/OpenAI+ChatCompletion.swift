@@ -193,19 +193,24 @@ public extension LLM.OpenAICompatibleAPI {
         public var tool_calls: [ToolCall]?
         public var tool_call_id: String?
 
+        /// Reasoning content from OpenAI o-series and GPT-5 models.
+        public var reasoning_content: String?
+
         /// Full initializer
         public init(
             content: String?,
             role: Role,
             name: String? = nil,
             tool_calls: [ToolCall]? = nil,
-            tool_call_id: String? = nil
+            tool_call_id: String? = nil,
+            reasoning_content: String? = nil
         ) {
             self.content = content
             self.role = role
             self.name = name
             self.tool_calls = tool_calls
             self.tool_call_id = tool_call_id
+            self.reasoning_content = reasoning_content
         }
 
         /// Backward-compatible convenience init
