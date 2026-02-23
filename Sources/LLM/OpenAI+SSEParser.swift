@@ -61,6 +61,19 @@ public extension LLM.OpenAICompatibleAPI {
 
                     // Parse field
                     if line.hasPrefix("event:") {
+                        // If we already have data buffered, dispatch the previous event
+                        // before starting a new one (handles streams without blank separators)
+                        if !dataLines.isEmpty {
+                            let data = dataLines.joined(separator: "\n")
+                            dataLines = []
+                            if data == "[DONE]" {
+                                finished = true
+                                return nil
+                            }
+                            let event = SSEEvent(event: currentEvent, data: data)
+                            currentEvent = String(line.dropFirst(6)).trimmingCharacters(in: CharacterSet.whitespaces)
+                            return event
+                        }
                         currentEvent = String(line.dropFirst(6)).trimmingCharacters(in: CharacterSet.whitespaces)
                     } else if line.hasPrefix("data:") {
                         dataLines.append(String(line.dropFirst(5)).trimmingCharacters(in: CharacterSet.whitespaces))
