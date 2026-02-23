@@ -167,7 +167,7 @@ import Testing
     ]
 
     for chunkJSON in chunks {
-        let chunk = try decoder.decode(LLM.OpenAICompatibleAPI.OpenAIStreamChunk.self, from: chunkJSON.data(using: .utf8)!)
+        let chunk = try decoder.decode(LLM.OpenAICompatibleAPI.OpenAIStreamChunk.self, from: #require(chunkJSON.data(using: .utf8)))
         acc.processOpenAIChunk(chunk)
     }
 
@@ -205,7 +205,7 @@ import Testing
     ]
 
     for chunkJSON in chunks {
-        let chunk = try decoder.decode(LLM.OpenAICompatibleAPI.OpenAIStreamChunk.self, from: chunkJSON.data(using: .utf8)!)
+        let chunk = try decoder.decode(LLM.OpenAICompatibleAPI.OpenAIStreamChunk.self, from: #require(chunkJSON.data(using: .utf8)))
         acc.processOpenAIChunk(chunk)
     }
 
@@ -241,7 +241,7 @@ import Testing
     ]
 
     for chunkJSON in chunks {
-        let chunk = try decoder.decode(LLM.OpenAICompatibleAPI.OpenAIStreamChunk.self, from: chunkJSON.data(using: .utf8)!)
+        let chunk = try decoder.decode(LLM.OpenAICompatibleAPI.OpenAIStreamChunk.self, from: #require(chunkJSON.data(using: .utf8)))
         acc.processOpenAIChunk(chunk)
     }
 
@@ -276,7 +276,7 @@ import Testing
     ]
 
     for eventJSON in events {
-        let event = try decoder.decode(LLM.OpenAICompatibleAPI.AnthropicStreamEvent.self, from: eventJSON.data(using: .utf8)!)
+        let event = try decoder.decode(LLM.OpenAICompatibleAPI.AnthropicStreamEvent.self, from: #require(eventJSON.data(using: .utf8)))
         acc.processAnthropicEvent(event)
     }
 
@@ -315,7 +315,7 @@ import Testing
     ]
 
     for eventJSON in events {
-        let event = try decoder.decode(LLM.OpenAICompatibleAPI.AnthropicStreamEvent.self, from: eventJSON.data(using: .utf8)!)
+        let event = try decoder.decode(LLM.OpenAICompatibleAPI.AnthropicStreamEvent.self, from: #require(eventJSON.data(using: .utf8)))
         acc.processAnthropicEvent(event)
     }
 
@@ -352,7 +352,7 @@ import Testing
     ]
 
     for eventJSON in events {
-        let event = try decoder.decode(LLM.OpenAICompatibleAPI.AnthropicStreamEvent.self, from: eventJSON.data(using: .utf8)!)
+        let event = try decoder.decode(LLM.OpenAICompatibleAPI.AnthropicStreamEvent.self, from: #require(eventJSON.data(using: .utf8)))
         acc.processAnthropicEvent(event)
     }
 
@@ -382,7 +382,7 @@ import Testing
     ]
 
     for chunkJSON in chunks {
-        let chunk = try decoder.decode(LLM.OpenAICompatibleAPI.OpenAIStreamChunk.self, from: chunkJSON.data(using: .utf8)!)
+        let chunk = try decoder.decode(LLM.OpenAICompatibleAPI.OpenAIStreamChunk.self, from: #require(chunkJSON.data(using: .utf8)))
         acc.processOpenAIChunk(chunk)
     }
 
@@ -409,7 +409,7 @@ import Testing
     ]
 
     for eventJSON in events {
-        let event = try decoder.decode(LLM.OpenAICompatibleAPI.AnthropicStreamEvent.self, from: eventJSON.data(using: .utf8)!)
+        let event = try decoder.decode(LLM.OpenAICompatibleAPI.AnthropicStreamEvent.self, from: #require(eventJSON.data(using: .utf8)))
         acc.processAnthropicEvent(event)
     }
 

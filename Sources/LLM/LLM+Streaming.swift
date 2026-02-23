@@ -67,18 +67,13 @@ extension LLM {
         }
 
         let jsonData = try JSONEncoder().encode(request)
-        FileHandle.standardError.write(Data("[_streamChat] request body: \(String(data: jsonData, encoding: .utf8)?.prefix(200) ?? "nil")\n".utf8))
-
         let (parser, _) = try await api.streamingChatCompletion(with: jsonData)
-        FileHandle.standardError.write(Data("[_streamChat] got parser, isAnthropic=\(isAnthropic)\n".utf8))
-
         var accumulator = OpenAICompatibleAPI.StreamAccumulator()
         var sseEventCount = 0
 
         if isAnthropic {
             for try await sseEvent in parser {
                 sseEventCount += 1
-                FileHandle.standardError.write(Data("[_streamChat] SSE event #\(sseEventCount): \(sseEvent.data.prefix(100))\n".utf8))
 
                 guard let data = sseEvent.data.data(using: .utf8) else { continue }
                 let event: OpenAICompatibleAPI.AnthropicStreamEvent
@@ -119,7 +114,6 @@ extension LLM {
 
                 accumulator.processAnthropicEvent(event)
             }
-            FileHandle.standardError.write(Data("[_streamChat] Anthropic stream done, \(sseEventCount) SSE events, text=\(accumulator.text.prefix(50))\n".utf8))
         } else {
             try await processOpenAIStream(parser: parser, accumulator: &accumulator, continuation: continuation)
         }

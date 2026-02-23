@@ -74,17 +74,17 @@ extension LLM.OpenAICompatibleAPI {
     struct AnthropicStreamEvent: Decodable {
         let type: String
 
-        // message_start
+        /// message_start
         let message: AnthropicMessage?
 
         // content_block_start
         let index: Int?
         let content_block: AnthropicContentBlock?
 
-        // content_block_delta
+        /// content_block_delta
         let delta: AnthropicDelta?
 
-        // message_delta (usage)
+        /// message_delta (usage)
         let usage: AnthropicUsage?
 
         struct AnthropicMessage: Decodable {
@@ -133,7 +133,7 @@ extension LLM.OpenAICompatibleAPI {
         var thinking: String = ""
         var finishReason: String?
 
-        // OpenAI tool calls keyed by index
+        /// OpenAI tool calls keyed by index
         var toolCalls: [Int: ToolCallAccumulator] = [:]
 
         // Usage
@@ -237,7 +237,7 @@ extension LLM.OpenAICompatibleAPI {
 
         func buildResponse(isAnthropic: Bool) -> ChatCompletionResponse {
             let sortedToolCalls = toolCalls.sorted(by: { $0.key < $1.key })
-            let completedToolCalls: [ToolCall]? = sortedToolCalls.isEmpty ? nil : sortedToolCalls.map { (_, acc) in
+            let completedToolCalls: [ToolCall]? = sortedToolCalls.isEmpty ? nil : sortedToolCalls.map { _, acc in
                 ToolCall(
                     id: acc.id,
                     function: FunctionCall(name: acc.name, arguments: acc.arguments)
@@ -263,7 +263,8 @@ extension LLM.OpenAICompatibleAPI {
                     for tc in tcs {
                         let inputDict: [String: JSONValue]?
                         if let data = tc.function.arguments.data(using: .utf8),
-                           let decoded = try? JSONDecoder().decode([String: JSONValue].self, from: data) {
+                           let decoded = try? JSONDecoder().decode([String: JSONValue].self, from: data)
+                        {
                             inputDict = decoded
                         } else {
                             inputDict = nil
