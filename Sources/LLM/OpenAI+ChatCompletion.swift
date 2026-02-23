@@ -267,6 +267,26 @@ public extension LLM.OpenAICompatibleAPI {
             public struct PromptTokensDetails: Friendly {
                 public let cached_tokens: Int?
             }
+
+            public init(
+                prompt_tokens: Int? = nil,
+                completion_tokens: Int? = nil,
+                total_tokens: Int? = nil,
+                input_tokens: Int? = nil,
+                output_tokens: Int? = nil,
+                cache_creation_input_tokens: Int? = nil,
+                cache_read_input_tokens: Int? = nil,
+                prompt_tokens_details: PromptTokensDetails? = nil
+            ) {
+                self.prompt_tokens = prompt_tokens
+                self.completion_tokens = completion_tokens
+                self.total_tokens = total_tokens
+                self.input_tokens = input_tokens
+                self.output_tokens = output_tokens
+                self.cache_creation_input_tokens = cache_creation_input_tokens
+                self.cache_read_input_tokens = cache_read_input_tokens
+                self.prompt_tokens_details = prompt_tokens_details
+            }
         }
 
         public struct Choice: Friendly {
@@ -303,5 +323,25 @@ public extension LLM.OpenAICompatibleAPI {
         public let created: Date? // unix timestamp
         public let choices: [Choice]?
         public let content: [Content]?
+
+        public init(
+            id: String? = nil,
+            object: ObjectType? = nil,
+            system_fingerprint: String? = nil,
+            usage: Usage = Usage(),
+            model: String = "",
+            created: Date? = nil,
+            choices: [Choice]? = nil,
+            content: [Content]? = nil
+        ) {
+            self.id = id
+            self.object = object
+            self.system_fingerprint = system_fingerprint
+            self.usage = usage
+            self.model = model
+            self.created = created
+            self.choices = choices
+            self.content = content
+        }
     }
 }

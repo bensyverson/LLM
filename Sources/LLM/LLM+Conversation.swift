@@ -113,6 +113,20 @@ public extension LLM {
         public let toolCalls: [OpenAICompatibleAPI.ToolCall]
         public let conversation: Conversation
         public let rawResponse: OpenAICompatibleAPI.ChatCompletionResponse
+
+        public init(
+            text: String?,
+            thinking: String?,
+            toolCalls: [OpenAICompatibleAPI.ToolCall],
+            conversation: Conversation,
+            rawResponse: OpenAICompatibleAPI.ChatCompletionResponse
+        ) {
+            self.text = text
+            self.thinking = thinking
+            self.toolCalls = toolCalls
+            self.conversation = conversation
+            self.rawResponse = rawResponse
+        }
     }
 }
 
