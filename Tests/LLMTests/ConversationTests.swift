@@ -334,7 +334,7 @@ import Testing
     let provider = LLM.Provider.anthropic(apiKey: "test")
     let request = conversation.request(for: provider)
 
-    #expect(request.model == .claude45Opus)
+    #expect(request.model == .claude46Opus)
 }
 
 // MARK: - Conversation JSON Serialization Tests
@@ -395,17 +395,21 @@ import Testing
     #expect(json["system"] as? String == "You are a helpful assistant")
 
     // Verify messages array (should NOT include system message)
+    // Anthropic uses content block format: [{"type": "text", "text": "..."}]
     let messages = try #require(json["messages"] as? [[String: Any]])
     #expect(messages.count == 3)
 
     #expect(messages[0]["role"] as? String == "user")
-    #expect(messages[0]["content"] as? String == "What is 2+2?")
+    let content0 = try #require(messages[0]["content"] as? [[String: Any]])
+    #expect(content0.first?["text"] as? String == "What is 2+2?")
 
     #expect(messages[1]["role"] as? String == "assistant")
-    #expect(messages[1]["content"] as? String == "4")
+    let content1 = try #require(messages[1]["content"] as? [[String: Any]])
+    #expect(content1.first?["text"] as? String == "4")
 
     #expect(messages[2]["role"] as? String == "user")
-    #expect(messages[2]["content"] as? String == "And 3+3?")
+    let content2 = try #require(messages[2]["content"] as? [[String: Any]])
+    #expect(content2.first?["text"] as? String == "And 3+3?")
 }
 
 @Test func conversationRequest_serializesToCorrectJSON_withReasoning() throws {
@@ -435,7 +439,7 @@ import Testing
     let anthropicData = try JSONEncoder().encode(anthropicRequest)
     let anthropicJson = try #require(JSONSerialization.jsonObject(with: anthropicData) as? [String: Any])
 
-    #expect(anthropicJson["model"] as? String == "claude-opus-4-5")
+    #expect(anthropicJson["model"] as? String == "claude-opus-4-6")
     #expect(anthropicJson["reasoning_effort"] == nil || anthropicJson["reasoning_effort"] is NSNull)
     // Anthropic: only maxTokens for output (thinking has separate budget)
     #expect(anthropicJson["max_tokens"] as? Int == 1000)

@@ -114,7 +114,7 @@ public extension LLM {
     }
 
     /// Extract tool calls from either OpenAI or Anthropic response format.
-    private static func extractToolCalls(
+    static func extractToolCalls(
         from response: OpenAICompatibleAPI.ChatCompletionResponse
     ) -> [OpenAICompatibleAPI.ToolCall] {
         // OpenAI format: tool_calls on the message in choices

@@ -42,6 +42,14 @@ public extension LLM.OpenAICompatibleAPI {
         }
     }
 
+    struct StreamOptions: Codable, Sendable {
+        public var include_usage: Bool
+
+        public init(include_usage: Bool = true) {
+            self.include_usage = include_usage
+        }
+    }
+
     // MARK: - Chat Completion
 
     struct ChatCompletion: Codable {
@@ -93,6 +101,8 @@ public extension LLM.OpenAICompatibleAPI {
         public var reasoning_effort: ReasoningEffort? = nil
         public var tools: [ToolDefinition]? = nil
         public var tool_choice: ToolChoice? = nil
+        public var stream: Bool? = nil
+        public var stream_options: StreamOptions? = nil
 
         /// When true, tools are encoded in Anthropic's format (name/description/input_schema)
         /// rather than OpenAI's (type/function wrapper). Set by `request(for:)`.
@@ -139,6 +149,7 @@ public extension LLM.OpenAICompatibleAPI {
             case model, system, messages, response_format, temperature
             case frequency_penalty, top_p, max_tokens, max_completion_tokens
             case stop, stop_sequences, thinking, reasoning_effort, tools, tool_choice
+            case stream, stream_options
         }
 
         public func encode(to encoder: Encoder) throws {
@@ -179,6 +190,8 @@ public extension LLM.OpenAICompatibleAPI {
             } else {
                 try container.encodeIfPresent(tool_choice, forKey: .tool_choice)
             }
+            try container.encodeIfPresent(stream, forKey: .stream)
+            try container.encodeIfPresent(stream_options, forKey: .stream_options)
         }
     }
 

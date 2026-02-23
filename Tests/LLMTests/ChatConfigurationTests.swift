@@ -361,7 +361,7 @@ import Testing
     let provider = LLM.Provider.anthropic(apiKey: "test")
     let request = config.request(for: provider)
 
-    #expect(request.model == .claude45Opus)
+    #expect(request.model == .claude46Opus)
 }
 
 // MARK: - Token Calculation Tests

@@ -113,13 +113,13 @@ import Testing
 @Test func providerModel_anthropic_flagship_direct() {
     let provider = LLM.Provider.anthropic(apiKey: "test-key")
     let model = provider.model(type: .flagship, inference: .direct)
-    #expect(model == .claude45Opus)
+    #expect(model == .claude46Opus)
 }
 
 @Test func providerModel_anthropic_flagship_reasoning() {
     let provider = LLM.Provider.anthropic(apiKey: "test-key")
     let model = provider.model(type: .flagship, inference: .reasoning)
-    #expect(model == .claude45Opus)
+    #expect(model == .claude46Opus)
 }
 
 @Test func providerModel_lmStudio_returnsPlaceholder() {
