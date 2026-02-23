@@ -67,13 +67,59 @@ extension LLM {
         }
 
         let jsonData = try JSONEncoder().encode(request)
+        FileHandle.standardError.write(Data("[_streamChat] request body: \(String(data: jsonData, encoding: .utf8)?.prefix(200) ?? "nil")\n".utf8))
 
         let (parser, _) = try await api.streamingChatCompletion(with: jsonData)
+        FileHandle.standardError.write(Data("[_streamChat] got parser, isAnthropic=\(isAnthropic)\n".utf8))
 
         var accumulator = OpenAICompatibleAPI.StreamAccumulator()
+        var sseEventCount = 0
 
         if isAnthropic {
-            try await processAnthropicStream(parser: parser, accumulator: &accumulator, continuation: continuation)
+            for try await sseEvent in parser {
+                sseEventCount += 1
+                FileHandle.standardError.write(Data("[_streamChat] SSE event #\(sseEventCount): \(sseEvent.data.prefix(100))\n".utf8))
+
+                guard let data = sseEvent.data.data(using: .utf8) else { continue }
+                let event: OpenAICompatibleAPI.AnthropicStreamEvent
+                do {
+                    event = try JSONDecoder().decode(OpenAICompatibleAPI.AnthropicStreamEvent.self, from: data)
+                } catch {
+                    FileHandle.standardError.write(Data("[_streamChat] decode error: \(error)\n".utf8))
+                    continue
+                }
+
+                switch event.type {
+                case "content_block_delta":
+                    if let delta = event.delta {
+                        switch delta.type {
+                        case "text_delta":
+                            if let text = delta.text, !text.isEmpty {
+                                continuation.yield(.textDelta(text))
+                            }
+                        case "thinking_delta":
+                            if let thinking = delta.thinking, !thinking.isEmpty {
+                                continuation.yield(.thinkingDelta(thinking))
+                            }
+                        case "input_json_delta":
+                            if let json = delta.partial_json, let idx = event.index {
+                                continuation.yield(.toolCallDelta(ToolCallDelta(index: idx, id: nil, name: nil, argumentsFragment: json)))
+                            }
+                        default:
+                            break
+                        }
+                    }
+                case "content_block_start":
+                    if let idx = event.index, let block = event.content_block, block.type == "tool_use" {
+                        continuation.yield(.toolCallDelta(ToolCallDelta(index: idx, id: block.id, name: block.name, argumentsFragment: "")))
+                    }
+                default:
+                    break
+                }
+
+                accumulator.processAnthropicEvent(event)
+            }
+            FileHandle.standardError.write(Data("[_streamChat] Anthropic stream done, \(sseEventCount) SSE events, text=\(accumulator.text.prefix(50))\n".utf8))
         } else {
             try await processOpenAIStream(parser: parser, accumulator: &accumulator, continuation: continuation)
         }
