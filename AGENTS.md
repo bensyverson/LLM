@@ -46,7 +46,7 @@ At moments when significant work has been completed and accepted by the user, of
 
 ## Development Stage
 
-- We are in MAINTAIN mode. This library is post-launch, with existing users which depend on the stability of the API. When refactoring or implementing new features, we ALWAYS need to consider the downstream impact on consumers of the library. When we need to enhance or extend the API, we aim to do it in a way that doesn't affect the call site of existing users.
+- We are in MAINTAIN mode. This library is post-launch, with existing users who depend on the stability of the API. When refactoring or implementing new features, we ALWAYS need to consider the downstream impact on consumers of the library. When we need to enhance or extend the API, we aim to do it in a way that doesn't affect the call site of existing users.
 - When our existing methods or API should be deprecated in favor of new ones, mark the old ones clearly using the pattern `@available(*, deprecated, message: "Use otherMethod(:) instead")`
 
 ## Swift-specific
