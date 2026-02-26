@@ -6,6 +6,9 @@
 //
 
 import Foundation
+#if canImport(FoundationNetworking)
+    import FoundationNetworking
+#endif
 
 public extension LLM.OpenAICompatibleAPI {
     /// A single Server-Sent Event with an optional event type and data payload.

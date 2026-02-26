@@ -5,6 +5,9 @@
 //
 
 import Foundation
+#if canImport(FoundationNetworking)
+    import FoundationNetworking
+#endif
 
 public extension LLM {
     /// Rate limit information extracted from provider HTTP response headers.

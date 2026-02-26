@@ -6,6 +6,9 @@
 //
 
 import Foundation
+#if canImport(FoundationNetworking)
+    import FoundationNetworking
+#endif
 
 public extension LLM {
     /// A configurable client for any OpenAI-compatible chat completions API.

@@ -6,6 +6,9 @@
 //
 
 import Foundation
+#if canImport(FoundationNetworking)
+    import FoundationNetworking
+#endif
 
 public extension LLM.OpenAICompatibleAPI {
     /// Sends a chat completion request and returns the parsed response with HTTP metadata.

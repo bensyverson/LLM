@@ -6,6 +6,9 @@
 //
 
 import Foundation
+#if canImport(FoundationNetworking)
+    import FoundationNetworking
+#endif
 
 /// Convenience typealias for types that are fully value-semantic and serializable.
 typealias Friendly = Codable & Equatable & Hashable & Sendable
