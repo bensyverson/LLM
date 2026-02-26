@@ -17,10 +17,15 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.4.3"),
+        .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.21.0"),
     ],
     targets: [
         .target(
-            name: "LLM"
+            name: "LLM",
+            dependencies: [
+                .product(name: "AsyncHTTPClient", package: "async-http-client",
+                         condition: .when(platforms: [.linux])),
+            ]
         ),
         .testTarget(
             name: "LLMTests",

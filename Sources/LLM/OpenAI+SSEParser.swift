@@ -107,6 +107,7 @@ public extension LLM.OpenAICompatibleAPI {
     }
 }
 
+#if !canImport(AsyncHTTPClient)
 // MARK: - Convenience initializer for URLSession.AsyncBytes
 
 public extension LLM.OpenAICompatibleAPI.SSEParser where Lines == AsyncLineSequence<URLSession.AsyncBytes> {
@@ -114,3 +115,4 @@ public extension LLM.OpenAICompatibleAPI.SSEParser where Lines == AsyncLineSeque
         self.init(lines: bytes.lines)
     }
 }
+#endif

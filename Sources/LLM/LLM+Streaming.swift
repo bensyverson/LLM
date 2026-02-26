@@ -91,59 +91,51 @@ extension LLM {
         }
 
         let jsonData = try JSONEncoder().encode(request)
-        let (parser, httpResponse, _) = try await api.streamingChatCompletion(with: jsonData)
 
-        // Adapt rate limits from response headers
-        if let info = RateLimitInfo.parse(from: httpResponse, provider: provider) {
-            await chatRateLimiter.updateLimits(
-                maxRequests: info.requestLimit,
-                maxTokens: info.tokenLimit
+        // Platform-conditional streaming setup
+        #if canImport(AsyncHTTPClient)
+            let (parser, rateLimitInfo) = try await api.streamingChatCompletionLinux(
+                with: jsonData, provider: provider
             )
-        }
+            if let info = rateLimitInfo {
+                await chatRateLimiter.updateLimits(
+                    maxRequests: info.requestLimit,
+                    maxTokens: info.tokenLimit
+                )
+            }
+            try await processStream(
+                parser: parser, isAnthropic: isAnthropic,
+                continuation: continuation, conversation: conversation
+            )
+        #else
+            let (parser, httpResponse, _) = try await api.streamingChatCompletion(with: jsonData)
+            if let info = RateLimitInfo.parse(from: httpResponse, provider: provider) {
+                await chatRateLimiter.updateLimits(
+                    maxRequests: info.requestLimit,
+                    maxTokens: info.tokenLimit
+                )
+            }
+            try await processStream(
+                parser: parser, isAnthropic: isAnthropic,
+                continuation: continuation, conversation: conversation
+            )
+        #endif
+    }
 
+    /// Processes an SSE parser stream, emitting deltas and building the final response.
+    ///
+    /// This is the shared implementation used by both the macOS (`URLSession`) and
+    /// Linux (`AsyncHTTPClient`) streaming paths.
+    private func processStream<Lines: AsyncSequence>(
+        parser: OpenAICompatibleAPI.SSEParser<Lines>,
+        isAnthropic: Bool,
+        continuation: AsyncThrowingStream<StreamEvent, Error>.Continuation,
+        conversation: Conversation
+    ) async throws where Lines.Element == String {
         var accumulator = OpenAICompatibleAPI.StreamAccumulator()
 
         if isAnthropic {
-            for try await sseEvent in parser {
-                guard let data = sseEvent.data.data(using: .utf8) else { continue }
-                let event: OpenAICompatibleAPI.AnthropicStreamEvent
-                do {
-                    event = try JSONDecoder().decode(OpenAICompatibleAPI.AnthropicStreamEvent.self, from: data)
-                } catch {
-                    FileHandle.standardError.write(Data("[_streamChat] decode error: \(error)\n".utf8))
-                    continue
-                }
-
-                switch event.type {
-                case "content_block_delta":
-                    if let delta = event.delta {
-                        switch delta.type {
-                        case "text_delta":
-                            if let text = delta.text, !text.isEmpty {
-                                continuation.yield(.textDelta(text))
-                            }
-                        case "thinking_delta":
-                            if let thinking = delta.thinking, !thinking.isEmpty {
-                                continuation.yield(.thinkingDelta(thinking))
-                            }
-                        case "input_json_delta":
-                            if let json = delta.partial_json, let idx = event.index {
-                                continuation.yield(.toolCallDelta(ToolCallDelta(index: idx, id: nil, name: nil, argumentsFragment: json)))
-                            }
-                        default:
-                            break
-                        }
-                    }
-                case "content_block_start":
-                    if let idx = event.index, let block = event.content_block, block.type == "tool_use" {
-                        continuation.yield(.toolCallDelta(ToolCallDelta(index: idx, id: block.id, name: block.name, argumentsFragment: "")))
-                    }
-                default:
-                    break
-                }
-
-                accumulator.processAnthropicEvent(event)
-            }
+            try await processAnthropicStream(parser: parser, accumulator: &accumulator, continuation: continuation)
         } else {
             try await processOpenAIStream(parser: parser, accumulator: &accumulator, continuation: continuation)
         }

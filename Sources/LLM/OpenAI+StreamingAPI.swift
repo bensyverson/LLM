@@ -10,6 +10,7 @@ import Foundation
     import FoundationNetworking
 #endif
 
+#if !canImport(AsyncHTTPClient)
 public extension LLM.OpenAICompatibleAPI {
     /// Initiates a streaming chat completion request.
     ///
@@ -62,3 +63,4 @@ public extension LLM.OpenAICompatibleAPI {
         return (parser, httpResponse, session)
     }
 }
+#endif

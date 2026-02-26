@@ -73,5 +73,55 @@ public extension LLM {
                 )
             }
         }
+
+        /// Parses rate limit information using a header lookup closure.
+        ///
+        /// This overload accepts a closure instead of an `HTTPURLResponse`,
+        /// enabling use with HTTP client libraries that expose headers differently
+        /// (e.g. AsyncHTTPClient on Linux).
+        ///
+        /// - Parameters:
+        ///   - headerLookup: A closure that returns the value for a given header name, or `nil`.
+        ///   - provider: The provider that sent the response, used to select the correct header format.
+        /// - Returns: Parsed rate limit info, or `nil` if no recognized headers are present.
+        public static func parse(
+            headerLookup: (String) -> String?,
+            provider: Provider
+        ) -> RateLimitInfo? {
+            func intHeader(_ key: String) -> Int? {
+                guard let value = headerLookup(key) else { return nil }
+                return Int(value)
+            }
+
+            if provider.isAnthropic {
+                let reqLimit = intHeader("anthropic-ratelimit-requests-limit")
+                let tokLimit = intHeader("anthropic-ratelimit-tokens-limit")
+                let reqRemaining = intHeader("anthropic-ratelimit-requests-remaining")
+                let tokRemaining = intHeader("anthropic-ratelimit-tokens-remaining")
+
+                guard reqLimit != nil || tokLimit != nil else { return nil }
+
+                return RateLimitInfo(
+                    requestLimit: reqLimit,
+                    tokenLimit: tokLimit,
+                    requestsRemaining: reqRemaining,
+                    tokensRemaining: tokRemaining
+                )
+            } else {
+                let reqLimit = intHeader("x-ratelimit-limit-requests")
+                let tokLimit = intHeader("x-ratelimit-limit-tokens")
+                let reqRemaining = intHeader("x-ratelimit-remaining-requests")
+                let tokRemaining = intHeader("x-ratelimit-remaining-tokens")
+
+                guard reqLimit != nil || tokLimit != nil else { return nil }
+
+                return RateLimitInfo(
+                    requestLimit: reqLimit,
+                    tokenLimit: tokLimit,
+                    requestsRemaining: reqRemaining,
+                    tokensRemaining: tokRemaining
+                )
+            }
+        }
     }
 }
