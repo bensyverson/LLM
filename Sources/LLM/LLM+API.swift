@@ -8,6 +8,13 @@
 import Foundation
 
 public extension LLM {
+    /// Generates an embedding vector for the given text.
+    ///
+    /// - Parameters:
+    ///   - input: The text to embed.
+    ///   - model: The model tier to use (`.fast` for small, `.flagship` for large).
+    ///   - dimensions: Optional dimensionality override for the embedding.
+    /// - Returns: The embedding as an array of floats.
     func embedding(
         input: String,
         model: ModelType = .fast,
@@ -25,15 +32,13 @@ public extension LLM {
         )
         let encoder = JSONEncoder()
         let json = try encoder.encode(request)
-
-        do {
-            return try await api.embedding(for: json)
-        } catch {
-            print(error)
-            throw error
-        }
+        return try await api.embedding(for: json)
     }
 
+    /// Sends a one-shot chat completion and returns the full response.
+    ///
+    /// - Parameter configuration: The chat configuration including model, prompts, and parameters.
+    /// - Returns: The raw ``OpenAICompatibleAPI/ChatCompletionResponse``.
     func chat(configuration: ChatConfiguration) async throws -> OpenAICompatibleAPI.ChatCompletionResponse {
         let api = providerApi
         let tokenCount = Int(Double((configuration.systemPrompt + configuration.user).count) / 2.0)
@@ -41,28 +46,44 @@ public extension LLM {
 
         let request = configuration.request(for: provider)
         let jsonData = try JSONEncoder().encode(request)
-        return try await api.chatCompletion(with: jsonData)
+        let (response, httpResponse) = try await api.chatCompletion(with: jsonData)
+
+        // Adapt rate limits from response headers
+        if let info = RateLimitInfo.parse(from: httpResponse, provider: provider) {
+            await chatRateLimiter.updateLimits(
+                maxRequests: info.requestLimit,
+                maxTokens: info.tokenLimit
+            )
+        }
+
+        return response
     }
 
+    /// Sends a one-shot chat completion and returns just the text content.
+    ///
+    /// - Parameter configuration: The chat configuration including model, prompts, and parameters.
+    /// - Returns: The text content from the response.
+    /// - Throws: ``LLMError/parseResponse(_:)`` if no text content is found.
     func chat(configuration: ChatConfiguration) async throws -> String {
-        do {
-            let response: OpenAICompatibleAPI.ChatCompletionResponse = try await chat(configuration: configuration)
+        let response: OpenAICompatibleAPI.ChatCompletionResponse = try await chat(configuration: configuration)
 
-            guard let content = response.content?.first(where: { $0.type == .text })?.text ?? response.choices?.first?.message.content else {
-                print("Couldn't parse response")
-                print(response)
-                throw LLMError.parseResponse(response)
-            }
-            return content
-        } catch {
-            print("Chat completion error:")
-            print(error)
-            throw error
+        guard let content = response.content?.first(where: { $0.type == .text })?.text ?? response.choices?.first?.message.content else {
+            throw LLMError.parseResponse(response)
         }
+        return content
     }
 
     // MARK: - Conversation API
 
+    /// Sends a conversation to the model and returns the response with an updated conversation history.
+    ///
+    /// This is the primary conversation driver. It handles rate limiting, request encoding,
+    /// response parsing (text, thinking, tool calls) for both OpenAI and Anthropic formats,
+    /// and builds an updated ``Conversation`` with the assistant's reply appended.
+    ///
+    /// - Parameter conversation: The conversation to continue, including system prompt and message history.
+    /// - Returns: A ``ConversationResponse`` containing the model's reply and updated conversation.
+    /// - Throws: ``LLMError/parseResponse(_:)`` if the response contains neither text nor tool calls.
     func chat(conversation: Conversation) async throws -> ConversationResponse {
         let api = providerApi
         let messageTextLength = conversation.messages.reduce(0) { total, msg in
@@ -73,7 +94,15 @@ public extension LLM {
 
         let request = conversation.request(for: provider)
         let jsonData = try JSONEncoder().encode(request)
-        let response = try await api.chatCompletion(with: jsonData)
+        let (response, httpResponse) = try await api.chatCompletion(with: jsonData)
+
+        // Adapt rate limits from response headers
+        if let info = RateLimitInfo.parse(from: httpResponse, provider: provider) {
+            await chatRateLimiter.updateLimits(
+                maxRequests: info.requestLimit,
+                maxTokens: info.tokenLimit
+            )
+        }
 
         // Extract text content (may be nil if response is tool-calls-only)
         let text = response.content?.first(where: { $0.type == .text })?.text
@@ -113,7 +142,14 @@ public extension LLM {
         )
     }
 
-    /// Extract tool calls from either OpenAI or Anthropic response format.
+    /// Extracts tool calls from either OpenAI or Anthropic response format.
+    ///
+    /// OpenAI returns tool calls in `choices[0].message.tool_calls`. Anthropic returns
+    /// them as content blocks with `type == "tool_use"`. This method normalizes both
+    /// formats into an array of ``OpenAICompatibleAPI/ToolCall``.
+    ///
+    /// - Parameter response: The raw chat completion response.
+    /// - Returns: An array of tool calls, or an empty array if none were found.
     static func extractToolCalls(
         from response: OpenAICompatibleAPI.ChatCompletionResponse
     ) -> [OpenAICompatibleAPI.ToolCall] {
@@ -150,6 +186,13 @@ public extension LLM {
         return []
     }
 
+    /// Starts a new conversation with the given system prompt and user message.
+    ///
+    /// - Parameters:
+    ///   - systemPrompt: The system prompt that guides the model's behavior.
+    ///   - userMessage: The initial user message.
+    ///   - configuration: Optional conversation configuration (model, temperature, tools, etc.).
+    /// - Returns: A ``ConversationResponse`` with the model's reply and the conversation history.
     func startConversation(
         systemPrompt: String,
         userMessage: String,
@@ -163,6 +206,12 @@ public extension LLM {
         return try await chat(conversation: conversation)
     }
 
+    /// Continues an existing conversation with a new user message.
+    ///
+    /// - Parameters:
+    ///   - conversation: The conversation to continue.
+    ///   - userMessage: The new user message to append.
+    /// - Returns: A ``ConversationResponse`` with the model's reply and updated conversation.
     func continueConversation(
         _ conversation: Conversation,
         userMessage: String

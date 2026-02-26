@@ -8,11 +8,15 @@
 import Foundation
 
 public extension LLM.OpenAICompatibleAPI {
+    /// A single Server-Sent Event with an optional event type and data payload.
     struct SSEEvent: Sendable {
+        /// The event type (from `event:` field), or `nil` if not specified.
         public let event: String?
+        /// The event data (from `data:` field(s)).
         public let data: String
     }
 
+    /// An async sequence that parses Server-Sent Events from a stream of lines.
     struct SSEParser<Lines: AsyncSequence>: AsyncSequence where Lines.Element == String {
         public typealias Element = SSEEvent
 

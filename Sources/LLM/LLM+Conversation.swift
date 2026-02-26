@@ -8,9 +8,16 @@
 import Foundation
 
 public extension LLM {
+    /// A multi-turn conversation with a system prompt, message history, and configuration.
+    ///
+    /// `Conversation` is a value type. Each mutation (adding a message) returns a new copy,
+    /// making it safe to branch conversations or retry from any point.
     struct Conversation: Friendly {
+        /// The system prompt that guides the model's behavior throughout the conversation.
         public var systemPrompt: String
+        /// The ordered list of messages in this conversation.
         public var messages: [OpenAICompatibleAPI.ChatMessage]
+        /// Configuration controlling model selection, temperature, tools, etc.
         public var configuration: ConversationConfiguration
 
         public init(
@@ -23,12 +30,14 @@ public extension LLM {
             self.configuration = configuration
         }
 
+        /// Returns a new conversation with a user message appended.
         public func addingUserMessage(_ content: String) -> Conversation {
             var copy = self
             copy.messages.append(OpenAICompatibleAPI.ChatMessage(content: content, role: .user))
             return copy
         }
 
+        /// Returns a new conversation with an assistant message appended.
         public func addingAssistantMessage(_ content: String) -> Conversation {
             var copy = self
             copy.messages.append(OpenAICompatibleAPI.ChatMessage(content: content, role: .assistant))
@@ -58,6 +67,7 @@ public extension LLM {
         }
     }
 
+    /// Configuration for a multi-turn conversation, including model, sampling parameters, and tools.
     struct ConversationConfiguration: Friendly {
         public var modelType: ModelType
         public var inference: InferenceType
@@ -107,11 +117,20 @@ public extension LLM {
         }
     }
 
+    /// The result of a chat or streaming conversation request.
+    ///
+    /// Contains the model's reply (text and/or tool calls), any reasoning output,
+    /// the updated conversation history, and the raw provider response.
     struct ConversationResponse: Friendly {
+        /// The text content of the model's reply, or `nil` if the response only contains tool calls.
         public let text: String?
+        /// The model's internal reasoning (Anthropic extended thinking or OpenAI reasoning), or `nil`.
         public let thinking: String?
+        /// Tool calls requested by the model. Empty if no tools were called.
         public let toolCalls: [OpenAICompatibleAPI.ToolCall]
+        /// The conversation with the model's reply appended.
         public let conversation: Conversation
+        /// The raw, unprocessed response from the provider.
         public let rawResponse: OpenAICompatibleAPI.ChatCompletionResponse
 
         public init(

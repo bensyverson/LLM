@@ -10,17 +10,27 @@ import Foundation
 // MARK: - Public Stream Types
 
 public extension LLM {
+    /// Events emitted during a streaming chat response.
     enum StreamEvent: Sendable {
+        /// A fragment of the model's text response.
         case textDelta(String)
+        /// A fragment of the model's internal reasoning.
         case thinkingDelta(String)
+        /// Incremental tool call data (id, name, or argument fragment).
         case toolCallDelta(ToolCallDelta)
+        /// The final event, containing the complete ``ConversationResponse``.
         case completed(ConversationResponse)
     }
 
+    /// An incremental update to a tool call during streaming.
     struct ToolCallDelta: Sendable {
+        /// The index of this tool call in the response (for multi-tool responses).
         public let index: Int
+        /// The tool call ID (present on the first delta for this tool call).
         public let id: String?
+        /// The function name (present on the first delta for this tool call).
         public let name: String?
+        /// A fragment of the JSON-encoded function arguments.
         public let argumentsFragment: String
     }
 }

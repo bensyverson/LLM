@@ -8,16 +8,25 @@
 import Foundation
 
 public extension LLM {
+    /// The model performance tier. Each provider maps these to specific model names.
     enum ModelType: String, Friendly {
-        case fast, flagship
+        /// A fast, cost-efficient model (e.g. GPT-5 Mini, Claude 4.5 Haiku).
+        case fast
+        /// The most capable model available (e.g. GPT-5.2, Claude 4.6 Opus).
+        case flagship
     }
 
+    /// The inference mode controlling whether the model uses chain-of-thought reasoning.
     enum InferenceType: String, Friendly {
-        case direct, reasoning
+        /// Standard inference without explicit reasoning.
+        case direct
+        /// Enables extended thinking / chain-of-thought reasoning.
+        case reasoning
     }
 }
 
 public extension LLM.Provider {
+    /// Returns the concrete model name for this provider given a model tier and inference type.
     func model(
         type: LLM.ModelType,
         inference _: LLM.InferenceType

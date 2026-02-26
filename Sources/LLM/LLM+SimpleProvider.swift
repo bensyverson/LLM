@@ -7,6 +7,9 @@
 import Foundation
 
 public extension LLM {
+    /// A provider identifier without credentials, useful for configuration and serialization.
+    ///
+    /// Use ``fullProvider(using:)`` to convert back to a ``Provider`` with an API key.
     enum SimpleProvider: Friendly {
         case openAI
         case anthropic
@@ -14,6 +17,7 @@ public extension LLM {
         case localhost(port: Int)
         case other(URL)
 
+        /// Creates a full ``Provider`` by attaching the given API key.
         public func fullProvider(using apiKey: String) -> LLM.Provider {
             switch self {
             case .openAI:
@@ -32,6 +36,7 @@ public extension LLM {
 }
 
 public extension LLM.Provider {
+    /// The credential-free ``SimpleProvider`` equivalent of this provider.
     var simpleProvider: LLM.SimpleProvider {
         switch self {
         case .openAI(apiKey: _):
@@ -47,10 +52,12 @@ public extension LLM.Provider {
         }
     }
 
+    /// Whether this provider sends requests to Anthropic's API.
     var isAnthropic: Bool {
         simpleProvider == .anthropic
     }
 
+    /// Whether this provider sends requests to OpenAI's API.
     var isOpenAI: Bool {
         simpleProvider == .openAI
     }

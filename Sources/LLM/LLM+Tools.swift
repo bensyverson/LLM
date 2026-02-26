@@ -8,10 +8,13 @@
 import Foundation
 
 public extension LLM.OpenAICompatibleAPI {
+    /// The type of tool. Currently only function calling is supported.
     enum ToolType: String, Friendly {
+        /// A function that the model can call.
         case function
     }
 
+    /// Defines a tool the model can call, wrapping a ``FunctionDefinition``.
     struct ToolDefinition: Friendly {
         public var type: ToolType
         public var function: FunctionDefinition
@@ -25,9 +28,13 @@ public extension LLM.OpenAICompatibleAPI {
         }
     }
 
+    /// Describes a function the model can call, including its name, description, and parameter schema.
     struct FunctionDefinition: Friendly {
+        /// The function name the model will use to identify this tool.
         public var name: String
+        /// A description of what the function does, helping the model decide when to call it.
         public var description: String
+        /// JSON Schema describing the function's parameters.
         public var parameters: JSONSchema
 
         public init(
@@ -41,6 +48,10 @@ public extension LLM.OpenAICompatibleAPI {
         }
     }
 
+    /// A JSON Schema definition used to describe tool parameters.
+    ///
+    /// Use the static convenience methods (``object(properties:required:description:)``,
+    /// ``string(description:enum:)``, ``integer(description:)``, etc.) for ergonomic construction.
     final class JSONSchema: Codable, Hashable, Equatable, Sendable {
         public enum SchemaType: String, Friendly {
             case object, array, string, number, integer, boolean, null
@@ -117,10 +128,15 @@ public extension LLM.OpenAICompatibleAPI {
         }
     }
 
+    /// Controls how the model selects tools.
     enum ToolChoice: Friendly {
+        /// Let the model decide whether to call a tool.
         case auto
+        /// The model must call at least one tool.
         case required
+        /// The model must not call any tools.
         case none
+        /// The model must call the named tool.
         case tool(name: String)
 
         public init(from decoder: Decoder) throws {
@@ -168,9 +184,13 @@ public extension LLM.OpenAICompatibleAPI {
         }
     }
 
+    /// A tool call requested by the model, containing the function name and arguments.
     struct ToolCall: Friendly {
+        /// The unique identifier for this tool call (used to match results back).
         public var id: String
+        /// The type of tool call (always `"function"`).
         public var type: String
+        /// The function name and JSON-encoded arguments.
         public var function: FunctionCall
 
         public init(
@@ -184,8 +204,11 @@ public extension LLM.OpenAICompatibleAPI {
         }
     }
 
+    /// The name and arguments of a function call requested by the model.
     struct FunctionCall: Friendly {
+        /// The name of the function to call.
         public var name: String
+        /// The function arguments as a JSON string.
         public var arguments: String
 
         public init(name: String, arguments: String) {

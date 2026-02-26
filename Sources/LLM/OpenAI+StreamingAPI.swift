@@ -8,10 +8,19 @@
 import Foundation
 
 public extension LLM.OpenAICompatibleAPI {
-    func streamingChatCompletion(with body: Data) async throws -> (SSEParser<AsyncLineSequence<URLSession.AsyncBytes>>, URLSession) {
+    /// Initiates a streaming chat completion request.
+    ///
+    /// - Parameter body: JSON-encoded request body (must have `stream: true`).
+    /// - Returns: A tuple of the SSE parser for consuming streamed events,
+    ///   the HTTP response (for header inspection), and the URL session.
+    /// - Throws: ``OpenAIError/badResponse(_:)`` if the response isn't HTTP,
+    ///   or ``OpenAIError/badResponseCode(_:)`` on non-200 status codes.
+    func streamingChatCompletion(
+        with body: Data
+    ) async throws -> (SSEParser<AsyncLineSequence<URLSession.AsyncBytes>>, HTTPURLResponse, URLSession) {
         let url = baseURL.appending(path: chatEndpoint)
 
-        var request = URLRequest(url: url, timeoutInterval: 120)
+        var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         for (header, headerValue) in headers ?? [:] {
@@ -47,6 +56,6 @@ public extension LLM.OpenAICompatibleAPI {
         }
 
         let parser = SSEParser(bytes: bytes)
-        return (parser, session)
+        return (parser, httpResponse, session)
     }
 }

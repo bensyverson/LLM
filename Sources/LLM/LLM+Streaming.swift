@@ -8,6 +8,14 @@
 import Foundation
 
 public extension LLM {
+    /// Streams a chat conversation, yielding incremental deltas as they arrive.
+    ///
+    /// Returns an `AsyncThrowingStream` of ``StreamEvent`` values. Text, thinking, and
+    /// tool call fragments are yielded as they arrive, followed by a final
+    /// `.completed` event containing the full ``ConversationResponse``.
+    ///
+    /// - Parameter conversation: The conversation to stream.
+    /// - Returns: A stream of events representing the model's incremental response.
     func streamChat(conversation: Conversation) -> AsyncThrowingStream<StreamEvent, Error> {
         AsyncThrowingStream { continuation in
             Task {
@@ -20,6 +28,13 @@ public extension LLM {
         }
     }
 
+    /// Starts a new streaming conversation with the given system prompt and user message.
+    ///
+    /// - Parameters:
+    ///   - systemPrompt: The system prompt that guides the model's behavior.
+    ///   - userMessage: The initial user message.
+    ///   - configuration: Optional conversation configuration.
+    /// - Returns: A stream of events representing the model's incremental response.
     func streamConversation(
         systemPrompt: String,
         userMessage: String,
@@ -33,6 +48,12 @@ public extension LLM {
         return streamChat(conversation: conversation)
     }
 
+    /// Continues an existing conversation with a new user message, streaming the response.
+    ///
+    /// - Parameters:
+    ///   - conversation: The conversation to continue.
+    ///   - userMessage: The new user message to append.
+    /// - Returns: A stream of events representing the model's incremental response.
     func streamContinueConversation(
         _ conversation: Conversation,
         userMessage: String
@@ -67,14 +88,20 @@ extension LLM {
         }
 
         let jsonData = try JSONEncoder().encode(request)
-        let (parser, _) = try await api.streamingChatCompletion(with: jsonData)
+        let (parser, httpResponse, _) = try await api.streamingChatCompletion(with: jsonData)
+
+        // Adapt rate limits from response headers
+        if let info = RateLimitInfo.parse(from: httpResponse, provider: provider) {
+            await chatRateLimiter.updateLimits(
+                maxRequests: info.requestLimit,
+                maxTokens: info.tokenLimit
+            )
+        }
+
         var accumulator = OpenAICompatibleAPI.StreamAccumulator()
-        var sseEventCount = 0
 
         if isAnthropic {
             for try await sseEvent in parser {
-                sseEventCount += 1
-
                 guard let data = sseEvent.data.data(using: .utf8) else { continue }
                 let event: OpenAICompatibleAPI.AnthropicStreamEvent
                 do {

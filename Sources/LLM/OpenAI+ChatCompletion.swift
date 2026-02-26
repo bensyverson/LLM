@@ -10,6 +10,7 @@ import Foundation
 public extension LLM.OpenAICompatibleAPI {
     // MARK: - Cache Control (Anthropic)
 
+    /// Anthropic prompt caching configuration.
     struct CacheControl: Codable, Sendable {
         public enum CacheType: String, Codable, Sendable {
             case ephemeral
@@ -52,6 +53,11 @@ public extension LLM.OpenAICompatibleAPI {
 
     // MARK: - Chat Completion
 
+    /// The request body for a chat completion API call.
+    ///
+    /// Supports both OpenAI and Anthropic wire formats. Provider-specific fields
+    /// (like `thinking` for Anthropic or `reasoning_effort` for OpenAI) are included
+    /// conditionally based on the provider.
     struct ChatCompletion: Codable {
         public struct JsonObject: Codable {
             public enum ObjectType: String, Codable {
@@ -195,10 +201,12 @@ public extension LLM.OpenAICompatibleAPI {
         }
     }
 
+    /// The role of a message in a chat conversation.
     enum Role: String, Friendly {
         case system, user, assistant, tool
     }
 
+    /// A single message in a chat conversation.
     struct ChatMessage: Friendly {
         public var content: String?
         public var role: Role
@@ -245,11 +253,15 @@ public extension LLM.OpenAICompatibleAPI {
         }
     }
 
+    /// The response from a chat completion API call.
+    ///
+    /// Supports both OpenAI format (with `choices`) and Anthropic format (with `content` blocks).
     struct ChatCompletionResponse: Friendly {
         public enum ObjectType: String, Friendly {
             case chatCompletion = "chat.completion"
         }
 
+        /// Token usage statistics from the API response.
         public struct Usage: Friendly {
             public let prompt_tokens: Int?
             public let completion_tokens: Int?

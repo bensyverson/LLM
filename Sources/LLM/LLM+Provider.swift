@@ -8,37 +8,56 @@
 import Foundation
 
 public extension LLM {
+    /// Identifies the LLM service provider and holds its credentials.
+    ///
+    /// Each case supplies the base URL and authentication method for the provider.
+    /// Rate limiters start with conservative defaults and adapt automatically
+    /// as the library reads rate limit headers from API responses.
     enum Provider: Friendly {
-        /// This will send requests to OpenAI's API (https://api.openai.com/)
+        /// Sends requests to OpenAI's API (`https://api.openai.com/`).
         case openAI(apiKey: String)
-        /// This will send requests to Anthropic's API
+        /// Sends requests to Anthropic's API (`https://api.anthropic.com/`).
         case anthropic(apiKey: String)
-        /// This sends requests to localhost:1234, the default port for LM Studio
+        /// Sends requests to `localhost:1234`, the default port for LM Studio.
         case lmStudio
-        /// This sends requests to localhost:port
+        /// Sends requests to `localhost` on the given port.
         case localhost(port: Int)
-        /// Pass in the root URL to any OpenAI-compatible API (not including /v1 and beyond)
+        /// Sends requests to any OpenAI-compatible API at the given URL (not including `/v1`).
         case other(URL, apiKey: String?)
 
+        /// A conservative chat rate limiter that adapts after the first API response.
+        ///
+        /// Cloud providers start with safe defaults (50 requests, 40K tokens per minute).
+        /// Local providers are effectively unlimited.
         public var chatLimiter: RateLimiter {
-            switch self {
-            case .openAI(apiKey: _):
-                return RateLimiter(maxRequests: 8000, maxTokens: 1_500_000, interval: 60) // Tier 3
-            default:
-                return RateLimiter(maxRequests: 40, maxTokens: 8000, interval: 60.0) // Tier 1 Anthropic
+            if isLocal {
+                return RateLimiter(maxRequests: 100_000, maxTokens: 100_000_000, interval: 60)
             }
+            return RateLimiter(maxRequests: 50, maxTokens: 40000, interval: 60)
         }
 
+        /// A conservative embedding rate limiter that adapts after the first API response.
+        ///
+        /// Cloud providers start with safe defaults. Local providers are effectively unlimited.
         public var embeddingLimiter: RateLimiter {
+            if isLocal {
+                return RateLimiter(maxRequests: 100_000, maxTokens: 100_000_000, interval: 60)
+            }
+            return RateLimiter(maxRequests: 50, maxTokens: 1_000_000, interval: 60)
+        }
+
+        /// Whether this provider targets a local server (no rate limiting needed).
+        public var isLocal: Bool {
             switch self {
-            case .openAI(apiKey: _):
-                return RateLimiter(maxRequests: 4000, maxTokens: 30_000_000, interval: 60) // Tier 2
+            case .lmStudio, .localhost:
+                return true
             default:
-                return RateLimiter(maxRequests: 10000, interval: 0.1)
+                return false
             }
         }
     }
 
+    /// The ``OpenAICompatibleAPI`` instance configured for this LLM's provider.
     var providerApi: OpenAICompatibleAPI {
         switch provider {
         case let .openAI(apiKey):

@@ -8,6 +8,7 @@
 import Foundation
 
 public extension LLM.OpenAICompatibleAPI {
+    /// The request body for an embedding API call.
     struct EmbeddingRequest: Codable {
         public enum EncodingFormat: String, Codable {
             case float, base64
@@ -37,6 +38,7 @@ public extension LLM.OpenAICompatibleAPI {
         }
     }
 
+    /// The response from an embedding API call.
     struct EmbeddingList: Codable {
         public struct EmbeddingData: Codable {
             public var embedding: [Float]

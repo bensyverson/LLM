@@ -8,7 +8,13 @@
 import Foundation
 
 public extension LLM {
+    /// A configurable client for any OpenAI-compatible chat completions API.
+    ///
+    /// This type handles URL construction, authentication headers, and endpoint routing.
+    /// Use the static factory methods (``openAI(apiKey:)``, ``anthropic(apiKey:)``,
+    /// ``localhost(port:)``) for common providers, or the full initializer for custom endpoints.
     struct OpenAICompatibleAPI: Friendly {
+        /// Known model identifiers for OpenAI and Anthropic.
         public enum ModelName: String, Codable {
             case placeholder
             case gpt35turbo = "gpt-3.5-turbo"
@@ -54,23 +60,36 @@ public extension LLM {
             }
         }
 
+        /// Errors returned by the OpenAI-compatible API layer.
         public enum OpenAIError: Error {
+            /// The embedding response contained no embedding data.
             case noEmbedding
+            /// The server returned a non-HTTP response.
             case badResponse(URLResponse)
+            /// The server returned a non-200 HTTP status code.
             case badResponseCode(Int)
         }
 
+        /// The authentication method used for API requests.
         public enum AuthenticationMethod: Friendly {
+            /// No authentication.
             case none
+            /// Bearer token authentication (`Authorization: Bearer <key>`).
             case bearer(apiKey: String)
+            /// Anthropic-style API key header (`x-api-key: <key>`).
             case xApiKey(apiKey: String)
         }
 
+        /// The base URL for the API (e.g. `https://api.openai.com/`).
         public var baseURL: URL
+        /// The authentication method to use for requests.
         public var authenticationMethod: AuthenticationMethod
+        /// The chat completions endpoint path (e.g. `v1/chat/completions`).
         public var chatEndpoint: String
+        /// Additional HTTP headers to include on every request.
         public var headers: [String: String]?
 
+        /// Creates a client configured for OpenAI's API.
         public static func openAI(apiKey: String) -> Self {
             .init(
                 baseURL: URL(string: "https://api.openai.com/")!,
@@ -78,6 +97,7 @@ public extension LLM {
             )
         }
 
+        /// Creates a client configured for Anthropic's Messages API.
         public static func anthropic(apiKey: String) -> Self {
             .init(
                 baseURL: URL(string: "https://api.anthropic.com/")!,
@@ -87,6 +107,7 @@ public extension LLM {
             )
         }
 
+        /// Creates a client configured for a local server on the given port.
         public static func localhost(port: Int) -> Self {
             .init(baseURL: URL(string: "http://localhost:\(port)/")!)
         }

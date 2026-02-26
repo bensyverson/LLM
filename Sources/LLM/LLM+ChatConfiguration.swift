@@ -8,10 +8,18 @@
 import Foundation
 
 public extension LLM {
+    /// Configuration for a single-shot chat request (no conversation history).
+    ///
+    /// Use this for simple prompt/response interactions where you don't need
+    /// to maintain a multi-turn conversation.
     struct ChatConfiguration: Friendly {
+        /// The system prompt that guides the model's behavior.
         public var systemPrompt: String
+        /// The user's message.
         public var user: String
+        /// The model tier to use (`.fast` or `.flagship`).
         public var modelType: ModelType = .fast
+        /// The inference mode (`.direct` or `.reasoning`).
         public var inference: InferenceType = .direct
         public var temperature: Double?
         public var frequencyPenalty: Double?
@@ -59,6 +67,7 @@ public extension LLM {
 }
 
 public extension LLM.ChatConfiguration {
+    /// Builds a ``LLM/LLM/OpenAICompatibleAPI/ChatCompletion`` request configured for the given provider.
     func request(for provider: LLM.Provider) -> LLM.OpenAICompatibleAPI.ChatCompletion {
         let isAnthropic = provider.isAnthropic
         let isOpenAI = provider.isOpenAI
