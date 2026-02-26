@@ -1,6 +1,6 @@
 # ``LLM``
 
-A unified Swift async interface for OpenAI, Anthropic, and OpenAI-compatible LLM providers.
+A unified Swift async interface for various LLM providers.
 
 ## Overview
 
@@ -10,10 +10,10 @@ management so you can focus on building your application.
 
 ### Supported Providers
 
-- **OpenAI** — GPT-4o, GPT-4.1, GPT-5, o-series reasoning models
-- **Anthropic** — Claude 4.5, Claude 4.6 (via Anthropic's Messages API)
-- **LM Studio** — Local models on `localhost:1234`
-- **Any OpenAI-compatible API** — Ollama, vLLM, Azure OpenAI, etc.
+- **OpenAI** - GPT
+- **Anthropic** - Claude
+- **LM Studio** and **localhost** — Local models
+- **Any OpenAI-compatible API** — Ollama, vLLM, Azure OpenAI, etc
 
 ### Key Features
 

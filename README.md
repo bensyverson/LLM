@@ -60,7 +60,7 @@ Add LLM as a Swift Package Manager dependency:
 
 ## Documentation
 
-Generate the full API documentation with DocC:
+[Browse the documentation online](https://bensyverson.com/documentation/LLM/), or generate the full API documentation with DocC:
 
 ```bash
 swift package generate-documentation --target LLM
@@ -75,3 +75,20 @@ The DocC catalog includes guides for:
 - [Streaming](Sources/LLM/Documentation.docc/StreamingGuide.md)
 - [Tools](Sources/LLM/Documentation.docc/ToolsGuide.md)
 - [Rate Limiting](Sources/LLM/Documentation.docc/RateLimiting.md)
+
+## About LLM
+
+I created this library in 2023 to experiment with OpenAI models in my macOS and iOS projects, and later extended the library to support local models and then Anthropic models. As a result, one of the core types is `OpenAICompatibleAPI`, though under the hood, LLM is really altering the shape of its requests to match different model capabilities and vendor flavors.
+
+LLM is designed to be lightweight (zero dependencies outside of DocC), and tries not to make any assumptions about how you'll use it; it can be used to one-shot answers to questions, and it's also the engine for my agentic library, [Operator](https://github.com/bensyverson/Operator). Hope it's helpful!
+
+[Ben Syverson](https://bensyverson.com/)
+Feb 2025
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
+Copyright (c) 2026 Ben Syverson
