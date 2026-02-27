@@ -184,37 +184,45 @@ extension LLM {
         let decoder = JSONDecoder()
 
         for try await event in parser {
-            guard let data = event.data.data(using: .utf8) else { continue }
+            // Split on newlines to handle providers (e.g. OpenRouter) that bundle
+            // multiple JSON chunks into a single SSE event's data field.
+            let jsonLines = event.data
+                .split(separator: "\n", omittingEmptySubsequences: true)
+                .map(String.init)
 
-            let chunk: OpenAICompatibleAPI.OpenAIStreamChunk
-            do {
-                chunk = try decoder.decode(OpenAICompatibleAPI.OpenAIStreamChunk.self, from: data)
-            } catch {
-                continue
-            }
+            for jsonString in jsonLines.isEmpty ? [event.data] : jsonLines {
+                guard let data = jsonString.data(using: .utf8) else { continue }
 
-            // Emit deltas before accumulating
-            if let choice = chunk.choices?.first {
-                if let content = choice.delta.content, !content.isEmpty {
-                    continuation.yield(.textDelta(content))
+                let chunk: OpenAICompatibleAPI.OpenAIStreamChunk
+                do {
+                    chunk = try decoder.decode(OpenAICompatibleAPI.OpenAIStreamChunk.self, from: data)
+                } catch {
+                    continue
                 }
-                if let reasoning = choice.delta.reasoning_content, !reasoning.isEmpty {
-                    continuation.yield(.thinkingDelta(reasoning))
-                }
-                if let tcChunks = choice.delta.tool_calls {
-                    for tc in tcChunks {
-                        let delta = ToolCallDelta(
-                            index: tc.index,
-                            id: tc.id,
-                            name: tc.function?.name,
-                            argumentsFragment: tc.function?.arguments ?? ""
-                        )
-                        continuation.yield(.toolCallDelta(delta))
+
+                // Emit deltas before accumulating
+                if let choice = chunk.choices?.first {
+                    if let content = choice.delta.content, !content.isEmpty {
+                        continuation.yield(.textDelta(content))
+                    }
+                    if let reasoning = choice.delta.reasoning_content, !reasoning.isEmpty {
+                        continuation.yield(.thinkingDelta(reasoning))
+                    }
+                    if let tcChunks = choice.delta.tool_calls {
+                        for tc in tcChunks {
+                            let delta = ToolCallDelta(
+                                index: tc.index,
+                                id: tc.id,
+                                name: tc.function?.name,
+                                argumentsFragment: tc.function?.arguments ?? ""
+                            )
+                            continuation.yield(.toolCallDelta(delta))
+                        }
                     }
                 }
-            }
 
-            accumulator.processOpenAIChunk(chunk)
+                accumulator.processOpenAIChunk(chunk)
+            }
         }
     }
 
