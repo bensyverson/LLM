@@ -86,7 +86,8 @@ public extension LLM.ChatConfiguration {
         let maxCompletionTokens: Int = {
             if isAnthropic {
                 // Anthropic: only use maxTokens for output (thinking has separate budget)
-                return maxTokens ?? 0
+                // Fall back to the model's documented max, then a safe default
+                return maxTokens ?? model.maxOutputTokens ?? 16384
             } else if isGPT5 && inference == .reasoning && maxTokens == nil {
                 // GPT-5 with reasoning: if user doesn't specify maxTokens, don't set a limit
                 return 0

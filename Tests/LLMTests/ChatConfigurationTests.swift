@@ -405,8 +405,8 @@ import Testing
 
     // GPT-5 with reasoning and no maxTokens: don't set a limit (returns nil)
     #expect(openAIRequest.max_completion_tokens == nil)
-    // Anthropic: maxTokens is nil → 0
-    #expect(anthropicRequest.max_tokens == 0)
+    // Anthropic: maxTokens is nil → model's maxOutputTokens (claude45Haiku = 64,000)
+    #expect(anthropicRequest.max_tokens == 64000)
 }
 
 // MARK: - Caching Tests
