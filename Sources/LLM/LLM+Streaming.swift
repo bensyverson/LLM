@@ -205,7 +205,7 @@ extension LLM {
                     if let content = choice.delta.content, !content.isEmpty {
                         continuation.yield(.textDelta(content))
                     }
-                    if let reasoning = choice.delta.reasoning_content, !reasoning.isEmpty {
+                    if let reasoning = choice.delta.thinking, !reasoning.isEmpty {
                         continuation.yield(.thinkingDelta(reasoning))
                     }
                     if let tcChunks = choice.delta.tool_calls {

@@ -54,8 +54,17 @@ extension LLM.OpenAICompatibleAPI {
         struct Delta: Decodable {
             let role: String?
             let content: String?
+            /// Reasoning/thinking content. OpenRouter exposes this as either
+            /// `reasoning_content` (DeepSeek-R1, some Qwen) or `reasoning`
+            /// (Kimi K2.5). We map both and coalesce at the call site.
             let reasoning_content: String?
+            let reasoning: String?
             let tool_calls: [ToolCallChunk]?
+
+            /// The thinking text from whichever field the provider uses.
+            var thinking: String? {
+                reasoning_content ?? reasoning
+            }
         }
 
         struct ToolCallChunk: Decodable {
@@ -175,7 +184,7 @@ extension LLM.OpenAICompatibleAPI {
             if let content = choice.delta.content {
                 text += content
             }
-            if let reasoning = choice.delta.reasoning_content {
+            if let reasoning = choice.delta.thinking {
                 thinking += reasoning
             }
             if let tcChunks = choice.delta.tool_calls {

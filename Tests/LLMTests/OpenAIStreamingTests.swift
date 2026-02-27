@@ -71,10 +71,9 @@ struct OpenAIStreamingTests {
         #expect(accumulator.totalTokens == 15)
     }
 
-    /// OpenRouter's reasoning models (e.g. Kimi) send reasoning in a `"reasoning"`
-    /// field. Our Delta struct maps `reasoning_content`, so reasoning is silently
-    /// dropped — but the `content` text must still be captured correctly.
-    @Test func openRouter_reasoningChunks_contentExtracted() throws {
+    /// OpenRouter's reasoning models (e.g. Kimi K2.5) send reasoning in a `"reasoning"`
+    /// field rather than `"reasoning_content"`. Both should be surfaced as thinking.
+    @Test func openRouter_reasoningField_capturedAsThinking() throws {
         let chunks = [
             #"{"id":"gen-2","choices":[{"index":0,"delta":{"role":"assistant","content":"","reasoning":"Let me think..."}}]}"#,
             #"{"id":"gen-2","choices":[{"index":0,"delta":{"content":"The answer is 42."}}]}"#,
@@ -87,8 +86,7 @@ struct OpenAIStreamingTests {
         }
 
         #expect(accumulator.text == "The answer is 42.")
-        // `reasoning` (not `reasoning_content`) is not mapped, so thinking stays empty.
-        #expect(accumulator.thinking == "")
+        #expect(accumulator.thinking == "Let me think...")
     }
 
     /// Some providers (OpenRouter) attach a usage object to the final non-[DONE]
