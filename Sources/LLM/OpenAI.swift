@@ -17,49 +17,84 @@ public extension LLM {
     /// Use the static factory methods (``openAI(apiKey:)``, ``anthropic(apiKey:)``,
     /// ``localhost(port:)``) for common providers, or the full initializer for custom endpoints.
     struct OpenAICompatibleAPI: Friendly {
-        /// Known model identifiers for OpenAI and Anthropic.
-        public enum ModelName: String, Codable {
-            case placeholder
-            case gpt35turbo = "gpt-3.5-turbo"
-            case gpt35turbo16k = "gpt-3.5-turbo-16k"
-            case gpt4 = "gpt-4"
-            case gpt4turbo = "gpt-4-turbo"
-            case gpt4o = "gpt-4o"
-            case gpt4oMini = "gpt-4o-mini"
-            case gpt41 = "gpt-4.1"
-            case gpt41Mini = "gpt-4.1-mini"
-            case gpt41Nano = "gpt-4.1-nano"
-            case o1preview = "o1-preview"
-            case o1mini = "o1-mini"
-            case o1
-            case o3
-            case o3mini = "o3-mini"
-            case o4mini = "o4-mini"
-            // OpenAI GPT-5 family (2026 - all have native reasoning)
-            case gpt52 = "gpt-5.2" // Flagship
-            case gpt5Mini = "gpt-5-mini" // Fast, cost-efficient
-            case gpt5Nano = "gpt-5-nano" // Fastest, most cost-efficient
-            // Anthropic Claude 4.6
-            case claude46Opus = "claude-opus-4-6"
-            case claude46Sonnet = "claude-sonnet-4-6"
-            // Anthropic Claude 4.5
-            case claude45Opus = "claude-opus-4-5"
-            case claude45Sonnet = "claude-sonnet-4-5"
-            case claude45Haiku = "claude-haiku-4-5"
-            // Anthropic Claude 4
-            case claude4Opus = "claude-opus-4"
-            case claude4Sonnet = "claude-sonnet-4"
-            // Legacy Anthropic models
-            case claude37SonnetLatest = "claude-3-7-sonnet-latest"
-            case claude35HaikuLatest = "claude-3-5-haiku-latest"
+        /// A model identifier for OpenAI-compatible APIs.
+        ///
+        /// Use the provided static constants for well-known models, or create
+        /// custom identifiers with `ModelName(rawValue:)` for arbitrary model
+        /// strings (e.g. when using OpenRouter or other proxy services).
+        public struct ModelName: RawRepresentable, Friendly {
+            public var rawValue: String
 
+            public init(rawValue: String) {
+                self.rawValue = rawValue
+            }
+
+            // MARK: - Placeholder
+
+            public static let placeholder = ModelName(rawValue: "placeholder")
+
+            // MARK: - OpenAI GPT-3.5
+
+            public static let gpt35turbo = ModelName(rawValue: "gpt-3.5-turbo")
+            public static let gpt35turbo16k = ModelName(rawValue: "gpt-3.5-turbo-16k")
+
+            // MARK: - OpenAI GPT-4
+
+            public static let gpt4 = ModelName(rawValue: "gpt-4")
+            public static let gpt4turbo = ModelName(rawValue: "gpt-4-turbo")
+            public static let gpt4o = ModelName(rawValue: "gpt-4o")
+            public static let gpt4oMini = ModelName(rawValue: "gpt-4o-mini")
+
+            // MARK: - OpenAI GPT-4.1
+
+            public static let gpt41 = ModelName(rawValue: "gpt-4.1")
+            public static let gpt41Mini = ModelName(rawValue: "gpt-4.1-mini")
+            public static let gpt41Nano = ModelName(rawValue: "gpt-4.1-nano")
+
+            // MARK: - OpenAI o-series
+
+            public static let o1preview = ModelName(rawValue: "o1-preview")
+            public static let o1mini = ModelName(rawValue: "o1-mini")
+            public static let o1 = ModelName(rawValue: "o1")
+            public static let o3 = ModelName(rawValue: "o3")
+            public static let o3mini = ModelName(rawValue: "o3-mini")
+            public static let o4mini = ModelName(rawValue: "o4-mini")
+
+            // MARK: - OpenAI GPT-5 (2026)
+
+            /// Flagship GPT-5 model with native reasoning.
+            public static let gpt52 = ModelName(rawValue: "gpt-5.2")
+            /// Fast, cost-efficient GPT-5 model.
+            public static let gpt5Mini = ModelName(rawValue: "gpt-5-mini")
+            /// Fastest, most cost-efficient GPT-5 model.
+            public static let gpt5Nano = ModelName(rawValue: "gpt-5-nano")
+
+            // MARK: - Anthropic Claude 4.6
+
+            public static let claude46Opus = ModelName(rawValue: "claude-opus-4-6")
+            public static let claude46Sonnet = ModelName(rawValue: "claude-sonnet-4-6")
+
+            // MARK: - Anthropic Claude 4.5
+
+            public static let claude45Opus = ModelName(rawValue: "claude-opus-4-5")
+            public static let claude45Sonnet = ModelName(rawValue: "claude-sonnet-4-5")
+            public static let claude45Haiku = ModelName(rawValue: "claude-haiku-4-5")
+
+            // MARK: - Anthropic Claude 4
+
+            public static let claude4Opus = ModelName(rawValue: "claude-opus-4")
+            public static let claude4Sonnet = ModelName(rawValue: "claude-sonnet-4")
+
+            // MARK: - Legacy Anthropic
+
+            public static let claude37SonnetLatest = ModelName(rawValue: "claude-3-7-sonnet-latest")
+            public static let claude35HaikuLatest = ModelName(rawValue: "claude-3-5-haiku-latest")
+
+            // MARK: - Computed Properties
+
+            /// Whether this model is in the GPT-5 family.
             public var isGPT5: Bool {
-                switch self {
-                case .gpt52, .gpt5Mini, .gpt5Nano:
-                    return true
-                default:
-                    return false
-                }
+                rawValue.hasPrefix("gpt-5")
             }
         }
 

@@ -21,6 +21,9 @@ public extension LLM {
         public var modelType: ModelType = .fast
         /// The inference mode (`.direct` or `.reasoning`).
         public var inference: InferenceType = .direct
+        /// An explicit model name override. When set, ``request(for:)``
+        /// uses this instead of asking the provider for its default model.
+        public var model: LLM.OpenAICompatibleAPI.ModelName?
         public var temperature: Double?
         public var frequencyPenalty: Double?
         public var repeatPenalty: Double?
@@ -37,6 +40,7 @@ public extension LLM {
             user: String,
             modelType: ModelType,
             inference: InferenceType,
+            model: LLM.OpenAICompatibleAPI.ModelName? = nil,
             temperature: Double? = nil,
             frequencyPenalty: Double? = nil,
             repeatPenalty: Double? = nil,
@@ -52,6 +56,7 @@ public extension LLM {
             self.user = user
             self.modelType = modelType
             self.inference = inference
+            self.model = model
             self.temperature = temperature
             self.frequencyPenalty = frequencyPenalty
             self.repeatPenalty = repeatPenalty
@@ -71,7 +76,7 @@ public extension LLM.ChatConfiguration {
     func request(for provider: LLM.Provider) -> LLM.OpenAICompatibleAPI.ChatCompletion {
         let isAnthropic = provider.isAnthropic
         let isOpenAI = provider.isOpenAI
-        let model = provider.model(type: modelType, inference: inference)
+        let model = model ?? provider.model(type: modelType, inference: inference)
         let isGPT5 = model.isGPT5
         // For GPT-5 models, always skip temperature/topP (they only support default values)
         // For older o-series reasoning models, also skip
