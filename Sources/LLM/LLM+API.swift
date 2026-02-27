@@ -155,7 +155,7 @@ public extension LLM {
     ) -> [OpenAICompatibleAPI.ToolCall] {
         // OpenAI format: tool_calls on the message in choices
         if let openAIToolCalls = response.choices?.first?.message.tool_calls, !openAIToolCalls.isEmpty {
-            return openAIToolCalls
+            return openAIToolCalls.filter { !$0.function.name.isEmpty }
         }
 
         // Anthropic format: content blocks with type == .tool_use
