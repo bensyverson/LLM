@@ -89,4 +89,24 @@ public actor LLM {
             imageResizer = Self.coreGraphicsResizer
         #endif
     }
+
+    /// Sets the image resizer closure.
+    ///
+    /// Use this from outside the actor's isolation context where setting
+    /// the property directly would violate Swift 6 concurrency rules.
+    ///
+    /// - Parameter resizer: A closure that resizes image data, or `nil` to disable resizing.
+    public func setImageResizer(_ resizer: (@Sendable (Data, String, CGSize) async throws -> Data)?) {
+        imageResizer = resizer
+    }
+
+    /// Sets the image describer closure.
+    ///
+    /// Use this from outside the actor's isolation context where setting
+    /// the property directly would violate Swift 6 concurrency rules.
+    ///
+    /// - Parameter describer: A closure that generates text descriptions for images, or `nil` to disable.
+    public func setImageDescriber(_ describer: (@Sendable (Data, String) async throws -> String)?) {
+        imageDescriber = describer
+    }
 }
