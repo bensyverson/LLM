@@ -67,7 +67,7 @@ public extension LLM {
     func chat(configuration: ChatConfiguration) async throws -> String {
         let response: OpenAICompatibleAPI.ChatCompletionResponse = try await chat(configuration: configuration)
 
-        guard let content = response.content?.first(where: { $0.type == .text })?.text ?? response.choices?.first?.message.content else {
+        guard let content = response.content?.first(where: { $0.type == .text })?.text ?? response.choices?.first?.message.textContent else {
             throw LLMError.parseResponse(response)
         }
         return content
@@ -92,7 +92,20 @@ public extension LLM {
         let tokenCount = Int(Double(conversation.systemPrompt.count + messageTextLength) / 2.0)
         try await chatRateLimiter.acquire(tokens: tokenCount)
 
-        let request = conversation.request(for: provider)
+        // Pre-process: non-vision fallback and image resizing
+        let model = conversation.configuration.model ?? provider.model(type: conversation.configuration.modelType, inference: conversation.configuration.inference)
+        let hasMedia = conversation.messages.contains { $0.hasMedia }
+        var warnings: [String] = []
+        var effectiveConversation = conversation
+
+        if hasMedia && model.supportsVision == false {
+            effectiveConversation = try await strippingMedia(conversation, using: imageDescriber)
+            warnings.append("Images were converted to text descriptions because \(model.rawValue) does not support vision.")
+        } else if hasMedia, let maxEdge = model.maxImageLongEdge, let resizer = imageResizer {
+            effectiveConversation = try await resizingImages(in: effectiveConversation, maxLongEdge: maxEdge, using: resizer)
+        }
+
+        let request = effectiveConversation.request(for: provider)
         let jsonData = try JSONEncoder().encode(request)
         let (response, httpResponse) = try await api.chatCompletion(with: jsonData)
 
@@ -106,7 +119,7 @@ public extension LLM {
 
         // Extract text content (may be nil if response is tool-calls-only)
         let text = response.content?.first(where: { $0.type == .text })?.text
-            ?? response.choices?.first?.message.content
+            ?? response.choices?.first?.message.textContent
 
         // Extract thinking content from Anthropic extended thinking blocks or OpenAI reasoning_content
         let thinking = response.content?.first(where: { $0.type == .thinking })?.thinking
@@ -138,7 +151,8 @@ public extension LLM {
             thinking: thinking,
             toolCalls: toolCalls,
             conversation: updatedConversation,
-            rawResponse: response
+            rawResponse: response,
+            warnings: warnings
         )
     }
 
@@ -215,6 +229,40 @@ public extension LLM {
     func continueConversation(
         _ conversation: Conversation,
         userMessage: String
+    ) async throws -> ConversationResponse {
+        let updated = conversation.addingUserMessage(userMessage)
+        return try await chat(conversation: updated)
+    }
+
+    /// Starts a new conversation with multimodal content.
+    ///
+    /// - Parameters:
+    ///   - systemPrompt: The system prompt that guides the model's behavior.
+    ///   - userMessage: The initial user message as content parts.
+    ///   - configuration: Optional conversation configuration.
+    /// - Returns: A ``ConversationResponse`` with the model's reply and the conversation history.
+    func startConversation(
+        systemPrompt: String,
+        userMessage: [OpenAICompatibleAPI.ContentPart],
+        configuration: ConversationConfiguration = .init()
+    ) async throws -> ConversationResponse {
+        let conversation = Conversation(
+            systemPrompt: systemPrompt,
+            messages: [OpenAICompatibleAPI.ChatMessage(content: userMessage, role: .user)],
+            configuration: configuration
+        )
+        return try await chat(conversation: conversation)
+    }
+
+    /// Continues an existing conversation with multimodal content.
+    ///
+    /// - Parameters:
+    ///   - conversation: The conversation to continue.
+    ///   - userMessage: The new user message as content parts.
+    /// - Returns: A ``ConversationResponse`` with the model's reply and updated conversation.
+    func continueConversation(
+        _ conversation: Conversation,
+        userMessage: [OpenAICompatibleAPI.ContentPart]
     ) async throws -> ConversationResponse {
         let updated = conversation.addingUserMessage(userMessage)
         return try await chat(conversation: updated)

@@ -21,6 +21,7 @@ management so you can focus on building your application.
 - **Streaming** with incremental text, thinking, and tool call deltas
 - **Tool calling** with a unified interface across OpenAI and Anthropic formats
 - **Conversation management** that tracks message history and handles assistant replies
+- **Multimodal** support for images and PDFs with automatic provider-specific encoding, resizing, and non-vision fallback
 
 ## Topics
 
@@ -50,6 +51,12 @@ management so you can focus on building your application.
 - ``LLM/LLM/OpenAICompatibleAPI/ToolCall``
 - ``LLM/LLM/OpenAICompatibleAPI/JSONSchema``
 - ``LLM/LLM/OpenAICompatibleAPI/ToolChoice``
+
+### Multimodal
+
+- <doc:MultimodalContent>
+- <doc:ImageHandling>
+- ``LLM/LLM/OpenAICompatibleAPI/ContentPart``
 
 ### Rate Limiting
 

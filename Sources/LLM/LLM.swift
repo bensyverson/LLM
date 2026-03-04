@@ -39,6 +39,27 @@ public actor LLM {
     /// The rate limiter used for embedding requests.
     let embeddingRateLimiter: LLM.RateLimiter
 
+    /// Resizes image data to fit within a target size.
+    ///
+    /// Parameters: `(imageData, mediaType, targetSize) -> resizedData`.
+    /// On Apple platforms this defaults to a CoreGraphics implementation.
+    /// On Linux this is `nil` by default — set it to enable image resizing.
+    public var imageResizer: (@Sendable (Data, String, CGSize) async throws -> Data)?
+
+    /// Generates a text description of an image for non-vision model fallback.
+    ///
+    /// Parameters: `(imageData, mediaType) -> description`.
+    /// `nil` by default. When set, ``strippingMedia(_:using:)`` calls this
+    /// for images that lack a description.
+    public var imageDescriber: (@Sendable (Data, String) async throws -> String)?
+
+    /// Cache for resized images, keyed by hash of original data + target size.
+    var resizeCache: [ResizeCacheKey: Data] = [:]
+    /// FIFO order for cache eviction.
+    var resizeCacheOrder: [ResizeCacheKey] = []
+    /// Maximum entries in the resize cache before FIFO eviction.
+    let resizeCacheMaxSize: Int = 50
+
     private let session: URLSession = {
         let configuration = URLSessionConfiguration.default
         configuration.timeoutIntervalForRequest = 120
@@ -64,5 +85,8 @@ public actor LLM {
         embeddingRateLimiter = embeddingLimiter ?? provider.embeddingLimiter
         session.configuration.timeoutIntervalForRequest = timeout
         session.configuration.timeoutIntervalForResource = timeout
+        #if canImport(CoreGraphics) && canImport(ImageIO)
+            imageResizer = Self.coreGraphicsResizer
+        #endif
     }
 }

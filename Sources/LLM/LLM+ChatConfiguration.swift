@@ -81,7 +81,8 @@ public extension LLM.ChatConfiguration {
         // For GPT-5 models, always skip temperature/topP (they only support default values)
         // For older o-series reasoning models, also skip
         let skipTemp = isGPT5 || inference == .reasoning
-        let skipTopP = skipTemp
+        // Anthropic forbids specifying both temperature and top_p
+        let skipTopP = skipTemp || (isAnthropic && temperature != nil)
         let skipFreq = isAnthropic
         let skipStop = isGPT5 // GPT-5 doesn't support stop parameter
         let maxReasoningTokenCount = inference == .reasoning ? maxReasoningTokens ?? 1024 : 0
@@ -92,7 +93,9 @@ public extension LLM.ChatConfiguration {
             if isAnthropic {
                 // Anthropic: only use maxTokens for output (thinking has separate budget)
                 // Fall back to the model's documented max, then a safe default
-                return maxTokens ?? model.maxOutputTokens ?? 16384
+                // Treat 0 as unset since Anthropic requires max_tokens >= 1
+                if let maxTokens, maxTokens > 0 { return maxTokens }
+                return model.maxOutputTokens ?? 16384
             } else if isGPT5 && inference == .reasoning && maxTokens == nil {
                 // GPT-5 with reasoning: if user doesn't specify maxTokens, don't set a limit
                 return 0
@@ -136,7 +139,7 @@ public extension LLM.ChatConfiguration {
             temperature: skipTemp ? nil : temperature,
             frequency_penalty: skipFreq ? nil : frequencyPenalty,
             top_p: skipTopP ? nil : topP,
-            max_tokens: isOpenAI ? nil : maxCompletionTokens,
+            max_tokens: isOpenAI || maxCompletionTokens <= 0 ? nil : maxCompletionTokens,
             max_completion_tokens: isOpenAI && maxCompletionTokens > 0 ? maxCompletionTokens : nil,
             stop: (isAnthropic || skipStop) ? nil : stopTokens,
             stop_sequences: isAnthropic ? stopTokens : nil,

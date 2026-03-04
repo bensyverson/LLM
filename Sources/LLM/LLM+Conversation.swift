@@ -37,6 +37,13 @@ public extension LLM {
             return copy
         }
 
+        /// Returns a new conversation with a multimodal user message appended.
+        public func addingUserMessage(_ parts: [OpenAICompatibleAPI.ContentPart]) -> Conversation {
+            var copy = self
+            copy.messages.append(OpenAICompatibleAPI.ChatMessage(content: parts, role: .user))
+            return copy
+        }
+
         /// Returns a new conversation with an assistant message appended.
         public func addingAssistantMessage(_ content: String) -> Conversation {
             var copy = self
@@ -57,6 +64,17 @@ public extension LLM {
 
         /// Add a tool result message.
         public func addingToolResultMessage(toolCallId: String, content: String) -> Conversation {
+            var copy = self
+            copy.messages.append(OpenAICompatibleAPI.ChatMessage(
+                content: content,
+                role: .tool,
+                tool_call_id: toolCallId
+            ))
+            return copy
+        }
+
+        /// Add a tool result message with multimodal content.
+        public func addingToolResultMessage(toolCallId: String, content: [OpenAICompatibleAPI.ContentPart]) -> Conversation {
             var copy = self
             copy.messages.append(OpenAICompatibleAPI.ChatMessage(
                 content: content,
@@ -137,19 +155,23 @@ public extension LLM {
         public let conversation: Conversation
         /// The raw, unprocessed response from the provider.
         public let rawResponse: OpenAICompatibleAPI.ChatCompletionResponse
+        /// Warnings generated during request processing (e.g. image stripping for non-vision models).
+        public let warnings: [String]
 
         public init(
             text: String?,
             thinking: String?,
             toolCalls: [OpenAICompatibleAPI.ToolCall],
             conversation: Conversation,
-            rawResponse: OpenAICompatibleAPI.ChatCompletionResponse
+            rawResponse: OpenAICompatibleAPI.ChatCompletionResponse,
+            warnings: [String] = []
         ) {
             self.text = text
             self.thinking = thinking
             self.toolCalls = toolCalls
             self.conversation = conversation
             self.rawResponse = rawResponse
+            self.warnings = warnings
         }
     }
 }
@@ -163,7 +185,8 @@ public extension LLM.Conversation {
         // For GPT-5 models, always skip temperature/topP (they only support default values)
         // For older o-series reasoning models, also skip
         let skipTemp = isGPT5 || configuration.inference == .reasoning
-        let skipTopP = skipTemp
+        // Anthropic forbids specifying both temperature and top_p
+        let skipTopP = skipTemp || (isAnthropic && configuration.temperature != nil)
         let skipFreq = isAnthropic
         let skipStop = isGPT5 // GPT-5 doesn't support stop parameter
         let maxReasoningTokenCount = configuration.inference == .reasoning ? configuration.maxReasoningTokens ?? 1024 : 0
@@ -174,7 +197,9 @@ public extension LLM.Conversation {
             if isAnthropic {
                 // Anthropic: only use maxTokens for output (thinking has separate budget)
                 // Fall back to the model's documented max, then a safe default
-                return configuration.maxTokens ?? model.maxOutputTokens ?? 16384
+                // Treat 0 as unset since Anthropic requires max_tokens >= 1
+                if let maxTokens = configuration.maxTokens, maxTokens > 0 { return maxTokens }
+                return model.maxOutputTokens ?? 16384
             } else if isGPT5 && configuration.inference == .reasoning && configuration.maxTokens == nil {
                 // GPT-5 with reasoning: if user doesn't specify maxTokens, don't set a limit
                 return 0
@@ -218,7 +243,7 @@ public extension LLM.Conversation {
             temperature: skipTemp ? nil : configuration.temperature,
             frequency_penalty: skipFreq ? nil : configuration.frequencyPenalty,
             top_p: skipTopP ? nil : configuration.topP,
-            max_tokens: isOpenAI ? nil : maxCompletionTokens,
+            max_tokens: isOpenAI || maxCompletionTokens <= 0 ? nil : maxCompletionTokens,
             max_completion_tokens: isOpenAI && maxCompletionTokens > 0 ? maxCompletionTokens : nil,
             stop: (isAnthropic || skipStop) ? nil : configuration.stopTokens,
             stop_sequences: isAnthropic ? configuration.stopTokens : nil,

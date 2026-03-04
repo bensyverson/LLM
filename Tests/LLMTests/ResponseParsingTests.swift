@@ -71,7 +71,7 @@ enum FixtureError: Error {
     let choice = try #require(response.choices?[0])
     #expect(choice.index == 0)
     #expect(choice.message.role == .assistant)
-    #expect(choice.message.content == "Hello! I'm here to help. How can I assist you today?")
+    #expect(choice.message.textContent == "Hello! I'm here to help. How can I assist you today?")
     #expect(choice.finish_reason == "stop")
 }
 
@@ -124,7 +124,7 @@ enum FixtureError: Error {
     // Choices
     #expect(response.choices?.count == 1)
     let choice = try #require(response.choices?[0])
-    #expect(choice.message.content == nil)
+    #expect(choice.message.content.isEmpty)
     #expect(choice.finish_reason == "tool_calls")
 
     // Tool calls
@@ -326,7 +326,7 @@ enum FixtureError: Error {
 
     #expect(response.id == "chatcmpl-D3oebJe6uqC797reNAhiYVinD5T3J")
     #expect(response.model == "gpt-4o-mini-2024-07-18")
-    #expect(response.choices?.first?.message.content == "Hello there, how are you?")
+    #expect(response.choices?.first?.message.textContent == "Hello there, how are you?")
     #expect(response.usage.prompt_tokens == 15)
     #expect(response.usage.completion_tokens == 7)
     #expect(response.usage.total_tokens == 22)
@@ -338,7 +338,7 @@ enum FixtureError: Error {
     let decoder = JSONDecoder()
     let response = try decoder.decode(LLM.OpenAICompatibleAPI.ChatCompletionResponse.self, from: data)
 
-    #expect(response.choices?.first?.message.content == nil)
+    #expect(response.choices?.first?.message.content.isEmpty == true)
     #expect(response.choices?.first?.finish_reason == "tool_calls")
     let toolCall = response.choices?.first?.message.tool_calls?.first
     #expect(toolCall?.function.name == "get_weather")
@@ -435,8 +435,8 @@ enum FixtureError: Error {
     let response = try decoder.decode(LLM.OpenAICompatibleAPI.ChatCompletionResponse.self, from: json)
 
     #expect(response.choices?.count == 2)
-    #expect(response.choices?[0].message.content == "Response 1")
-    #expect(response.choices?[1].message.content == "Response 2")
+    #expect(response.choices?[0].message.textContent == "Response 1")
+    #expect(response.choices?[1].message.textContent == "Response 2")
 }
 
 @Test func parseResponse_multipleToolCalls() throws {

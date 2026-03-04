@@ -62,6 +62,25 @@ print(result.text ?? "")
 The ``LLM/LLM/ConversationResponse`` carries the updated conversation history, so you
 can keep calling ``LLM/LLM/continueConversation(_:userMessage:)`` to add turns.
 
+### Sending images
+
+Add images and other media to conversations using ``LLM/LLM/OpenAICompatibleAPI/ContentPart``:
+
+```swift
+let imageData = try Data(contentsOf: imageURL)
+
+let result = try await openai.startConversation(
+    systemPrompt: "You are a helpful assistant.",
+    userMessage: [
+        .text("Describe this image."),
+        .image(data: imageData, mediaType: "image/jpeg"),
+    ]
+)
+print(result.text ?? "")
+```
+
+See <doc:MultimodalContent> for the full guide on multimodal support.
+
 ### Choosing a model
 
 LLM uses ``LLM/LLM/ModelType`` (`.fast` or `.flagship`) and ``LLM/LLM/InferenceType``

@@ -67,8 +67,10 @@ public extension LLM.OpenAICompatibleAPI {
         /// A content block in an Anthropic message.
         enum ContentBlock: Encodable {
             case text(String)
+            case image(data: Data, mediaType: String)
+            case document(data: Data, mediaType: String, title: String?)
             case toolUse(id: String, name: String, input: String)
-            case toolResult(toolUseId: String, content: String)
+            case toolResult(toolUseId: String, content: [ContentBlock])
 
             func encode(to encoder: Encoder) throws {
                 var container = encoder.container(keyedBy: CodingKeys.self)
@@ -76,6 +78,19 @@ public extension LLM.OpenAICompatibleAPI {
                 case let .text(text):
                     try container.encode("text", forKey: .type)
                     try container.encode(text, forKey: .text)
+                case let .image(data, mediaType):
+                    try container.encode("image", forKey: .type)
+                    try container.encode(
+                        ImageSource(type: "base64", media_type: mediaType, data: data.base64EncodedString()),
+                        forKey: .source
+                    )
+                case let .document(data, mediaType, title):
+                    try container.encode("document", forKey: .type)
+                    try container.encode(
+                        ImageSource(type: "base64", media_type: mediaType, data: data.base64EncodedString()),
+                        forKey: .source
+                    )
+                    try container.encodeIfPresent(title, forKey: .title)
                 case let .toolUse(id, name, input):
                     try container.encode("tool_use", forKey: .type)
                     try container.encode(id, forKey: .id)
@@ -92,7 +107,29 @@ public extension LLM.OpenAICompatibleAPI {
             }
 
             enum CodingKeys: String, CodingKey {
-                case type, text, id, name, input, tool_use_id, content
+                case type, text, id, name, input, tool_use_id, content, source, title
+            }
+
+            struct ImageSource: Encodable {
+                let type: String
+                let media_type: String
+                let data: String
+            }
+        }
+
+        /// Converts content parts to Anthropic content blocks.
+        private static func contentBlocks(from parts: [ContentPart]) -> [ContentBlock] {
+            parts.compactMap { part in
+                switch part {
+                case let .text(text):
+                    return .text(text)
+                case let .image(data, mediaType, _, _):
+                    return .image(data: data, mediaType: mediaType)
+                case let .pdf(data, title):
+                    return .document(data: data, mediaType: "application/pdf", title: title)
+                case .audio, .video:
+                    return nil
+                }
             }
         }
 
@@ -106,12 +143,14 @@ public extension LLM.OpenAICompatibleAPI {
                     continue
 
                 case .user:
-                    let block = ContentBlock.text(msg.content ?? "")
-                    appendOrMerge(&result, role: "user", blocks: [block])
+                    let blocks = contentBlocks(from: msg.content)
+                    let effectiveBlocks = blocks.isEmpty ? [ContentBlock.text("")] : blocks
+                    appendOrMerge(&result, role: "user", blocks: effectiveBlocks)
 
                 case .assistant:
                     var blocks = [ContentBlock]()
-                    if let text = msg.content, !text.isEmpty {
+                    // Assistant messages only use text (no images in assistant content)
+                    if let text = msg.textContent, !text.isEmpty {
                         blocks.append(.text(text))
                     }
                     if let toolCalls = msg.tool_calls {
@@ -129,9 +168,12 @@ public extension LLM.OpenAICompatibleAPI {
 
                 case .tool:
                     // Convert to user message with tool_result content block
+                    // Tool results can include images (Anthropic supports this)
+                    let innerBlocks = contentBlocks(from: msg.content)
+                    let effectiveContent = innerBlocks.isEmpty ? [ContentBlock.text("")] : innerBlocks
                     let block = ContentBlock.toolResult(
                         toolUseId: msg.tool_call_id ?? "",
-                        content: msg.content ?? ""
+                        content: effectiveContent
                     )
                     appendOrMerge(&result, role: "user", blocks: [block])
                 }

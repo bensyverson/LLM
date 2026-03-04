@@ -100,7 +100,7 @@ import Testing
 
     #expect(updated.messages.count == 2)
     #expect(updated.messages[1].role == .assistant)
-    #expect(updated.messages[1].content == nil)
+    #expect(updated.messages[1].content.isEmpty)
     #expect(updated.messages[1].tool_calls?.count == 1)
     #expect(updated.messages[1].tool_calls?[0].id == "call_123")
     #expect(updated.messages[1].tool_calls?[0].function.name == "get_weather")
@@ -117,7 +117,7 @@ import Testing
 
     #expect(updated.messages.count == 2)
     #expect(updated.messages[1].role == .tool)
-    #expect(updated.messages[1].content == "The weather in NYC is sunny, 72°F")
+    #expect(updated.messages[1].textContent == "The weather in NYC is sunny, 72°F")
     #expect(updated.messages[1].tool_call_id == "call_123")
 }
 
@@ -144,7 +144,7 @@ import Testing
     #expect(conversation.messages[1].tool_calls != nil)
     #expect(conversation.messages[2].role == .tool)
     #expect(conversation.messages[3].role == .assistant)
-    #expect(conversation.messages[3].content == "I found 10 results about Swift concurrency.")
+    #expect(conversation.messages[3].textContent == "I found 10 results about Swift concurrency.")
 }
 
 // MARK: - ConversationResponse Optional Text + ToolCalls

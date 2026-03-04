@@ -207,8 +207,13 @@ public extension LLM.OpenAICompatibleAPI {
     }
 
     /// A single message in a chat conversation.
+    ///
+    /// Content is represented as an array of ``ContentPart`` values, supporting
+    /// text, images, PDFs, and other media types. For text-only messages, the
+    /// convenience initializers accepting `String` wrap the text automatically.
     struct ChatMessage: Friendly {
-        public var content: String?
+        /// The content parts of this message.
+        public var content: [ContentPart]
         public var role: Role
         public var name: String?
         public var tool_calls: [ToolCall]?
@@ -217,9 +222,9 @@ public extension LLM.OpenAICompatibleAPI {
         /// Reasoning content from OpenAI o-series and GPT-5 models.
         public var reasoning_content: String?
 
-        /// Full initializer
+        /// Primary initializer accepting an array of content parts.
         public init(
-            content: String?,
+            content: [ContentPart],
             role: Role,
             name: String? = nil,
             tool_calls: [ToolCall]? = nil,
@@ -234,22 +239,161 @@ public extension LLM.OpenAICompatibleAPI {
             self.reasoning_content = reasoning_content
         }
 
-        /// Backward-compatible convenience init
+        /// Convenience initializer for optional text content (e.g. tool-call-only messages).
+        public init(
+            content: String?,
+            role: Role,
+            name: String? = nil,
+            tool_calls: [ToolCall]? = nil,
+            tool_call_id: String? = nil,
+            reasoning_content: String? = nil
+        ) {
+            self.content = content.map { [.text($0)] } ?? []
+            self.role = role
+            self.name = name
+            self.tool_calls = tool_calls
+            self.tool_call_id = tool_call_id
+            self.reasoning_content = reasoning_content
+        }
+
+        /// Backward-compatible convenience init for text messages.
         public init(
             content: String,
             role: Role,
             name: String? = nil
         ) {
-            self.content = content
+            self.content = [.text(content)]
             self.role = role
             self.name = name
             tool_calls = nil
             tool_call_id = nil
         }
 
-        /// Helper to get content length (for token estimation)
+        /// The concatenated text content of this message, or `nil` if there are no text parts.
+        public var textContent: String? {
+            let texts = content.compactMap(\.textContent)
+            return texts.isEmpty ? nil : texts.joined()
+        }
+
+        /// Whether this message contains any media (non-text) parts.
+        public var hasMedia: Bool {
+            content.contains { $0.isMedia }
+        }
+
+        /// Estimated content length in characters (sum of text part lengths).
         public var contentLength: Int {
-            content?.count ?? 0
+            content.compactMap(\.textContent).reduce(0) { $0 + $1.count }
+        }
+
+        // MARK: - Custom Codable
+
+        enum CodingKeys: String, CodingKey {
+            case content, role, name, tool_calls, tool_call_id, reasoning_content
+        }
+
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(role, forKey: .role)
+            try container.encodeIfPresent(name, forKey: .name)
+            try container.encodeIfPresent(tool_calls, forKey: .tool_calls)
+            try container.encodeIfPresent(tool_call_id, forKey: .tool_call_id)
+            try container.encodeIfPresent(reasoning_content, forKey: .reasoning_content)
+
+            // Encode content: text-only as plain string, multimodal as array
+            if content.isEmpty {
+                try container.encodeNil(forKey: .content)
+            } else if !hasMedia, let text = textContent {
+                try container.encode(text, forKey: .content)
+            } else {
+                try container.encode(content.map { OpenAIContentPartWrapper($0) }, forKey: .content)
+            }
+        }
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            role = try container.decode(Role.self, forKey: .role)
+            name = try container.decodeIfPresent(String.self, forKey: .name)
+            tool_calls = try container.decodeIfPresent([ToolCall].self, forKey: .tool_calls)
+            tool_call_id = try container.decodeIfPresent(String.self, forKey: .tool_call_id)
+            reasoning_content = try container.decodeIfPresent(String.self, forKey: .reasoning_content)
+
+            // Decode content: handle string, array, or null
+            if let text = try? container.decodeIfPresent(String.self, forKey: .content) {
+                content = [.text(text)]
+            } else if let parts = try? container.decodeIfPresent([OpenAIContentPartWrapper].self, forKey: .content) {
+                content = parts.map(\.part)
+            } else {
+                content = []
+            }
+        }
+    }
+
+    /// Wrapper for encoding/decoding content parts in OpenAI's format.
+    struct OpenAIContentPartWrapper: Codable, Equatable, Hashable, Sendable {
+        let part: ContentPart
+
+        init(_ part: ContentPart) {
+            self.part = part
+        }
+
+        enum CodingKeys: String, CodingKey {
+            case type, text, image_url
+        }
+
+        struct ImageURL: Codable, Equatable, Hashable, Sendable {
+            let url: String
+            let detail: String?
+        }
+
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            switch part {
+            case let .text(text):
+                try container.encode("text", forKey: .type)
+                try container.encode(text, forKey: .text)
+            case let .image(data, mediaType, _, _):
+                try container.encode("image_url", forKey: .type)
+                let base64 = data.base64EncodedString()
+                let dataURI = "data:\(mediaType);base64,\(base64)"
+                try container.encode(ImageURL(url: dataURI, detail: "auto"), forKey: .image_url)
+            case .pdf:
+                // OpenAI doesn't support PDFs — encode as text placeholder
+                try container.encode("text", forKey: .type)
+                try container.encode("[Unsupported: PDF content]", forKey: .text)
+            case .audio, .video:
+                try container.encode("text", forKey: .type)
+                try container.encode("[Unsupported media]", forKey: .text)
+            }
+        }
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            let type = try container.decode(String.self, forKey: .type)
+            switch type {
+            case "text":
+                let text = try container.decode(String.self, forKey: .text)
+                part = .text(text)
+            case "image_url":
+                let imageURL = try container.decode(ImageURL.self, forKey: .image_url)
+                // Parse data URI back to Data if possible
+                if imageURL.url.hasPrefix("data:"),
+                   let semicolonIdx = imageURL.url.firstIndex(of: ";"),
+                   let commaIdx = imageURL.url.firstIndex(of: ",")
+                {
+                    let mediaType = String(imageURL.url[imageURL.url.index(imageURL.url.startIndex, offsetBy: 5) ..< semicolonIdx])
+                    let base64String = String(imageURL.url[imageURL.url.index(after: commaIdx)...])
+                    if let data = Data(base64Encoded: base64String) {
+                        part = .image(data: data, mediaType: mediaType)
+                    } else {
+                        part = .text(imageURL.url)
+                    }
+                } else {
+                    part = .text(imageURL.url)
+                }
+            default:
+                let text = try container.decodeIfPresent(String.self, forKey: .text) ?? ""
+                part = .text(text)
+            }
         }
     }
 

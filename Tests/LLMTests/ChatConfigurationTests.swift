@@ -68,9 +68,9 @@ import Testing
     #expect(request.system == nil)
     #expect(request.messages.count == 2)
     #expect(request.messages[0].role == .system)
-    #expect(request.messages[0].content == "You are helpful")
+    #expect(request.messages[0].textContent == "You are helpful")
     #expect(request.messages[1].role == .user)
-    #expect(request.messages[1].content == "Hello!")
+    #expect(request.messages[1].textContent == "Hello!")
 }
 
 @Test func chatConfigRequest_openAI_usesMaxCompletionTokens() {
@@ -233,7 +233,7 @@ import Testing
     #expect(request.system == "You are helpful")
     #expect(request.messages.count == 1)
     #expect(request.messages[0].role == .user)
-    #expect(request.messages[0].content == "Hello!")
+    #expect(request.messages[0].textContent == "Hello!")
 }
 
 @Test func chatConfigRequest_anthropic_usesMaxTokens() {
@@ -508,5 +508,5 @@ import Testing
     #expect(request.system == nil)
     #expect(request.systemBlocks == nil)
     #expect(request.messages[0].role == .system)
-    #expect(request.messages[0].content == "You are helpful")
+    #expect(request.messages[0].textContent == "You are helpful")
 }

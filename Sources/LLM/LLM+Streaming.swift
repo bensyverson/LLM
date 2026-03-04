@@ -64,6 +64,29 @@ public extension LLM {
         let updated = conversation.addingUserMessage(userMessage)
         return streamChat(conversation: updated)
     }
+
+    /// Starts a new streaming conversation with multimodal content.
+    func streamConversation(
+        systemPrompt: String,
+        userMessage: [OpenAICompatibleAPI.ContentPart],
+        configuration: ConversationConfiguration = .init()
+    ) -> AsyncThrowingStream<StreamEvent, Error> {
+        let conversation = Conversation(
+            systemPrompt: systemPrompt,
+            messages: [OpenAICompatibleAPI.ChatMessage(content: userMessage, role: .user)],
+            configuration: configuration
+        )
+        return streamChat(conversation: conversation)
+    }
+
+    /// Continues an existing conversation with multimodal content, streaming the response.
+    func streamContinueConversation(
+        _ conversation: Conversation,
+        userMessage: [OpenAICompatibleAPI.ContentPart]
+    ) -> AsyncThrowingStream<StreamEvent, Error> {
+        let updated = conversation.addingUserMessage(userMessage)
+        return streamChat(conversation: updated)
+    }
 }
 
 // MARK: - Internal Implementation
@@ -83,8 +106,19 @@ extension LLM {
         let tokenCount = Int(Double(conversation.systemPrompt.count + messageTextLength) / 2.0)
         try await chatRateLimiter.acquire(tokens: tokenCount)
 
+        // Pre-process: non-vision fallback and image resizing
+        let model = conversation.configuration.model ?? provider.model(type: conversation.configuration.modelType, inference: conversation.configuration.inference)
+        let hasMedia = conversation.messages.contains { $0.hasMedia }
+        var effectiveConversation = conversation
+
+        if hasMedia && model.supportsVision == false {
+            effectiveConversation = try await strippingMedia(conversation, using: imageDescriber)
+        } else if hasMedia, let maxEdge = model.maxImageLongEdge, let resizer = imageResizer {
+            effectiveConversation = try await resizingImages(in: effectiveConversation, maxLongEdge: maxEdge, using: resizer)
+        }
+
         // Build request with streaming enabled
-        var request = conversation.request(for: provider)
+        var request = effectiveConversation.request(for: provider)
         request.stream = true
         if provider.isOpenAI {
             request.stream_options = OpenAICompatibleAPI.StreamOptions(include_usage: true)
@@ -144,7 +178,7 @@ extension LLM {
         let rawResponse = accumulator.buildResponse(isAnthropic: isAnthropic)
 
         let text = rawResponse.content?.first(where: { $0.type == .text })?.text
-            ?? rawResponse.choices?.first?.message.content
+            ?? rawResponse.choices?.first?.message.textContent
 
         let thinking = rawResponse.content?.first(where: { $0.type == .thinking })?.thinking
             ?? rawResponse.choices?.first?.message.reasoning_content

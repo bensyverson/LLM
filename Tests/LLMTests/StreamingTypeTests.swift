@@ -177,7 +177,7 @@ import Testing
     #expect(acc.completionTokens == 2)
 
     let response = acc.buildResponse(isAnthropic: false)
-    #expect(response.choices?.first?.message.content == "Hello world")
+    #expect(response.choices?.first?.message.textContent == "Hello world")
     #expect(response.choices?.first?.finish_reason == "stop")
     #expect(response.usage.prompt_tokens == 10)
     #expect(response.usage.completion_tokens == 2)
@@ -250,7 +250,7 @@ import Testing
 
     let response = acc.buildResponse(isAnthropic: false)
     #expect(response.choices?.first?.message.reasoning_content == "Thinking...")
-    #expect(response.choices?.first?.message.content == "Answer")
+    #expect(response.choices?.first?.message.textContent == "Answer")
 }
 
 @Test func accumulator_anthropic_textOnly() throws {
@@ -387,7 +387,7 @@ import Testing
     }
 
     let response = acc.buildResponse(isAnthropic: false)
-    #expect(response.choices?.first?.message.content == "Hi")
+    #expect(response.choices?.first?.message.textContent == "Hi")
     #expect(response.usage.prompt_tokens == nil)
     #expect(response.usage.completion_tokens == nil)
 }

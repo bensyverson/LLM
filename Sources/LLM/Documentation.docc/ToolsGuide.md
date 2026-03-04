@@ -72,3 +72,21 @@ Control how the model uses tools with ``LLM/LLM/OpenAICompatibleAPI/ToolChoice``
 - `.required` — The model must call at least one tool.
 - `.none` — The model must not call any tools.
 - `.tool(name:)` — The model must call the specific named tool.
+
+### Images in tool results
+
+Anthropic supports returning images in tool results, which is useful for tools that
+generate screenshots or charts. Use the `[ContentPart]` overload:
+
+```swift
+let updated = result.conversation.addingToolResultMessage(
+    toolCallId: call.id,
+    content: [
+        .text("Here is the screenshot"),
+        .image(data: screenshotData, mediaType: "image/png"),
+    ]
+)
+```
+
+> Note: OpenAI only supports text in tool results. When sending to OpenAI, image parts
+> in tool results are automatically converted to text placeholders.

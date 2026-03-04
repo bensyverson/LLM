@@ -58,3 +58,18 @@ let stream = openai.streamContinueConversation(
 
 The `.completed` event is always the last event in the stream and contains the same
 ``LLM/LLM/ConversationResponse`` you would get from the non-streaming API.
+
+### Multimodal messages
+
+Streaming works identically with multimodal messages — no special handling is needed.
+Use the `[ContentPart]` overloads to include images in streamed conversations:
+
+```swift
+let stream = openai.streamConversation(
+    systemPrompt: "You are a helpful assistant.",
+    userMessage: [
+        .text("What's in this image?"),
+        .image(data: imageData, mediaType: "image/jpeg"),
+    ]
+)
+```

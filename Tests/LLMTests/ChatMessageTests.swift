@@ -14,7 +14,7 @@ import Testing
 @Test func chatMessage_backwardCompatibleInit() {
     let message = LLM.OpenAICompatibleAPI.ChatMessage(content: "Hello", role: .user)
 
-    #expect(message.content == "Hello")
+    #expect(message.textContent == "Hello")
     #expect(message.role == .user)
     #expect(message.name == nil)
     #expect(message.tool_calls == nil)
@@ -28,7 +28,7 @@ import Testing
         name: "test_user"
     )
 
-    #expect(message.content == "Hello")
+    #expect(message.textContent == "Hello")
     #expect(message.role == .user)
     #expect(message.name == "test_user")
 }
@@ -40,7 +40,7 @@ import Testing
         tool_calls: []
     )
 
-    #expect(message.content == nil)
+    #expect(message.content.isEmpty)
     #expect(message.role == .assistant)
     #expect(message.tool_calls != nil)
 }
@@ -61,7 +61,7 @@ import Testing
         tool_calls: [toolCall]
     )
 
-    #expect(message.content == nil)
+    #expect(message.content.isEmpty)
     #expect(message.tool_calls?.count == 1)
     #expect(message.tool_calls?[0].id == "call_123")
 }
@@ -73,7 +73,7 @@ import Testing
         tool_call_id: "call_123"
     )
 
-    #expect(message.content == "{\"temperature\":72}")
+    #expect(message.textContent == "{\"temperature\":72}")
     #expect(message.role == .tool)
     #expect(message.tool_call_id == "call_123")
 }

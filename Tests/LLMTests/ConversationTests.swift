@@ -16,7 +16,7 @@ import Testing
     let updated = conversation.addingUserMessage("Hello!")
 
     #expect(updated.messages.count == 1)
-    #expect(updated.messages[0].content == "Hello!")
+    #expect(updated.messages[0].textContent == "Hello!")
     #expect(updated.messages[0].role == .user)
 }
 
@@ -26,8 +26,8 @@ import Testing
     conversation = conversation.addingUserMessage("Second")
 
     #expect(conversation.messages.count == 2)
-    #expect(conversation.messages[0].content == "First")
-    #expect(conversation.messages[1].content == "Second")
+    #expect(conversation.messages[0].textContent == "First")
+    #expect(conversation.messages[1].textContent == "Second")
 }
 
 @Test func conversation_addingAssistantMessage_appendsMessage() {
@@ -35,7 +35,7 @@ import Testing
     let updated = conversation.addingAssistantMessage("Hello, how can I help?")
 
     #expect(updated.messages.count == 1)
-    #expect(updated.messages[0].content == "Hello, how can I help?")
+    #expect(updated.messages[0].textContent == "Hello, how can I help?")
     #expect(updated.messages[0].role == .assistant)
 }
 
@@ -57,11 +57,11 @@ import Testing
 
     #expect(conversation.messages.count == 3)
     #expect(conversation.messages[0].role == .user)
-    #expect(conversation.messages[0].content == "Question 1")
+    #expect(conversation.messages[0].textContent == "Question 1")
     #expect(conversation.messages[1].role == .assistant)
-    #expect(conversation.messages[1].content == "Answer 1")
+    #expect(conversation.messages[1].textContent == "Answer 1")
     #expect(conversation.messages[2].role == .user)
-    #expect(conversation.messages[2].content == "Question 2")
+    #expect(conversation.messages[2].textContent == "Question 2")
 }
 
 @Test func conversation_originalNotMutated() {
@@ -107,9 +107,9 @@ import Testing
     #expect(request.system == nil)
     #expect(request.messages.count == 2)
     #expect(request.messages[0].role == .system)
-    #expect(request.messages[0].content == "You are helpful")
+    #expect(request.messages[0].textContent == "You are helpful")
     #expect(request.messages[1].role == .user)
-    #expect(request.messages[1].content == "Hello")
+    #expect(request.messages[1].textContent == "Hello")
 }
 
 @Test func conversationRequest_openAI_usesMaxCompletionTokens() {
@@ -222,7 +222,7 @@ import Testing
     #expect(request.system == "You are helpful")
     #expect(request.messages.count == 1)
     #expect(request.messages[0].role == .user)
-    #expect(request.messages[0].content == "Hello")
+    #expect(request.messages[0].textContent == "Hello")
 }
 
 @Test func conversationRequest_anthropic_usesMaxTokens() {
@@ -570,5 +570,5 @@ import Testing
     #expect(request.system == nil)
     #expect(request.systemBlocks == nil)
     #expect(request.messages[0].role == .system)
-    #expect(request.messages[0].content == "You are helpful")
+    #expect(request.messages[0].textContent == "You are helpful")
 }
