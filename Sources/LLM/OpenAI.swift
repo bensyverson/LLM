@@ -141,7 +141,10 @@ public extension LLM {
                 baseURL: URL(string: "https://api.anthropic.com/")!,
                 authMethod: .xApiKey(apiKey: apiKey),
                 chatEndpoint: "v1/messages",
-                headers: ["anthropic-version": "2023-06-01"]
+                headers: [
+                    "anthropic-version": "2023-06-01",
+                    "anthropic-beta": "prompt-caching-2024-07-31",
+                ]
             )
         }
 

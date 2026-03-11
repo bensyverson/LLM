@@ -126,7 +126,7 @@ public extension LLM.ChatConfiguration {
         let systemBlocks: [LLM.OpenAICompatibleAPI.SystemContentBlock]? = (isAnthropic && enableCaching) ? [
             LLM.OpenAICompatibleAPI.SystemContentBlock(
                 text: systemPrompt,
-                cache_control: LLM.OpenAICompatibleAPI.CacheControl(ttl: cacheTTL ?? .fiveMinutes)
+                cache_control: LLM.OpenAICompatibleAPI.CacheControl(ttl: cacheTTL)
             ),
         ] : nil
 

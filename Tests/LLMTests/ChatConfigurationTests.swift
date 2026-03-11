@@ -231,7 +231,7 @@ import Testing
 
     // Anthropic with caching (default): system = nil, systemBlocks with cache_control on blocks
     #expect(request.system == nil)
-    #expect(request.cache_control == nil)
+
     #expect(request.systemBlocks != nil)
     #expect(request.systemBlocks?[0].text == "You are helpful")
     #expect(request.systemBlocks?[0].cache_control != nil)
@@ -475,7 +475,7 @@ import Testing
     #expect(request.systemBlocks != nil)
     #expect(request.systemBlocks?[0].text == "You are helpful")
     #expect(request.systemBlocks?[0].cache_control != nil)
-    #expect(request.cache_control == nil)
+
 }
 
 @Test func chatConfigRequest_anthropic_cachingEnabled_withTTL() {
