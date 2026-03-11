@@ -225,19 +225,15 @@ public extension LLM.Conversation {
         }
         conversationMessages.append(contentsOf: messages)
 
-        // Build system prompt - use array format with cache_control for Anthropic when caching enabled
-        let systemString: String? = (isAnthropic && !configuration.enableCaching) ? systemPrompt : (isAnthropic ? nil : nil)
-        let systemBlocks: [LLM.OpenAICompatibleAPI.SystemContentBlock]? = (isAnthropic && configuration.enableCaching) ? [
-            LLM.OpenAICompatibleAPI.SystemContentBlock(
-                text: systemPrompt,
-                cache_control: LLM.OpenAICompatibleAPI.CacheControl(ttl: configuration.cacheTTL ?? .fiveMinutes)
-            ),
-        ] : nil
+        // Build system prompt and caching
+        let systemString: String? = isAnthropic ? systemPrompt : nil
+        let topLevelCache: LLM.OpenAICompatibleAPI.CacheControl? = (isAnthropic && configuration.enableCaching)
+            ? LLM.OpenAICompatibleAPI.CacheControl(ttl: configuration.cacheTTL ?? .fiveMinutes)
+            : nil
 
         var completion = LLM.OpenAICompatibleAPI.ChatCompletion(
             model: model,
             system: systemString,
-            systemBlocks: systemBlocks,
             messages: conversationMessages,
             response_format: nil,
             temperature: skipTemp ? nil : configuration.temperature,
@@ -252,6 +248,7 @@ public extension LLM.Conversation {
             tools: configuration.tools,
             tool_choice: configuration.toolChoice
         )
+        completion.cache_control = topLevelCache
         completion.useAnthropicToolFormat = isAnthropic
         return completion
     }

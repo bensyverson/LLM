@@ -92,8 +92,9 @@ public extension LLM.OpenAICompatibleAPI {
         }
 
         public var model: ModelName = .gpt35turbo
+        public var cache_control: CacheControl? = nil // Top-level Anthropic caching
         public var system: String? = nil
-        public var systemBlocks: [SystemContentBlock]? = nil // For Anthropic caching
+        public var systemBlocks: [SystemContentBlock]? = nil // For Anthropic per-block caching
         public var messages: [ChatMessage]
         public var response_format: JsonObject? = JsonObject()
         public var temperature: Double? = 1.0
@@ -152,7 +153,7 @@ public extension LLM.OpenAICompatibleAPI {
 
         /// Custom encoding to handle Anthropic's array-based system prompt
         enum CodingKeys: String, CodingKey {
-            case model, system, messages, response_format, temperature
+            case model, cache_control, system, messages, response_format, temperature
             case frequency_penalty, top_p, max_tokens, max_completion_tokens
             case stop, stop_sequences, thinking, reasoning_effort, tools, tool_choice
             case stream, stream_options
@@ -161,6 +162,7 @@ public extension LLM.OpenAICompatibleAPI {
         public func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
             try container.encode(model, forKey: .model)
+            try container.encodeIfPresent(cache_control, forKey: .cache_control)
 
             // For Anthropic with caching, use systemBlocks (array format)
             // Otherwise use standard string system prompt

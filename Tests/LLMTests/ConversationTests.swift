@@ -218,11 +218,10 @@ import Testing
     let provider = LLM.Provider.anthropic(apiKey: "test")
     let request = conversation.request(for: provider)
 
-    // Anthropic with caching (default): system in systemBlocks, not in messages
-    #expect(request.system == nil)
-    #expect(request.systemBlocks?.count == 1)
-    #expect(request.systemBlocks?[0].text == "You are helpful")
-    #expect(request.systemBlocks?[0].cache_control != nil)
+    // Anthropic with caching (default): system as string, cache_control at top level
+    #expect(request.system == "You are helpful")
+    #expect(request.cache_control != nil)
+    #expect(request.systemBlocks == nil)
     #expect(request.messages.count == 1)
     #expect(request.messages[0].role == .user)
 }
@@ -393,11 +392,9 @@ import Testing
     // Verify model
     #expect(json["model"] as? String == "claude-haiku-4-5")
 
-    // Verify system is in array format with cache_control (caching enabled by default)
-    let systemBlocks = try #require(json["system"] as? [[String: Any]])
-    #expect(systemBlocks.count == 1)
-    #expect(systemBlocks[0]["text"] as? String == "You are a helpful assistant")
-    #expect(systemBlocks[0]["cache_control"] != nil)
+    // Verify system is a plain string (caching uses top-level cache_control)
+    #expect(json["system"] as? String == "You are a helpful assistant")
+    #expect(json["cache_control"] != nil)
 
     // Verify messages array (should NOT include system message)
     // Anthropic uses content block format: [{"type": "text", "text": "..."}]
@@ -538,11 +535,9 @@ import Testing
     let provider = LLM.Provider.anthropic(apiKey: "test")
     let request = conversation.request(for: provider)
 
-    #expect(request.system == nil)
-    #expect(request.systemBlocks != nil)
-    #expect(request.systemBlocks?.count == 1)
-    #expect(request.systemBlocks?[0].text == "You are helpful")
-    #expect(request.systemBlocks?[0].cache_control != nil)
+    #expect(request.system == "You are helpful")
+    #expect(request.systemBlocks == nil)
+    #expect(request.cache_control != nil)
 }
 
 @Test func conversationRequest_anthropic_cachingEnabled_withTTL() {
@@ -558,7 +553,7 @@ import Testing
     let provider = LLM.Provider.anthropic(apiKey: "test")
     let request = conversation.request(for: provider)
 
-    #expect(request.systemBlocks?[0].cache_control?.ttl == .fiveMinutes)
+    #expect(request.cache_control?.ttl == .fiveMinutes)
 }
 
 @Test func conversationRequest_openAI_cachingHasNoEffect() {
