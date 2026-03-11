@@ -230,7 +230,7 @@ public extension LLM.Conversation {
         let systemBlocks: [LLM.OpenAICompatibleAPI.SystemContentBlock]? = (isAnthropic && configuration.enableCaching) ? [
             LLM.OpenAICompatibleAPI.SystemContentBlock(
                 text: systemPrompt,
-                cache_control: LLM.OpenAICompatibleAPI.CacheControl(ttl: configuration.cacheTTL)
+                cache_control: LLM.OpenAICompatibleAPI.CacheControl(ttl: configuration.cacheTTL ?? .fiveMinutes)
             ),
         ] : nil
 

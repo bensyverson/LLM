@@ -336,7 +336,7 @@ import Testing
 @Test func cacheControl_defaults() {
     let cache = LLM.OpenAICompatibleAPI.CacheControl()
     #expect(cache.type == .ephemeral)
-    #expect(cache.ttl == nil)
+    #expect(cache.ttl == .fiveMinutes)
 }
 
 @Test func cacheControl_withTTL() {

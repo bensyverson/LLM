@@ -22,9 +22,9 @@ public extension LLM.OpenAICompatibleAPI {
         }
 
         public var type: CacheType = .ephemeral
-        public var ttl: TTL?
+        public var ttl: TTL
 
-        public init(type: CacheType = .ephemeral, ttl: TTL? = nil) {
+        public init(type: CacheType = .ephemeral, ttl: TTL = .fiveMinutes) {
             self.type = type
             self.ttl = ttl
         }
