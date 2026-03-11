@@ -121,15 +121,19 @@ public extension LLM.ChatConfiguration {
             LLM.OpenAICompatibleAPI.ChatMessage(content: user, role: .user),
         ]
 
-        // Build system prompt and caching
-        let systemString: String? = isAnthropic ? systemPrompt : nil
-        let topLevelCache: LLM.OpenAICompatibleAPI.CacheControl? = (isAnthropic && enableCaching)
-            ? LLM.OpenAICompatibleAPI.CacheControl(ttl: cacheTTL ?? .fiveMinutes)
-            : nil
+        // Build system prompt - use array format with per-block cache_control for Anthropic
+        let systemString: String? = (isAnthropic && !enableCaching) ? systemPrompt : (isAnthropic ? nil : nil)
+        let systemBlocks: [LLM.OpenAICompatibleAPI.SystemContentBlock]? = (isAnthropic && enableCaching) ? [
+            LLM.OpenAICompatibleAPI.SystemContentBlock(
+                text: systemPrompt,
+                cache_control: LLM.OpenAICompatibleAPI.CacheControl(ttl: cacheTTL ?? .fiveMinutes)
+            ),
+        ] : nil
 
-        var completion = LLM.OpenAICompatibleAPI.ChatCompletion(
+        return LLM.OpenAICompatibleAPI.ChatCompletion(
             model: model,
             system: systemString,
+            systemBlocks: systemBlocks,
             messages: messages,
             response_format: nil,
             temperature: skipTemp ? nil : temperature,
@@ -142,7 +146,5 @@ public extension LLM.ChatConfiguration {
             thinking: thinking,
             reasoning_effort: isAnthropic ? nil : effectiveReasoningEffort
         )
-        completion.cache_control = topLevelCache
-        return completion
     }
 }

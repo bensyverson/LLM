@@ -229,10 +229,12 @@ import Testing
     let provider = LLM.Provider.anthropic(apiKey: "test")
     let request = config.request(for: provider)
 
-    // Anthropic with caching (default): system as string, cache_control at top level
-    #expect(request.system == "You are helpful")
-    #expect(request.cache_control != nil)
-    #expect(request.systemBlocks == nil)
+    // Anthropic with caching (default): system = nil, systemBlocks with cache_control on blocks
+    #expect(request.system == nil)
+    #expect(request.cache_control == nil)
+    #expect(request.systemBlocks != nil)
+    #expect(request.systemBlocks?[0].text == "You are helpful")
+    #expect(request.systemBlocks?[0].cache_control != nil)
     #expect(request.messages.count == 1)
     #expect(request.messages[0].role == .user)
 }
@@ -468,10 +470,12 @@ import Testing
     let provider = LLM.Provider.anthropic(apiKey: "test")
     let request = config.request(for: provider)
 
-    // With caching, should use string system + top-level cache_control
-    #expect(request.system == "You are helpful")
-    #expect(request.systemBlocks == nil)
-    #expect(request.cache_control != nil)
+    // With caching, should use systemBlocks with per-block cache_control
+    #expect(request.system == nil)
+    #expect(request.systemBlocks != nil)
+    #expect(request.systemBlocks?[0].text == "You are helpful")
+    #expect(request.systemBlocks?[0].cache_control != nil)
+    #expect(request.cache_control == nil)
 }
 
 @Test func chatConfigRequest_anthropic_cachingEnabled_withTTL() {
@@ -487,7 +491,7 @@ import Testing
     let provider = LLM.Provider.anthropic(apiKey: "test")
     let request = config.request(for: provider)
 
-    #expect(request.cache_control?.ttl == .oneHour)
+    #expect(request.systemBlocks?[0].cache_control?.ttl == .oneHour)
 }
 
 @Test func chatConfigRequest_openAI_cachingHasNoEffect() {
