@@ -83,6 +83,6 @@ See <doc:MultimodalContent> for the full guide on multimodal support.
 
 ### Choosing a model
 
-LLM uses ``LLM/LLM/ModelType`` (`.fast` or `.flagship`) and ``LLM/LLM/InferenceType``
+LLM uses ``LLM/LLM/ModelType`` (`.fast`, `.standard` or `.flagship`) and ``LLM/LLM/InferenceType``
 (`.direct` or `.reasoning`) to select the right model for each provider. This lets
 you write provider-agnostic code that automatically picks the best model available.

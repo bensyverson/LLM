@@ -218,11 +218,13 @@ import Testing
     let provider = LLM.Provider.anthropic(apiKey: "test")
     let request = conversation.request(for: provider)
 
-    // Anthropic: system should be in system field, not in messages
-    #expect(request.system == "You are helpful")
+    // Anthropic with caching (default): system in systemBlocks, not in messages
+    #expect(request.system == nil)
+    #expect(request.systemBlocks?.count == 1)
+    #expect(request.systemBlocks?[0].text == "You are helpful")
+    #expect(request.systemBlocks?[0].cache_control != nil)
     #expect(request.messages.count == 1)
     #expect(request.messages[0].role == .user)
-    #expect(request.messages[0].textContent == "Hello")
 }
 
 @Test func conversationRequest_anthropic_usesMaxTokens() {
@@ -391,8 +393,11 @@ import Testing
     // Verify model
     #expect(json["model"] as? String == "claude-haiku-4-5")
 
-    // Verify system is in dedicated field for Anthropic
-    #expect(json["system"] as? String == "You are a helpful assistant")
+    // Verify system is in array format with cache_control (caching enabled by default)
+    let systemBlocks = try #require(json["system"] as? [[String: Any]])
+    #expect(systemBlocks.count == 1)
+    #expect(systemBlocks[0]["text"] as? String == "You are a helpful assistant")
+    #expect(systemBlocks[0]["cache_control"] != nil)
 
     // Verify messages array (should NOT include system message)
     // Anthropic uses content block format: [{"type": "text", "text": "..."}]
@@ -495,7 +500,7 @@ import Testing
 @Test func conversationConfiguration_cachingDefaults() {
     let config = LLM.ConversationConfiguration()
 
-    #expect(config.enableCaching == false)
+    #expect(config.enableCaching == true)
     #expect(config.cacheTTL == nil)
 }
 

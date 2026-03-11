@@ -100,7 +100,7 @@ public extension LLM {
         public var maxReasoningTokens: Int?
         public var reasoningEffort: LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort?
         public var stopTokens: [String]?
-        public var enableCaching: Bool = false
+        public var enableCaching: Bool = true
         public var cacheTTL: LLM.OpenAICompatibleAPI.CacheControl.TTL?
         public var tools: [LLM.OpenAICompatibleAPI.ToolDefinition]?
         public var toolChoice: LLM.OpenAICompatibleAPI.ToolChoice?
@@ -117,7 +117,7 @@ public extension LLM {
             maxReasoningTokens: Int? = nil,
             reasoningEffort: LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort? = nil,
             stopTokens: [String]? = nil,
-            enableCaching: Bool = false,
+            enableCaching: Bool = true,
             cacheTTL: LLM.OpenAICompatibleAPI.CacheControl.TTL? = nil,
             tools: [LLM.OpenAICompatibleAPI.ToolDefinition]? = nil,
             toolChoice: LLM.OpenAICompatibleAPI.ToolChoice? = nil

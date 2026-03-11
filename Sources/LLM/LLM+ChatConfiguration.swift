@@ -17,7 +17,7 @@ public extension LLM {
         public var systemPrompt: String
         /// The user's message.
         public var user: String
-        /// The model tier to use (`.fast` or `.flagship`).
+        /// The model tier to use (`.fast`, `.standard` or `.flagship`).
         public var modelType: ModelType = .fast
         /// The inference mode (`.direct` or `.reasoning`).
         public var inference: InferenceType = .direct
@@ -32,7 +32,7 @@ public extension LLM {
         public var maxReasoningTokens: Int?
         public var reasoningEffort: LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort?
         public var stopTokens: [String]?
-        public var enableCaching: Bool = false
+        public var enableCaching: Bool = true
         public var cacheTTL: LLM.OpenAICompatibleAPI.CacheControl.TTL?
 
         public init(
@@ -49,7 +49,7 @@ public extension LLM {
             maxReasoningTokens: Int? = nil,
             reasoningEffort: LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort? = nil,
             stopTokens: [String]? = nil,
-            enableCaching: Bool = false,
+            enableCaching: Bool = true,
             cacheTTL: LLM.OpenAICompatibleAPI.CacheControl.TTL? = nil
         ) {
             self.systemPrompt = systemPrompt

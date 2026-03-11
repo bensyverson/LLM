@@ -229,11 +229,13 @@ import Testing
     let provider = LLM.Provider.anthropic(apiKey: "test")
     let request = config.request(for: provider)
 
-    // Anthropic: system in system field, only user in messages
-    #expect(request.system == "You are helpful")
+    // Anthropic with caching (default): system in systemBlocks, only user in messages
+    #expect(request.system == nil)
+    #expect(request.systemBlocks?.count == 1)
+    #expect(request.systemBlocks?[0].text == "You are helpful")
+    #expect(request.systemBlocks?[0].cache_control != nil)
     #expect(request.messages.count == 1)
     #expect(request.messages[0].role == .user)
-    #expect(request.messages[0].textContent == "Hello!")
 }
 
 @Test func chatConfigRequest_anthropic_usesMaxTokens() {
@@ -419,8 +421,8 @@ import Testing
         inference: .direct
     )
 
-    // Caching should be disabled by default
-    #expect(config.enableCaching == false)
+    // Caching should be enabled by default
+    #expect(config.enableCaching == true)
     #expect(config.cacheTTL == nil)
 }
 
