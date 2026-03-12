@@ -114,6 +114,10 @@ public extension LLM.OpenAICompatibleAPI {
         /// rather than OpenAI's (type/function wrapper). Set by `request(for:)`.
         public var useAnthropicToolFormat: Bool = false
 
+        /// When set, the last content block of the penultimate Anthropic message
+        /// is wrapped with this cache control, enabling conversation history caching.
+        public var conversationCacheControl: CacheControl?
+
         public init(
             model: LLM.OpenAICompatibleAPI.ModelName = .gpt35turbo,
             system: String? = nil,
@@ -171,7 +175,11 @@ public extension LLM.OpenAICompatibleAPI {
             }
 
             if useAnthropicToolFormat {
-                try container.encode(AnthropicMessageConverter.convert(messages), forKey: .messages)
+                var anthropicMessages = AnthropicMessageConverter.convert(messages)
+                if let cacheControl = conversationCacheControl, anthropicMessages.count >= 2 {
+                    anthropicMessages[anthropicMessages.count - 2].lastBlockCacheControl = cacheControl
+                }
+                try container.encode(anthropicMessages, forKey: .messages)
             } else {
                 try container.encode(messages, forKey: .messages)
             }

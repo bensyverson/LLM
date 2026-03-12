@@ -62,6 +62,31 @@ public extension LLM.OpenAICompatibleAPI {
         struct Message: Encodable {
             let role: String
             let content: [ContentBlock]
+            /// When set, the last content block is encoded with this cache control.
+            var lastBlockCacheControl: CacheControl?
+
+            enum CodingKeys: String, CodingKey {
+                case role, content
+            }
+
+            func encode(to encoder: Encoder) throws {
+                var container = encoder.container(keyedBy: CodingKeys.self)
+                try container.encode(role, forKey: .role)
+                if let cacheControl = lastBlockCacheControl, !content.isEmpty {
+                    // Encode all blocks normally except the last, which gets cache_control
+                    var contentContainer = container.nestedUnkeyedContainer(forKey: .content)
+                    for (index, block) in content.enumerated() {
+                        let blockEncoder = contentContainer.superEncoder()
+                        if index == content.count - 1 {
+                            try block.encode(to: blockEncoder, cacheControl: cacheControl)
+                        } else {
+                            try block.encode(to: blockEncoder)
+                        }
+                    }
+                } else {
+                    try container.encode(content, forKey: .content)
+                }
+            }
         }
 
         /// A content block in an Anthropic message.
@@ -73,6 +98,10 @@ public extension LLM.OpenAICompatibleAPI {
             case toolResult(toolUseId: String, content: [ContentBlock])
 
             func encode(to encoder: Encoder) throws {
+                try encode(to: encoder, cacheControl: nil)
+            }
+
+            func encode(to encoder: Encoder, cacheControl: CacheControl?) throws {
                 var container = encoder.container(keyedBy: CodingKeys.self)
                 switch self {
                 case let .text(text):
@@ -104,10 +133,11 @@ public extension LLM.OpenAICompatibleAPI {
                     try container.encode(toolUseId, forKey: .tool_use_id)
                     try container.encode(content, forKey: .content)
                 }
+                try container.encodeIfPresent(cacheControl, forKey: .cache_control)
             }
 
             enum CodingKeys: String, CodingKey {
-                case type, text, id, name, input, tool_use_id, content, source, title
+                case type, text, id, name, input, tool_use_id, content, source, title, cache_control
             }
 
             struct ImageSource: Encodable {

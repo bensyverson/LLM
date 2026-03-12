@@ -9,6 +9,29 @@ import Foundation
 @testable import LLM
 import Testing
 
+// MARK: - ContentBlock Cache Control Tests
+
+@Test func contentBlock_cached_encodesWithCacheControl() throws {
+    let block = LLM.OpenAICompatibleAPI.AnthropicMessageConverter.ContentBlock.text("hello")
+    let cacheControl = LLM.OpenAICompatibleAPI.CacheControl()
+    let encoder = JSONEncoder()
+    // Use a wrapper to call encode(to:cacheControl:) via a custom Encodable
+    struct Wrapper: Encodable {
+        let block: LLM.OpenAICompatibleAPI.AnthropicMessageConverter.ContentBlock
+        let cacheControl: LLM.OpenAICompatibleAPI.CacheControl
+        func encode(to encoder: Encoder) throws {
+            try block.encode(to: encoder, cacheControl: cacheControl)
+        }
+    }
+    let data = try encoder.encode(Wrapper(block: block, cacheControl: cacheControl))
+    let json = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+
+    #expect(json["type"] as? String == "text")
+    #expect(json["text"] as? String == "hello")
+    let cc = try #require(json["cache_control"] as? [String: Any])
+    #expect(cc["type"] as? String == "ephemeral")
+}
+
 // MARK: - ChatMessage Tests
 
 @Test func chatMessage_backwardCompatibleInit() {

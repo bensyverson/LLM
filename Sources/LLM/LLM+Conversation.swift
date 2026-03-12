@@ -253,6 +253,9 @@ public extension LLM.Conversation {
             tool_choice: configuration.toolChoice
         )
         completion.useAnthropicToolFormat = isAnthropic
+        if isAnthropic, configuration.enableCaching {
+            completion.conversationCacheControl = LLM.OpenAICompatibleAPI.CacheControl(ttl: configuration.cacheTTL)
+        }
         return completion
     }
 }

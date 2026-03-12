@@ -546,7 +546,6 @@ import Testing
     #expect(request.systemBlocks != nil)
     #expect(request.systemBlocks?[0].text == "You are helpful")
     #expect(request.systemBlocks?[0].cache_control != nil)
-
 }
 
 @Test func conversationRequest_anthropic_cachingEnabled_withTTL() {
@@ -563,6 +562,112 @@ import Testing
     let request = conversation.request(for: provider)
 
     #expect(request.systemBlocks?[0].cache_control?.ttl == .fiveMinutes)
+}
+
+@Test func conversationRequest_cachesConversationHistory_anthropic() throws {
+    let conversation = LLM.Conversation(systemPrompt: "You are helpful")
+        .addingUserMessage("What is 2+2?")
+        .addingAssistantMessage("4")
+        .addingUserMessage("And 3+3?")
+
+    let request = conversation.request(for: .anthropic(apiKey: "test"))
+
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = [.sortedKeys]
+    let data = try encoder.encode(request)
+    let json = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+    let messages = try #require(json["messages"] as? [[String: Any]])
+
+    // 3 Anthropic messages: user, assistant, user
+    #expect(messages.count == 3)
+
+    // Penultimate message (assistant, index 1) should have cache_control on its last content block
+    let penultimateContent = try #require(messages[1]["content"] as? [[String: Any]])
+    let lastBlock = try #require(penultimateContent.last)
+    let cacheControl = try #require(lastBlock["cache_control"] as? [String: Any])
+    #expect(cacheControl["type"] as? String == "ephemeral")
+
+    // Last message (user, index 2) should NOT have cache_control
+    let lastContent = try #require(messages[2]["content"] as? [[String: Any]])
+    for block in lastContent {
+        #expect(block["cache_control"] == nil)
+    }
+}
+
+@Test func conversationRequest_noCacheOnMessages_whenCachingDisabled() throws {
+    let config = LLM.ConversationConfiguration(enableCaching: false)
+    let conversation = LLM.Conversation(
+        systemPrompt: "System",
+        configuration: config
+    )
+    .addingUserMessage("Hello")
+    .addingAssistantMessage("Hi")
+    .addingUserMessage("Bye")
+
+    let request = conversation.request(for: .anthropic(apiKey: "test"))
+
+    let data = try JSONEncoder().encode(request)
+    let json = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+    let messages = try #require(json["messages"] as? [[String: Any]])
+
+    // No message should have cache_control on any content block
+    for message in messages {
+        if let content = message["content"] as? [[String: Any]] {
+            for block in content {
+                #expect(block["cache_control"] == nil)
+            }
+        }
+    }
+}
+
+@Test func conversationRequest_noCacheOnMessages_singleMessage() throws {
+    let conversation = LLM.Conversation(systemPrompt: "System")
+        .addingUserMessage("Hello")
+
+    let request = conversation.request(for: .anthropic(apiKey: "test"))
+
+    let data = try JSONEncoder().encode(request)
+    let json = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+    let messages = try #require(json["messages"] as? [[String: Any]])
+
+    // Only 1 message → no penultimate → no message-level cache breakpoint
+    #expect(messages.count == 1)
+    let content = try #require(messages[0]["content"] as? [[String: Any]])
+    for block in content {
+        #expect(block["cache_control"] == nil)
+    }
+}
+
+@Test func conversationRequest_cachesToolResultTurn_anthropic() throws {
+    let toolCall = LLM.OpenAICompatibleAPI.ToolCall(
+        id: "call_123",
+        type: "function",
+        function: LLM.OpenAICompatibleAPI.FunctionCall(
+            name: "get_weather",
+            arguments: "{\"city\":\"Seattle\"}"
+        )
+    )
+    let conversation = LLM.Conversation(systemPrompt: "You are helpful")
+        .addingUserMessage("What's the weather?")
+        .addingAssistantToolCallMessage([toolCall])
+        .addingToolResultMessage(toolCallId: "call_123", content: "Sunny, 72°F")
+        .addingUserMessage("Thanks!")
+
+    let request = conversation.request(for: .anthropic(apiKey: "test"))
+
+    let data = try JSONEncoder().encode(request)
+    let json = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+    let messages = try #require(json["messages"] as? [[String: Any]])
+
+    // Anthropic merges: user (What's the weather?), assistant (tool_use), user (tool_result + Thanks!)
+    // Wait — tool_result is role: user, and "Thanks!" is also role: user, so they merge.
+    // So: 3 messages: user, assistant, user(tool_result + text)
+    #expect(messages.count == 3)
+
+    // Penultimate = assistant (index 1) — should have cache_control on last block
+    let penultimateContent = try #require(messages[1]["content"] as? [[String: Any]])
+    let lastBlock = try #require(penultimateContent.last)
+    #expect(lastBlock["cache_control"] != nil)
 }
 
 @Test func conversationRequest_openAI_cachingHasNoEffect() {
