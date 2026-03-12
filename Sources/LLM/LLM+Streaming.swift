@@ -124,7 +124,7 @@ extension LLM {
             request.stream_options = OpenAICompatibleAPI.StreamOptions(include_usage: true)
         }
 
-        let jsonData = try JSONEncoder().encode(request)
+        let jsonData = try requestEncoder.encode(request)
 
         // Platform-conditional streaming setup
         #if canImport(AsyncHTTPClient)

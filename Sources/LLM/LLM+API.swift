@@ -30,8 +30,7 @@ public extension LLM {
             encoding_format: .float,
             dimensions: dimensions
         )
-        let encoder = JSONEncoder()
-        let json = try encoder.encode(request)
+        let json = try requestEncoder.encode(request)
         return try await api.embedding(for: json)
     }
 
@@ -45,7 +44,7 @@ public extension LLM {
         try await chatRateLimiter.acquire(tokens: tokenCount)
 
         let request = configuration.request(for: provider)
-        let jsonData = try JSONEncoder().encode(request)
+        let jsonData = try requestEncoder.encode(request)
         let (response, httpResponse) = try await api.chatCompletion(with: jsonData)
 
         // Adapt rate limits from response headers
@@ -106,7 +105,7 @@ public extension LLM {
         }
 
         let request = effectiveConversation.request(for: provider)
-        let jsonData = try JSONEncoder().encode(request)
+        let jsonData = try requestEncoder.encode(request)
         let (response, httpResponse) = try await api.chatCompletion(with: jsonData)
 
         // Adapt rate limits from response headers

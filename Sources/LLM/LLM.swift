@@ -60,6 +60,13 @@ public actor LLM {
     /// Maximum entries in the resize cache before FIFO eviction.
     let resizeCacheMaxSize: Int = 50
 
+    /// Shared encoder with sorted keys for stable JSON output (required for prompt caching).
+    nonisolated let requestEncoder: JSONEncoder = {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        return encoder
+    }()
+
     private let session: URLSession = {
         let configuration = URLSessionConfiguration.default
         configuration.timeoutIntervalForRequest = 120

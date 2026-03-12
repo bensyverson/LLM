@@ -27,6 +27,10 @@ let package = Package(
                          condition: .when(platforms: [.linux])),
             ]
         ),
+        .executableTarget(
+            name: "llm-cli",
+            dependencies: ["LLM"]
+        ),
         .testTarget(
             name: "LLMTests",
             dependencies: ["LLM"],
