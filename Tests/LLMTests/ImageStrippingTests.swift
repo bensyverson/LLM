@@ -120,7 +120,7 @@ import Testing
     let llm = LLM(provider: .openAI(apiKey: "test"))
 
     let describer: @Sendable (Data, String) async throws -> String = { _, _ in
-        return "A generated description"
+        "A generated description"
     }
 
     let conversation = LLM.Conversation(systemPrompt: "System")

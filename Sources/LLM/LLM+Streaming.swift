@@ -111,7 +111,7 @@ extension LLM {
         let hasMedia = conversation.messages.contains { $0.hasMedia }
         var effectiveConversation = conversation
 
-        if hasMedia && model.supportsVision == false {
+        if hasMedia, model.supportsVision == false {
             effectiveConversation = try await strippingMedia(conversation, using: imageDescriber)
         } else if hasMedia, let maxEdge = model.maxImageLongEdge, let resizer = imageResizer {
             effectiveConversation = try await resizingImages(in: effectiveConversation, maxLongEdge: maxEdge, using: resizer)

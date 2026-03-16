@@ -475,7 +475,6 @@ import Testing
     #expect(request.systemBlocks != nil)
     #expect(request.systemBlocks?[0].text == "You are helpful")
     #expect(request.systemBlocks?[0].cache_control != nil)
-
 }
 
 @Test func chatConfigRequest_anthropic_cachingEnabled_withTTL() {

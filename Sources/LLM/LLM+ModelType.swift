@@ -12,8 +12,8 @@ public extension LLM {
     enum ModelType: String, Friendly {
         /// A fast, cost-efficient model (e.g. GPT-5 Mini, Claude Haiku).
         case fast
-		/// A balanced mid-tier model (e.g. Claude Sonnet).
-		case standard
+        /// A balanced mid-tier model (e.g. Claude Sonnet).
+        case standard
         /// The most capable model available (e.g. GPT-5.2, Claude Opus).
         case flagship
     }
@@ -39,8 +39,8 @@ public extension LLM.Provider {
             switch type {
             case .fast:
                 return .gpt5Mini
-			case .standard:
-				return .gpt5Mini
+            case .standard:
+                return .gpt5Mini
             case .flagship:
                 return .gpt52
             }
@@ -48,8 +48,8 @@ public extension LLM.Provider {
             switch type {
             case .fast:
                 return .claude45Haiku
-			case .standard:
-				return .claude4Sonnet
+            case .standard:
+                return .claude4Sonnet
             case .flagship:
                 return .claude46Opus
             }

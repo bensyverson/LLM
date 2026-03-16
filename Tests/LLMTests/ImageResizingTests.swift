@@ -23,7 +23,7 @@ import Testing
 
 // MARK: - Cache Tests
 
-@Test func resizeCache_storeAndRetrieve() async throws {
+@Test func resizeCache_storeAndRetrieve() async {
     let llm = LLM(provider: .openAI(apiKey: "test"))
     let key = LLM.ResizeCacheKey(dataHash: 42, targetWidth: 100, targetHeight: 100)
     let data = Data([0x01, 0x02, 0x03])
@@ -34,7 +34,7 @@ import Testing
     #expect(cached == data)
 }
 
-@Test func resizeCache_missReturnsNil() async throws {
+@Test func resizeCache_missReturnsNil() async {
     let llm = LLM(provider: .openAI(apiKey: "test"))
     let key = LLM.ResizeCacheKey(dataHash: 999, targetWidth: 100, targetHeight: 100)
 
@@ -42,7 +42,7 @@ import Testing
     #expect(cached == nil)
 }
 
-@Test func resizeCache_fifoEviction() async throws {
+@Test func resizeCache_fifoEviction() async {
     let llm = LLM(provider: .openAI(apiKey: "test"))
 
     // Fill cache to max (50 entries)
@@ -87,8 +87,8 @@ import Testing
 @Test func resizingImages_callsResizerForImages() async throws {
     let llm = LLM(provider: .openAI(apiKey: "test"))
 
-    let resizer: @Sendable (Data, String, CGSize) async throws -> Data = { data, _, targetSize in
-        return Data([0xAA, 0xBB]) // "resized" data
+    let resizer: @Sendable (Data, String, CGSize) async throws -> Data = { _, _, _ in
+        Data([0xAA, 0xBB]) // "resized" data
     }
 
     let conversation = LLM.Conversation(systemPrompt: "System")

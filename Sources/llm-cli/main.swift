@@ -143,7 +143,8 @@ let prettyEncoder: JSONEncoder = {
 
 func prettyJSON<T: Encodable>(_ value: T) -> String {
     guard let data = try? prettyEncoder.encode(value),
-          let string = String(data: data, encoding: .utf8) else {
+          let string = String(data: data, encoding: .utf8)
+    else {
         return "<failed to encode JSON>"
     }
     return string
@@ -175,6 +176,7 @@ do {
     )
 
     // MARK: - Raw Response
+
     if rawResponse {
         print("── Raw Response ──")
         print(prettyJSON(response.rawResponse))
@@ -182,6 +184,7 @@ do {
     }
 
     // MARK: - Usage Summary
+
     let usage = response.rawResponse.usage
     print("── Usage ──")
     if let input = usage.input_tokens ?? usage.prompt_tokens {
@@ -202,6 +205,7 @@ do {
     print()
 
     // MARK: - Thinking
+
     if let thinking = response.thinking {
         print("── Thinking ──")
         print(thinking)
@@ -209,6 +213,7 @@ do {
     }
 
     // MARK: - Response Text
+
     if let text = response.text {
         print("── Response ──")
         print(text)
