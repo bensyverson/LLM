@@ -109,6 +109,7 @@ public extension LLM.OpenAICompatibleAPI {
         public var tool_choice: ToolChoice? = nil
         public var stream: Bool? = nil
         public var stream_options: StreamOptions? = nil
+        public var parallel_tool_calls: Bool? = nil
 
         /// When true, tools are encoded in Anthropic's format (name/description/input_schema)
         /// rather than OpenAI's (type/function wrapper). Set by `request(for:)`.
@@ -117,6 +118,8 @@ public extension LLM.OpenAICompatibleAPI {
         /// When set, the last content block of the penultimate Anthropic message
         /// is wrapped with this cache control, enabling conversation history caching.
         public var conversationCacheControl: CacheControl?
+        /// When true, the request is being sent to Mistral's API.
+        public var useMistralFormat: Bool = false
 
         public init(
             model: LLM.OpenAICompatibleAPI.ModelName = .gpt35turbo,
@@ -134,7 +137,8 @@ public extension LLM.OpenAICompatibleAPI {
             thinking: Thinking? = nil,
             reasoning_effort: ReasoningEffort? = nil,
             tools: [ToolDefinition]? = nil,
-            tool_choice: ToolChoice? = nil
+            tool_choice: ToolChoice? = nil,
+            parallel_tool_calls: Bool? = nil
         ) {
             self.model = model
             self.system = system
@@ -152,6 +156,7 @@ public extension LLM.OpenAICompatibleAPI {
             self.reasoning_effort = reasoning_effort
             self.tools = tools
             self.tool_choice = tool_choice
+            self.parallel_tool_calls = parallel_tool_calls
         }
 
         /// Custom encoding to handle Anthropic's array-based system prompt
@@ -159,7 +164,7 @@ public extension LLM.OpenAICompatibleAPI {
             case model, system, messages, response_format, temperature
             case frequency_penalty, top_p, max_tokens, max_completion_tokens
             case stop, stop_sequences, thinking, reasoning_effort, tools, tool_choice
-            case stream, stream_options
+            case stream, stream_options, parallel_tool_calls
         }
 
         public func encode(to encoder: Encoder) throws {
@@ -206,6 +211,7 @@ public extension LLM.OpenAICompatibleAPI {
             }
             try container.encodeIfPresent(stream, forKey: .stream)
             try container.encodeIfPresent(stream_options, forKey: .stream_options)
+            try container.encodeIfPresent(parallel_tool_calls, forKey: .parallel_tool_calls)
         }
     }
 

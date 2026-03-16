@@ -18,6 +18,8 @@ public extension LLM {
         case openAI(apiKey: String)
         /// Sends requests to Anthropic's API (`https://api.anthropic.com/`).
         case anthropic(apiKey: String)
+        /// Sends requests to Mistral's API (`https://api.mistral.ai/`).
+        case mistral(apiKey: String)
         /// Sends requests to `localhost:1234`, the default port for LM Studio.
         case lmStudio
         /// Sends requests to `localhost` on the given port.
@@ -64,6 +66,8 @@ public extension LLM {
             return OpenAICompatibleAPI.openAI(apiKey: apiKey)
         case let .anthropic(apiKey):
             return OpenAICompatibleAPI.anthropic(apiKey: apiKey)
+        case let .mistral(apiKey):
+            return OpenAICompatibleAPI.mistral(apiKey: apiKey)
         case .lmStudio:
             return OpenAICompatibleAPI.localhost(port: 1234)
         case let .other(url, apiKey: apiKey):

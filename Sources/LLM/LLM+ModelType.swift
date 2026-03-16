@@ -53,6 +53,15 @@ public extension LLM.Provider {
             case .flagship:
                 return .claude46Opus
             }
+        case .mistral(apiKey: _):
+            switch type {
+            case .fast:
+                return .mistralSmall
+            case .standard:
+                return .mistralMedium
+            case .flagship:
+                return .mistralLarge
+            }
         case .lmStudio:
             return .placeholder
         case .localhost(port: _):

@@ -37,7 +37,7 @@ guard let message else {
     fputs("""
 
     Options:
-      --provider <name>            Provider: anthropic, openai, local (default: anthropic)
+      --provider <name>            Provider: anthropic, openai, mistral, local (default: anthropic)
       --model <name>               Explicit model name
       --tier <tier>                Model tier: fast, standard, flagship (default: fast)
       --system <path>              System prompt file path
@@ -71,10 +71,16 @@ case "openai":
         exit(1)
     }
     provider = .openAI(apiKey: apiKey)
+case "mistral":
+    guard let apiKey = ProcessInfo.processInfo.environment["MISTRAL_API_KEY"] else {
+        fputs("Error: MISTRAL_API_KEY environment variable not set\n", stderr)
+        exit(1)
+    }
+    provider = .mistral(apiKey: apiKey)
 case "local":
     provider = .lmStudio
 default:
-    fputs("Error: Unknown provider '\(providerName)'. Use: anthropic, openai, local\n", stderr)
+    fputs("Error: Unknown provider '\(providerName)'. Use: anthropic, openai, mistral, local\n", stderr)
     exit(1)
 }
 

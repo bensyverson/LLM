@@ -13,6 +13,7 @@ public extension LLM {
     enum SimpleProvider: Friendly {
         case openAI
         case anthropic
+        case mistral
         case lmStudio
         case localhost(port: Int)
         case other(URL)
@@ -24,6 +25,8 @@ public extension LLM {
                 return .openAI(apiKey: apiKey)
             case .anthropic:
                 return .anthropic(apiKey: apiKey)
+            case .mistral:
+                return .mistral(apiKey: apiKey)
             case .lmStudio:
                 return .lmStudio
             case let .localhost(port: port):
@@ -43,6 +46,8 @@ public extension LLM.Provider {
             return .openAI
         case .anthropic(apiKey: _):
             return .anthropic
+        case .mistral(apiKey: _):
+            return .mistral
         case .lmStudio:
             return .lmStudio
         case let .localhost(port: port):
@@ -60,5 +65,10 @@ public extension LLM.Provider {
     /// Whether this provider sends requests to OpenAI's API.
     var isOpenAI: Bool {
         simpleProvider == .openAI
+    }
+
+    /// Whether this provider sends requests to Mistral's API.
+    var isMistral: Bool {
+        simpleProvider == .mistral
     }
 }

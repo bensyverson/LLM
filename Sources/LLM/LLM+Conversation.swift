@@ -104,6 +104,7 @@ public extension LLM {
         public var cacheTTL: LLM.OpenAICompatibleAPI.CacheControl.TTL?
         public var tools: [LLM.OpenAICompatibleAPI.ToolDefinition]?
         public var toolChoice: LLM.OpenAICompatibleAPI.ToolChoice?
+        public var parallelToolCalls: Bool?
 
         public init(
             modelType: ModelType = .fast,
@@ -120,7 +121,8 @@ public extension LLM {
             enableCaching: Bool = true,
             cacheTTL: LLM.OpenAICompatibleAPI.CacheControl.TTL? = nil,
             tools: [LLM.OpenAICompatibleAPI.ToolDefinition]? = nil,
-            toolChoice: LLM.OpenAICompatibleAPI.ToolChoice? = nil
+            toolChoice: LLM.OpenAICompatibleAPI.ToolChoice? = nil,
+            parallelToolCalls: Bool? = nil
         ) {
             self.modelType = modelType
             self.inference = inference
@@ -137,6 +139,7 @@ public extension LLM {
             self.cacheTTL = cacheTTL
             self.tools = tools
             self.toolChoice = toolChoice
+            self.parallelToolCalls = parallelToolCalls
         }
     }
 
@@ -179,6 +182,7 @@ public extension LLM {
 public extension LLM.Conversation {
     func request(for provider: LLM.Provider) -> LLM.OpenAICompatibleAPI.ChatCompletion {
         let isAnthropic = provider.isAnthropic
+        let isMistral = provider.isMistral
         let isOpenAI = provider.isOpenAI
         let model = configuration.model ?? provider.model(type: configuration.modelType, inference: configuration.inference)
         let isGPT5 = model.isGPT5
@@ -250,9 +254,11 @@ public extension LLM.Conversation {
             thinking: thinking,
             reasoning_effort: isAnthropic ? nil : effectiveReasoningEffort,
             tools: configuration.tools,
-            tool_choice: configuration.toolChoice
+            tool_choice: configuration.toolChoice,
+            parallel_tool_calls: isMistral ? configuration.parallelToolCalls : nil
         )
         completion.useAnthropicToolFormat = isAnthropic
+        completion.useMistralFormat = isMistral
         if isAnthropic, configuration.enableCaching {
             completion.conversationCacheControl = LLM.OpenAICompatibleAPI.CacheControl(ttl: configuration.cacheTTL)
         }

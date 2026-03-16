@@ -90,6 +90,13 @@ public extension LLM {
             public static let claude37SonnetLatest = ModelName(rawValue: "claude-3-7-sonnet-latest")
             public static let claude35HaikuLatest = ModelName(rawValue: "claude-3-5-haiku-latest")
 
+            // MARK: - Mistral
+
+            public static let mistralSmall = ModelName(rawValue: "mistral-small-latest")
+            public static let mistralMedium = ModelName(rawValue: "mistral-medium-latest")
+            public static let mistralLarge = ModelName(rawValue: "mistral-large-latest")
+            public static let devstral = ModelName(rawValue: "devstral-latest")
+
             // MARK: - Computed Properties
 
             /// Whether this model is in the GPT-5 family.
@@ -145,6 +152,14 @@ public extension LLM {
                     "anthropic-version": "2023-06-01",
                     "anthropic-beta": "prompt-caching-2024-07-31",
                 ]
+            )
+        }
+
+        /// Creates a client configured for Mistral's API.
+        public static func mistral(apiKey: String) -> Self {
+            .init(
+                baseURL: URL(string: "https://api.mistral.ai/")!,
+                authMethod: .bearer(apiKey: apiKey)
             )
         }
 
