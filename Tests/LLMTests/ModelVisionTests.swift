@@ -29,6 +29,9 @@ typealias ModelName = LLM.OpenAICompatibleAPI.ModelName
     #expect(ModelName.gpt52.supportsVision == true)
     #expect(ModelName.gpt5Mini.supportsVision == true)
     #expect(ModelName.gpt5Nano.supportsVision == true)
+    #expect(ModelName.gpt54.supportsVision == true)
+    #expect(ModelName.gpt54Mini.supportsVision == true)
+    #expect(ModelName.gpt54Nano.supportsVision == true)
 }
 
 @Test func supportsVision_reasoningModels_returnTrue() {
@@ -44,10 +47,6 @@ typealias ModelName = LLM.OpenAICompatibleAPI.ModelName
     #expect(ModelName.claude45Opus.supportsVision == true)
     #expect(ModelName.claude45Sonnet.supportsVision == true)
     #expect(ModelName.claude45Haiku.supportsVision == true)
-    #expect(ModelName.claude4Opus.supportsVision == true)
-    #expect(ModelName.claude4Sonnet.supportsVision == true)
-    #expect(ModelName.claude37SonnetLatest.supportsVision == true)
-    #expect(ModelName.claude35HaikuLatest.supportsVision == true)
 }
 
 @Test func supportsVision_customClaude_returnTrue() {

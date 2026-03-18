@@ -212,8 +212,8 @@ import Testing
 
     let provider = LLM.Provider.openAI(apiKey: "test")
 
-    #expect(fastConfig.request(for: provider).model == .gpt5Mini)
-    #expect(flagshipConfig.request(for: provider).model == .gpt52)
+    #expect(fastConfig.request(for: provider).model == .gpt54Nano)
+    #expect(flagshipConfig.request(for: provider).model == .gpt54)
 }
 
 // MARK: - ChatConfiguration.request(for:) - Anthropic Tests

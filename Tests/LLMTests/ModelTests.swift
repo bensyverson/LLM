@@ -77,25 +77,25 @@ import Testing
 @Test func providerModel_openAI_fast_direct() {
     let provider = LLM.Provider.openAI(apiKey: "test-key")
     let model = provider.model(type: .fast, inference: .direct)
-    #expect(model == .gpt5Mini)
+    #expect(model == .gpt54Nano)
 }
 
 @Test func providerModel_openAI_flagship_direct() {
     let provider = LLM.Provider.openAI(apiKey: "test-key")
     let model = provider.model(type: .flagship, inference: .direct)
-    #expect(model == .gpt52)
+    #expect(model == .gpt54)
 }
 
 @Test func providerModel_openAI_fast_reasoning() {
     let provider = LLM.Provider.openAI(apiKey: "test-key")
     let model = provider.model(type: .fast, inference: .reasoning)
-    #expect(model == .gpt5Mini)
+    #expect(model == .gpt54Nano)
 }
 
 @Test func providerModel_openAI_flagship_reasoning() {
     let provider = LLM.Provider.openAI(apiKey: "test-key")
     let model = provider.model(type: .flagship, inference: .reasoning)
-    #expect(model == .gpt52)
+    #expect(model == .gpt54)
 }
 
 @Test func providerModel_anthropic_fast_direct() {

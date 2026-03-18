@@ -38,18 +38,18 @@ public extension LLM.Provider {
             // GPT-5 models have native reasoning via reasoning_effort parameter
             switch type {
             case .fast:
-                return .gpt5Mini
+                return .gpt54Nano
             case .standard:
-                return .gpt5Mini
+                return .gpt54Mini
             case .flagship:
-                return .gpt52
+                return .gpt54
             }
         case .anthropic(apiKey: _):
             switch type {
             case .fast:
                 return .claude45Haiku
             case .standard:
-                return .claude4Sonnet
+                return .claude46Sonnet
             case .flagship:
                 return .claude46Opus
             }

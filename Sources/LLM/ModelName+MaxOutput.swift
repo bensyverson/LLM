@@ -12,12 +12,6 @@ public extension LLM.OpenAICompatibleAPI.ModelName {
         if self == .claude45Opus { return 64000 }
         if self == .claude45Sonnet { return 64000 }
         if self == .claude45Haiku { return 64000 }
-        // Anthropic Claude 4
-        if self == .claude4Opus { return 32000 }
-        if self == .claude4Sonnet { return 64000 }
-        // Legacy Anthropic
-        if self == .claude37SonnetLatest { return 8192 }
-        if self == .claude35HaikuLatest { return 8192 }
         // OpenAI and unknown models
         return nil
     }

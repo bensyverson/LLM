@@ -356,7 +356,7 @@ import Testing
     let json = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
 
     // Verify model
-    #expect(json["model"] as? String == "gpt-5-mini")
+    #expect(json["model"] as? String == "gpt-5.4-nano")
 
     // Verify system is nil for OpenAI (system prompt is in messages)
     #expect(json["system"] == nil || json["system"] is NSNull)
@@ -437,7 +437,7 @@ import Testing
     let openAIData = try JSONEncoder().encode(openAIRequest)
     let openAIJson = try #require(JSONSerialization.jsonObject(with: openAIData) as? [String: Any])
 
-    #expect(openAIJson["model"] as? String == "gpt-5.2")
+    #expect(openAIJson["model"] as? String == "gpt-5.4")
     #expect(openAIJson["reasoning_effort"] as? String == "high")
     #expect(openAIJson["max_completion_tokens"] as? Int == 3048) // 1000 + 2048
     #expect(openAIJson["thinking"] == nil || openAIJson["thinking"] is NSNull)

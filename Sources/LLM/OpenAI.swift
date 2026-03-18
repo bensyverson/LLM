@@ -62,12 +62,13 @@ public extension LLM {
 
             // MARK: - OpenAI GPT-5 (2026)
 
-            /// Flagship GPT-5 model with native reasoning.
             public static let gpt52 = ModelName(rawValue: "gpt-5.2")
-            /// Fast, cost-efficient GPT-5 model.
             public static let gpt5Mini = ModelName(rawValue: "gpt-5-mini")
-            /// Fastest, most cost-efficient GPT-5 model.
             public static let gpt5Nano = ModelName(rawValue: "gpt-5-nano")
+
+            public static let gpt54 = ModelName(rawValue: "gpt-5.4")
+            public static let gpt54Mini = ModelName(rawValue: "gpt-5.4-mini")
+            public static let gpt54Nano = ModelName(rawValue: "gpt-5.4-nano")
 
             // MARK: - Anthropic Claude 4.6
 
@@ -79,16 +80,6 @@ public extension LLM {
             public static let claude45Opus = ModelName(rawValue: "claude-opus-4-5")
             public static let claude45Sonnet = ModelName(rawValue: "claude-sonnet-4-5")
             public static let claude45Haiku = ModelName(rawValue: "claude-haiku-4-5")
-
-            // MARK: - Anthropic Claude 4
-
-            public static let claude4Opus = ModelName(rawValue: "claude-opus-4")
-            public static let claude4Sonnet = ModelName(rawValue: "claude-sonnet-4")
-
-            // MARK: - Legacy Anthropic
-
-            public static let claude37SonnetLatest = ModelName(rawValue: "claude-3-7-sonnet-latest")
-            public static let claude35HaikuLatest = ModelName(rawValue: "claude-3-5-haiku-latest")
 
             // MARK: - Mistral
 

@@ -17,14 +17,6 @@ struct ModelMaxOutputTests {
         #expect(LLM.OpenAICompatibleAPI.ModelName.claude45Haiku.maxOutputTokens == 64000)
     }
 
-    @Test func claude4Opus_returns32k() {
-        #expect(LLM.OpenAICompatibleAPI.ModelName.claude4Opus.maxOutputTokens == 32000)
-    }
-
-    @Test func claude37SonnetLatest_returns8192() {
-        #expect(LLM.OpenAICompatibleAPI.ModelName.claude37SonnetLatest.maxOutputTokens == 8192)
-    }
-
     // MARK: - OpenAI models return nil
 
     @Test func openAI_models_returnNil() {
