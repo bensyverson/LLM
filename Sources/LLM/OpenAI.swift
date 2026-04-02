@@ -134,9 +134,9 @@ public extension LLM {
         }
 
         /// Creates a client configured for Anthropic's Messages API.
-        public static func anthropic(apiKey: String) -> Self {
+        public static func anthropic(apiKey: String, baseURL: URL? = nil) -> Self {
             .init(
-                baseURL: URL(string: "https://api.anthropic.com/")!,
+                baseURL: baseURL ?? URL(string: "https://api.anthropic.com/")!,
                 authMethod: .xApiKey(apiKey: apiKey),
                 chatEndpoint: "v1/messages",
                 headers: [

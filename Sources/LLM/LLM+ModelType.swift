@@ -44,7 +44,7 @@ public extension LLM.Provider {
             case .flagship:
                 return .gpt54
             }
-        case .anthropic(apiKey: _):
+        case .anthropic(apiKey: _, baseURL: _):
             switch type {
             case .fast:
                 return .claude45Haiku

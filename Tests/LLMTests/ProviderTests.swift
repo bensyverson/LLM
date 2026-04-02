@@ -109,10 +109,10 @@ import Testing
 }
 
 @Test func simpleProvider_fullProvider_anthropic() {
-    let simple = LLM.SimpleProvider.anthropic
+    let simple = LLM.SimpleProvider.anthropic(baseURL: nil)
     let full = simple.fullProvider(using: "my-api-key")
 
-    if case let .anthropic(apiKey) = full {
+    if case let .anthropic(apiKey, _) = full {
         #expect(apiKey == "my-api-key")
     } else {
         Issue.record("Expected .anthropic provider")
@@ -173,7 +173,7 @@ import Testing
     let simple = original.simpleProvider
     let restored = simple.fullProvider(using: "new-key")
 
-    if case let .anthropic(apiKey) = restored {
+    if case let .anthropic(apiKey, _) = restored {
         #expect(apiKey == "new-key")
     } else {
         Issue.record("Expected .anthropic provider")

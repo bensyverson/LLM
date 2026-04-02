@@ -12,7 +12,7 @@ public extension LLM {
     /// Use ``fullProvider(using:)`` to convert back to a ``Provider`` with an API key.
     enum SimpleProvider: Friendly {
         case openAI
-        case anthropic
+        case anthropic(baseURL: URL? = nil)
         case mistral
         case lmStudio
         case localhost(port: Int)
@@ -23,8 +23,8 @@ public extension LLM {
             switch self {
             case .openAI:
                 return .openAI(apiKey: apiKey)
-            case .anthropic:
-                return .anthropic(apiKey: apiKey)
+            case let .anthropic(baseURL):
+                return .anthropic(apiKey: apiKey, baseURL: baseURL)
             case .mistral:
                 return .mistral(apiKey: apiKey)
             case .lmStudio:
@@ -44,8 +44,8 @@ public extension LLM.Provider {
         switch self {
         case .openAI(apiKey: _):
             return .openAI
-        case .anthropic(apiKey: _):
-            return .anthropic
+        case let .anthropic(_, baseURL):
+            return .anthropic(baseURL: baseURL)
         case .mistral(apiKey: _):
             return .mistral
         case .lmStudio:
@@ -59,7 +59,8 @@ public extension LLM.Provider {
 
     /// Whether this provider sends requests to Anthropic's API.
     var isAnthropic: Bool {
-        simpleProvider == .anthropic
+        if case .anthropic = simpleProvider { return true }
+        return false
     }
 
     /// Whether this provider sends requests to OpenAI's API.
