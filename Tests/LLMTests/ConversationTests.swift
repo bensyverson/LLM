@@ -337,7 +337,7 @@ import Testing
     let provider = LLM.Provider.anthropic(apiKey: "test")
     let request = conversation.request(for: provider)
 
-    #expect(request.model == .claude46Opus)
+    #expect(request.model == .claude47Opus)
 }
 
 // MARK: - Conversation JSON Serialization Tests
@@ -447,13 +447,16 @@ import Testing
     let anthropicData = try JSONEncoder().encode(anthropicRequest)
     let anthropicJson = try #require(JSONSerialization.jsonObject(with: anthropicData) as? [String: Any])
 
-    #expect(anthropicJson["model"] as? String == "claude-opus-4-6")
+    #expect(anthropicJson["model"] as? String == "claude-opus-4-7")
     #expect(anthropicJson["reasoning_effort"] == nil || anthropicJson["reasoning_effort"] is NSNull)
     // Anthropic: only maxTokens for output (thinking has separate budget)
     #expect(anthropicJson["max_tokens"] as? Int == 1000)
     let thinking = anthropicJson["thinking"] as? [String: Any]
-    #expect(thinking?["type"] as? String == "enabled")
-    #expect(thinking?["budget_tokens"] as? Int == 2048)
+    #expect(thinking?["type"] as? String == "adaptive")
+    #expect(thinking?["budget_tokens"] == nil || thinking?["budget_tokens"] is NSNull)
+    // Adaptive thinking uses output_config with effort
+    let outputConfig = anthropicJson["output_config"] as? [String: Any]
+    #expect(outputConfig?["effort"] as? String == "high")
 }
 
 // MARK: - ConversationConfiguration Tests

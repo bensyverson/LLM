@@ -5,6 +5,8 @@ public extension LLM.OpenAICompatibleAPI.ModelName {
     /// `max_tokens`), `.placeholder`, or models whose max output cannot
     /// be determined at compile time.
     var maxOutputTokens: Int? {
+        // Anthropic Claude 4.7
+        if self == .claude47Opus { return 128_000 }
         // Anthropic Claude 4.6
         if self == .claude46Opus { return 128_000 }
         if self == .claude46Sonnet { return 64000 }

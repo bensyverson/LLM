@@ -80,7 +80,7 @@ public extension LLM.ChatConfiguration {
         let isGPT5 = model.isGPT5
         // For GPT-5 models, always skip temperature/topP (they only support default values)
         // For older o-series reasoning models, also skip
-        let skipTemp = isGPT5 || inference == .reasoning
+        let skipTemp = isGPT5 || model.alwaysSkipSamplingParams || inference == .reasoning
         // Anthropic forbids specifying both temperature and top_p
         let skipTopP = skipTemp || (isAnthropic && temperature != nil)
         let skipFreq = isAnthropic
@@ -104,12 +104,25 @@ public extension LLM.ChatConfiguration {
                 return (maxTokens ?? 0) + maxReasoningTokenCount
             }
         }()
-        let thinking: LLM.OpenAICompatibleAPI.ChatCompletion.Thinking? = (isAnthropic && inference == .reasoning) ? .init(budget_tokens: maxReasoningTokenCount) : nil
+        let thinking: LLM.OpenAICompatibleAPI.ChatCompletion.Thinking? = {
+            guard isAnthropic && inference == .reasoning else { return nil }
+            if model.supportsAdaptiveThinking {
+                return .init(type: .adaptive, budget_tokens: nil)
+            }
+            return .init(budget_tokens: maxReasoningTokenCount)
+        }()
+
+        let outputConfig: LLM.OpenAICompatibleAPI.ChatCompletion.OutputConfig? = {
+            guard isAnthropic && inference == .reasoning && model.supportsAdaptiveThinking else { return nil }
+            return .init(effort: (reasoningEffort ?? .high).anthropicEffort)
+        }()
 
         // For GPT-5 models with .reasoning inference, auto-set reasoning_effort if not specified
+        // Clamp .max to .xhigh for OpenAI (max is Anthropic-only)
         let effectiveReasoningEffort: LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort? = {
             if isOpenAI && inference == .reasoning && isGPT5 {
-                return reasoningEffort ?? .high
+                let effort = reasoningEffort ?? .high
+                return effort == .max ? .xhigh : effort
             }
             return reasoningEffort
         }()
@@ -144,7 +157,8 @@ public extension LLM.ChatConfiguration {
             stop: (isAnthropic || skipStop) ? nil : stopTokens,
             stop_sequences: isAnthropic ? stopTokens : nil,
             thinking: thinking,
-            reasoning_effort: isAnthropic ? nil : effectiveReasoningEffort
+            reasoning_effort: isAnthropic ? nil : effectiveReasoningEffort,
+            output_config: outputConfig
         )
     }
 }

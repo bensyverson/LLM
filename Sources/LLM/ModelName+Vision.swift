@@ -22,6 +22,7 @@ public extension LLM.OpenAICompatibleAPI.ModelName {
     /// Anthropic limits images to 1568px on the long edge.
     /// OpenAI auto-scales to 2048px for high-detail mode.
     var maxImageLongEdge: Int? {
+        if self == .claude47Opus { return 2576 }
         if rawValue.hasPrefix("claude-") { return 1568 }
         if supportsVision == true { return 2048 }
         return nil

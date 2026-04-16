@@ -70,6 +70,10 @@ public extension LLM {
             public static let gpt54Mini = ModelName(rawValue: "gpt-5.4-mini")
             public static let gpt54Nano = ModelName(rawValue: "gpt-5.4-nano")
 
+            // MARK: - Anthropic Claude 4.7
+
+            public static let claude47Opus = ModelName(rawValue: "claude-opus-4-7")
+
             // MARK: - Anthropic Claude 4.6
 
             public static let claude46Opus = ModelName(rawValue: "claude-opus-4-6")
@@ -93,6 +97,16 @@ public extension LLM {
             /// Whether this model is in the GPT-5 family.
             public var isGPT5: Bool {
                 rawValue.hasPrefix("gpt-5")
+            }
+
+            /// Whether this model uses Anthropic's adaptive thinking (effort-based) instead of budget_tokens.
+            public var supportsAdaptiveThinking: Bool {
+                self == .claude47Opus || self == .claude46Opus || self == .claude46Sonnet
+            }
+
+            /// Whether this model rejects all sampling parameters (temperature, top_p, top_k).
+            public var alwaysSkipSamplingParams: Bool {
+                self == .claude47Opus
             }
         }
 

@@ -27,6 +27,8 @@ public extension LLM.OpenAICompatibleAPI.ModelName {
         if self == .gpt52 { return 1_047_576 }
         if self == .gpt5Mini { return 1_047_576 }
         if self == .gpt5Nano { return 1_047_576 }
+        // Anthropic Claude 4.7
+        if self == .claude47Opus { return 1_000_000 }
         // Anthropic Claude 4.6
         if self == .claude46Opus { return 200_000 }
         if self == .claude46Sonnet { return 200_000 }

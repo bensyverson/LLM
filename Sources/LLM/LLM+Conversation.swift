@@ -188,7 +188,7 @@ public extension LLM.Conversation {
         let isGPT5 = model.isGPT5
         // For GPT-5 models, always skip temperature/topP (they only support default values)
         // For older o-series reasoning models, also skip
-        let skipTemp = isGPT5 || configuration.inference == .reasoning
+        let skipTemp = isGPT5 || model.alwaysSkipSamplingParams || configuration.inference == .reasoning
         // Anthropic forbids specifying both temperature and top_p
         let skipTopP = skipTemp || (isAnthropic && configuration.temperature != nil)
         let skipFreq = isAnthropic
@@ -212,12 +212,25 @@ public extension LLM.Conversation {
                 return (configuration.maxTokens ?? 0) + maxReasoningTokenCount
             }
         }()
-        let thinking: LLM.OpenAICompatibleAPI.ChatCompletion.Thinking? = (isAnthropic && configuration.inference == .reasoning) ? .init(budget_tokens: maxReasoningTokenCount) : nil
+        let thinking: LLM.OpenAICompatibleAPI.ChatCompletion.Thinking? = {
+            guard isAnthropic && configuration.inference == .reasoning else { return nil }
+            if model.supportsAdaptiveThinking {
+                return .init(type: .adaptive, budget_tokens: nil)
+            }
+            return .init(budget_tokens: maxReasoningTokenCount)
+        }()
+
+        let outputConfig: LLM.OpenAICompatibleAPI.ChatCompletion.OutputConfig? = {
+            guard isAnthropic && configuration.inference == .reasoning && model.supportsAdaptiveThinking else { return nil }
+            return .init(effort: (configuration.reasoningEffort ?? .high).anthropicEffort)
+        }()
 
         // For GPT-5 models with .reasoning inference, auto-set reasoning_effort if not specified
+        // Clamp .max to .xhigh for OpenAI (max is Anthropic-only)
         let effectiveReasoningEffort: LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort? = {
             if isOpenAI && configuration.inference == .reasoning && isGPT5 {
-                return configuration.reasoningEffort ?? .high
+                let effort = configuration.reasoningEffort ?? .high
+                return effort == .max ? .xhigh : effort
             }
             return configuration.reasoningEffort
         }()
@@ -253,6 +266,7 @@ public extension LLM.Conversation {
             stop_sequences: isAnthropic ? configuration.stopTokens : nil,
             thinking: thinking,
             reasoning_effort: isAnthropic ? nil : effectiveReasoningEffort,
+            output_config: outputConfig,
             tools: configuration.tools,
             tool_choice: configuration.toolChoice,
             parallel_tool_calls: isMistral ? configuration.parallelToolCalls : nil

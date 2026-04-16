@@ -73,22 +73,50 @@ public extension LLM.OpenAICompatibleAPI {
 
         public struct Thinking: Codable {
             public enum ThinkingType: String, Codable {
-                case enabled, disabled
+                case enabled, disabled, adaptive
             }
 
             public var type: ThinkingType = .enabled
-            public var budget_tokens: Int = 1024
+            public var budget_tokens: Int?
             public init(
                 type: ThinkingType = .enabled,
-                budget_tokens: Int = 1024
+                budget_tokens: Int? = 1024
             ) {
                 self.type = type
                 self.budget_tokens = budget_tokens
             }
+
+            public func encode(to encoder: Encoder) throws {
+                var container = encoder.container(keyedBy: CodingKeys.self)
+                try container.encode(type, forKey: .type)
+                try container.encodeIfPresent(budget_tokens, forKey: .budget_tokens)
+            }
+
+            enum CodingKeys: String, CodingKey {
+                case type, budget_tokens
+            }
         }
 
         public enum ReasoningEffort: String, Codable, Sendable {
-            case none, low, medium, high, xhigh, minimal
+            case none, low, medium, high, xhigh, minimal, max
+
+            /// Maps our unified effort level to Anthropic's effort string.
+            public var anthropicEffort: String {
+                switch self {
+                case .none, .minimal, .low: return "low"
+                case .medium: return "medium"
+                case .high: return "high"
+                case .xhigh: return "xhigh"
+                case .max: return "max"
+                }
+            }
+        }
+
+        public struct OutputConfig: Codable {
+            public var effort: String
+            public init(effort: String) {
+                self.effort = effort
+            }
         }
 
         public var model: ModelName = .gpt35turbo
@@ -107,6 +135,7 @@ public extension LLM.OpenAICompatibleAPI {
         public var reasoning_effort: ReasoningEffort? = nil
         public var tools: [ToolDefinition]? = nil
         public var tool_choice: ToolChoice? = nil
+        public var output_config: OutputConfig? = nil
         public var stream: Bool? = nil
         public var stream_options: StreamOptions? = nil
         public var parallel_tool_calls: Bool? = nil
@@ -136,6 +165,7 @@ public extension LLM.OpenAICompatibleAPI {
             stop_sequences: [String]? = nil,
             thinking: Thinking? = nil,
             reasoning_effort: ReasoningEffort? = nil,
+            output_config: OutputConfig? = nil,
             tools: [ToolDefinition]? = nil,
             tool_choice: ToolChoice? = nil,
             parallel_tool_calls: Bool? = nil
@@ -154,6 +184,7 @@ public extension LLM.OpenAICompatibleAPI {
             self.stop_sequences = stop_sequences
             self.thinking = thinking
             self.reasoning_effort = reasoning_effort
+            self.output_config = output_config
             self.tools = tools
             self.tool_choice = tool_choice
             self.parallel_tool_calls = parallel_tool_calls
@@ -163,8 +194,8 @@ public extension LLM.OpenAICompatibleAPI {
         enum CodingKeys: String, CodingKey {
             case model, system, messages, response_format, temperature
             case frequency_penalty, top_p, max_tokens, max_completion_tokens
-            case stop, stop_sequences, thinking, reasoning_effort, tools, tool_choice
-            case stream, stream_options, parallel_tool_calls
+            case stop, stop_sequences, thinking, reasoning_effort, output_config
+            case tools, tool_choice, stream, stream_options, parallel_tool_calls
         }
 
         public func encode(to encoder: Encoder) throws {
@@ -198,6 +229,7 @@ public extension LLM.OpenAICompatibleAPI {
             try container.encodeIfPresent(stop_sequences, forKey: .stop_sequences)
             try container.encodeIfPresent(thinking, forKey: .thinking)
             try container.encodeIfPresent(reasoning_effort, forKey: .reasoning_effort)
+            try container.encodeIfPresent(output_config, forKey: .output_config)
             if useAnthropicToolFormat, let tools {
                 let anthropicTools = tools.map { AnthropicToolDefinition(from: $0) }
                 try container.encode(anthropicTools, forKey: .tools)
@@ -354,7 +386,7 @@ public extension LLM.OpenAICompatibleAPI {
             case type, text, image_url
         }
 
-        struct ImageURL: Codable, Equatable, Hashable, Sendable {
+        struct ImageURL: Codable, Equatable, Hashable {
             let url: String
             let detail: String?
         }

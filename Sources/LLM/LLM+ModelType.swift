@@ -51,7 +51,7 @@ public extension LLM.Provider {
             case .standard:
                 return .claude46Sonnet
             case .flagship:
-                return .claude46Opus
+                return .claude47Opus
             }
         case .mistral(apiKey: _):
             switch type {
