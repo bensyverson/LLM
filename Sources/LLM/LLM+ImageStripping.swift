@@ -24,7 +24,7 @@ public extension LLM {
     /// - Returns: A new conversation with all media parts replaced by text stubs.
     func strippingMedia(
         _ conversation: Conversation,
-        using describer: (@Sendable (Data, String) async throws -> String)? = nil
+        using describer: (@Sendable (Data, String) async throws -> String)? = nil,
     ) async throws -> Conversation {
         var imageCounter = 0
         var documentCounter = 0

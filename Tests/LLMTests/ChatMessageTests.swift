@@ -11,7 +11,7 @@ import Testing
 
 // MARK: - ContentBlock Cache Control Tests
 
-@Test func contentBlock_cached_encodesWithCacheControl() throws {
+@Test func `content block cached encodes with cache control`() throws {
     let block = LLM.OpenAICompatibleAPI.AnthropicMessageConverter.ContentBlock.text("hello")
     let cacheControl = LLM.OpenAICompatibleAPI.CacheControl()
     let encoder = JSONEncoder()
@@ -34,7 +34,7 @@ import Testing
 
 // MARK: - ChatMessage Tests
 
-@Test func chatMessage_backwardCompatibleInit() {
+@Test func `chat message backward compatible init`() {
     let message = LLM.OpenAICompatibleAPI.ChatMessage(content: "Hello", role: .user)
 
     #expect(message.textContent == "Hello")
@@ -44,11 +44,11 @@ import Testing
     #expect(message.tool_call_id == nil)
 }
 
-@Test func chatMessage_backwardCompatibleInit_withName() {
+@Test func `chat message backward compatible init with name`() {
     let message = LLM.OpenAICompatibleAPI.ChatMessage(
         content: "Hello",
         role: .user,
-        name: "test_user"
+        name: "test_user",
     )
 
     #expect(message.textContent == "Hello")
@@ -56,11 +56,11 @@ import Testing
     #expect(message.name == "test_user")
 }
 
-@Test func chatMessage_fullInit_withOptionalContent() {
+@Test func `chat message full init with optional content`() {
     let message = LLM.OpenAICompatibleAPI.ChatMessage(
         content: nil,
         role: .assistant,
-        tool_calls: []
+        tool_calls: [],
     )
 
     #expect(message.content.isEmpty)
@@ -68,20 +68,20 @@ import Testing
     #expect(message.tool_calls != nil)
 }
 
-@Test func chatMessage_fullInit_withToolCalls() {
+@Test func `chat message full init with tool calls`() {
     let funcCall = LLM.OpenAICompatibleAPI.FunctionCall(
         name: "get_weather",
-        arguments: "{\"location\":\"NYC\"}"
+        arguments: "{\"location\":\"NYC\"}",
     )
     let toolCall = LLM.OpenAICompatibleAPI.ToolCall(
         id: "call_123",
-        function: funcCall
+        function: funcCall,
     )
 
     let message = LLM.OpenAICompatibleAPI.ChatMessage(
         content: nil,
         role: .assistant,
-        tool_calls: [toolCall]
+        tool_calls: [toolCall],
     )
 
     #expect(message.content.isEmpty)
@@ -89,11 +89,11 @@ import Testing
     #expect(message.tool_calls?[0].id == "call_123")
 }
 
-@Test func chatMessage_fullInit_withToolCallId() {
+@Test func `chat message full init with tool call id`() {
     let message = LLM.OpenAICompatibleAPI.ChatMessage(
         content: "{\"temperature\":72}",
         role: .tool,
-        tool_call_id: "call_123"
+        tool_call_id: "call_123",
     )
 
     #expect(message.textContent == "{\"temperature\":72}")
@@ -101,38 +101,38 @@ import Testing
     #expect(message.tool_call_id == "call_123")
 }
 
-@Test func chatMessage_contentLength_returnsZeroForNil() {
+@Test func `chat message content length returns zero for nil`() {
     let message = LLM.OpenAICompatibleAPI.ChatMessage(
         content: nil,
-        role: .assistant
+        role: .assistant,
     )
 
     #expect(message.contentLength == 0)
 }
 
-@Test func chatMessage_contentLength_returnsActualLength() {
+@Test func `chat message content length returns actual length`() {
     let message = LLM.OpenAICompatibleAPI.ChatMessage(
         content: "Hello, world!",
-        role: .user
+        role: .user,
     )
 
     #expect(message.contentLength == 13)
 }
 
-@Test func chatMessage_contentLength_emptyString() {
+@Test func `chat message content length empty string`() {
     let message = LLM.OpenAICompatibleAPI.ChatMessage(
         content: "",
-        role: .user
+        role: .user,
     )
 
     #expect(message.contentLength == 0)
 }
 
-@Test func chatMessage_codable_roundTrip() throws {
+@Test func `chat message codable round trip`() throws {
     let message = LLM.OpenAICompatibleAPI.ChatMessage(
         content: "Hello",
         role: .user,
-        name: "test"
+        name: "test",
     )
 
     let encoder = JSONEncoder()
@@ -146,13 +146,13 @@ import Testing
     #expect(decoded.name == message.name)
 }
 
-@Test func chatMessage_codable_withToolCalls() throws {
+@Test func `chat message codable with tool calls`() throws {
     let funcCall = LLM.OpenAICompatibleAPI.FunctionCall(name: "test", arguments: "{}")
     let toolCall = LLM.OpenAICompatibleAPI.ToolCall(id: "call_1", function: funcCall)
     let message = LLM.OpenAICompatibleAPI.ChatMessage(
         content: nil,
         role: .assistant,
-        tool_calls: [toolCall]
+        tool_calls: [toolCall],
     )
 
     let encoder = JSONEncoder()
@@ -167,14 +167,14 @@ import Testing
 
 // MARK: - Role Tests
 
-@Test func role_rawValues() {
+@Test func `role raw values`() {
     #expect(LLM.OpenAICompatibleAPI.Role.system.rawValue == "system")
     #expect(LLM.OpenAICompatibleAPI.Role.user.rawValue == "user")
     #expect(LLM.OpenAICompatibleAPI.Role.assistant.rawValue == "assistant")
     #expect(LLM.OpenAICompatibleAPI.Role.tool.rawValue == "tool")
 }
 
-@Test func role_codable_roundTrip() throws {
+@Test func `role codable round trip`() throws {
     let roles: [LLM.OpenAICompatibleAPI.Role] = [.system, .user, .assistant, .tool]
     let encoder = JSONEncoder()
     let decoder = JSONDecoder()
@@ -188,7 +188,7 @@ import Testing
 
 // MARK: - ChatCompletion Tests
 
-@Test func chatCompletion_defaultValues() {
+@Test func `chat completion default values`() {
     let messages = [
         LLM.OpenAICompatibleAPI.ChatMessage(content: "Hi", role: .user),
     ]
@@ -210,7 +210,7 @@ import Testing
     #expect(completion.tool_choice == nil)
 }
 
-@Test func chatCompletion_customValues() {
+@Test func `chat completion custom values`() {
     let messages = [
         LLM.OpenAICompatibleAPI.ChatMessage(content: "Hi", role: .user),
     ]
@@ -227,7 +227,7 @@ import Testing
         stop: ["###"],
         stop_sequences: nil,
         thinking: .init(budget_tokens: 2048),
-        reasoning_effort: .high
+        reasoning_effort: .high,
     )
 
     #expect(completion.model == .gpt52)
@@ -242,22 +242,22 @@ import Testing
     #expect(completion.reasoning_effort == .high)
 }
 
-@Test func chatCompletion_withTools() {
+@Test func `chat completion with tools`() {
     let params = LLM.OpenAICompatibleAPI.JSONSchema.object(
         properties: ["query": .string()],
-        required: ["query"]
+        required: ["query"],
     )
     let funcDef = LLM.OpenAICompatibleAPI.FunctionDefinition(
         name: "search",
         description: "Search for info",
-        parameters: params
+        parameters: params,
     )
     let toolDef = LLM.OpenAICompatibleAPI.ToolDefinition(function: funcDef)
 
     let completion = LLM.OpenAICompatibleAPI.ChatCompletion(
         messages: [LLM.OpenAICompatibleAPI.ChatMessage(content: "Search for X", role: .user)],
         tools: [toolDef],
-        tool_choice: .auto
+        tool_choice: .auto,
     )
 
     #expect(completion.tools?.count == 1)
@@ -267,12 +267,12 @@ import Testing
 
 // MARK: - JsonObject Tests
 
-@Test func jsonObject_defaultType() {
+@Test func `json object default type`() {
     let jsonObject = LLM.OpenAICompatibleAPI.ChatCompletion.JsonObject()
     #expect(jsonObject.type == .json_object)
 }
 
-@Test func jsonObject_codable_roundTrip() throws {
+@Test func `json object codable round trip`() throws {
     let jsonObject = LLM.OpenAICompatibleAPI.ChatCompletion.JsonObject()
 
     let encoder = JSONEncoder()
@@ -281,7 +281,7 @@ import Testing
     let data = try encoder.encode(jsonObject)
     let decoded = try decoder.decode(
         LLM.OpenAICompatibleAPI.ChatCompletion.JsonObject.self,
-        from: data
+        from: data,
     )
 
     #expect(decoded.type == jsonObject.type)
@@ -289,27 +289,27 @@ import Testing
 
 // MARK: - Thinking Tests
 
-@Test func thinking_defaults() {
+@Test func `thinking defaults`() {
     let thinking = LLM.OpenAICompatibleAPI.ChatCompletion.Thinking()
     #expect(thinking.type == .enabled)
     #expect(thinking.budget_tokens == 1024)
 }
 
-@Test func thinking_customBudget() {
+@Test func `thinking custom budget`() {
     let thinking = LLM.OpenAICompatibleAPI.ChatCompletion.Thinking(budget_tokens: 4096)
     #expect(thinking.type == .enabled)
     #expect(thinking.budget_tokens == 4096)
 }
 
-@Test func thinking_disabled() {
+@Test func `thinking disabled`() {
     let thinking = LLM.OpenAICompatibleAPI.ChatCompletion.Thinking(type: .disabled)
     #expect(thinking.type == .disabled)
 }
 
-@Test func thinking_codable_roundTrip() throws {
+@Test func `thinking codable round trip`() throws {
     let thinking = LLM.OpenAICompatibleAPI.ChatCompletion.Thinking(
         type: .enabled,
-        budget_tokens: 2048
+        budget_tokens: 2048,
     )
 
     let encoder = JSONEncoder()
@@ -318,7 +318,7 @@ import Testing
     let data = try encoder.encode(thinking)
     let decoded = try decoder.decode(
         LLM.OpenAICompatibleAPI.ChatCompletion.Thinking.self,
-        from: data
+        from: data,
     )
 
     #expect(decoded.type == thinking.type)
@@ -327,7 +327,7 @@ import Testing
 
 // MARK: - ReasoningEffort Tests
 
-@Test func reasoningEffort_rawValues() {
+@Test func `reasoning effort raw values`() {
     #expect(LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort.none.rawValue == "none")
     #expect(LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort.low.rawValue == "low")
     #expect(LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort.medium.rawValue == "medium")
@@ -336,7 +336,7 @@ import Testing
     #expect(LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort.minimal.rawValue == "minimal")
 }
 
-@Test func reasoningEffort_codable_roundTrip() throws {
+@Test func `reasoning effort codable round trip`() throws {
     let efforts: [LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort] = [
         .none, .low, .medium, .high, .xhigh, .minimal,
     ]
@@ -348,7 +348,7 @@ import Testing
         let data = try encoder.encode(effort)
         let decoded = try decoder.decode(
             LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort.self,
-            from: data
+            from: data,
         )
         #expect(decoded == effort)
     }
@@ -356,24 +356,24 @@ import Testing
 
 // MARK: - CacheControl Tests
 
-@Test func cacheControl_defaults() {
+@Test func `cache control defaults`() {
     let cache = LLM.OpenAICompatibleAPI.CacheControl()
     #expect(cache.type == .ephemeral)
     #expect(cache.ttl == nil)
 }
 
-@Test func cacheControl_withTTL() {
+@Test func `cache control with TTL`() {
     let cache = LLM.OpenAICompatibleAPI.CacheControl(ttl: .oneHour)
     #expect(cache.type == .ephemeral)
     #expect(cache.ttl == .oneHour)
 }
 
-@Test func cacheControl_ttlRawValues() {
+@Test func `cache control ttl raw values`() {
     #expect(LLM.OpenAICompatibleAPI.CacheControl.TTL.fiveMinutes.rawValue == "5m")
     #expect(LLM.OpenAICompatibleAPI.CacheControl.TTL.oneHour.rawValue == "1h")
 }
 
-@Test func cacheControl_codable_roundTrip() throws {
+@Test func `cache control codable round trip`() throws {
     let cache = LLM.OpenAICompatibleAPI.CacheControl(ttl: .oneHour)
 
     let encoder = JSONEncoder()
@@ -386,7 +386,7 @@ import Testing
     #expect(decoded.ttl == cache.ttl)
 }
 
-@Test func cacheControl_jsonSerialization() throws {
+@Test func `cache control json serialization`() throws {
     let cache = LLM.OpenAICompatibleAPI.CacheControl(ttl: .fiveMinutes)
 
     let encoder = JSONEncoder()
@@ -399,14 +399,14 @@ import Testing
 
 // MARK: - SystemContentBlock Tests
 
-@Test func systemContentBlock_defaults() {
+@Test func `system content block defaults`() {
     let block = LLM.OpenAICompatibleAPI.SystemContentBlock(text: "Hello")
     #expect(block.type == "text")
     #expect(block.text == "Hello")
     #expect(block.cache_control == nil)
 }
 
-@Test func systemContentBlock_withCacheControl() {
+@Test func `system content block with cache control`() {
     let cache = LLM.OpenAICompatibleAPI.CacheControl(ttl: .oneHour)
     let block = LLM.OpenAICompatibleAPI.SystemContentBlock(text: "System", cache_control: cache)
 
@@ -416,7 +416,7 @@ import Testing
     #expect(block.cache_control?.ttl == .oneHour)
 }
 
-@Test func systemContentBlock_codable_roundTrip() throws {
+@Test func `system content block codable round trip`() throws {
     let cache = LLM.OpenAICompatibleAPI.CacheControl(ttl: .fiveMinutes)
     let block = LLM.OpenAICompatibleAPI.SystemContentBlock(text: "Test prompt", cache_control: cache)
 
@@ -432,7 +432,7 @@ import Testing
     #expect(decoded.cache_control?.ttl == block.cache_control?.ttl)
 }
 
-@Test func systemContentBlock_jsonSerialization() throws {
+@Test func `system content block json serialization`() throws {
     let cache = LLM.OpenAICompatibleAPI.CacheControl(ttl: .oneHour)
     let block = LLM.OpenAICompatibleAPI.SystemContentBlock(text: "Be helpful", cache_control: cache)
 
@@ -448,7 +448,7 @@ import Testing
 
 // MARK: - ChatCompletion with SystemBlocks Tests
 
-@Test func chatCompletion_withSystemBlocks_encodesAsArray() throws {
+@Test func `chat completion with system blocks encodes as array`() throws {
     let cache = LLM.OpenAICompatibleAPI.CacheControl(ttl: .fiveMinutes)
     let blocks = [LLM.OpenAICompatibleAPI.SystemContentBlock(text: "You are helpful", cache_control: cache)]
 
@@ -456,7 +456,7 @@ import Testing
         model: .claude45Opus,
         system: nil,
         systemBlocks: blocks,
-        messages: [LLM.OpenAICompatibleAPI.ChatMessage(content: "Hello", role: .user)]
+        messages: [LLM.OpenAICompatibleAPI.ChatMessage(content: "Hello", role: .user)],
     )
 
     let encoder = JSONEncoder()
@@ -470,12 +470,12 @@ import Testing
     #expect(jsonString.contains("cache_control"))
 }
 
-@Test func chatCompletion_withStringSystem_encodesAsString() throws {
+@Test func `chat completion with string system encodes as string`() throws {
     let completion = LLM.OpenAICompatibleAPI.ChatCompletion(
         model: .claude45Opus,
         system: "You are helpful",
         systemBlocks: nil,
-        messages: [LLM.OpenAICompatibleAPI.ChatMessage(content: "Hello", role: .user)]
+        messages: [LLM.OpenAICompatibleAPI.ChatMessage(content: "Hello", role: .user)],
     )
 
     let encoder = JSONEncoder()
@@ -487,14 +487,14 @@ import Testing
     #expect(!jsonString.contains("cache_control"))
 }
 
-@Test func chatCompletion_withBothSystemTypes_prefersBlocks() throws {
+@Test func `chat completion with both system types prefers blocks`() throws {
     let blocks = [LLM.OpenAICompatibleAPI.SystemContentBlock(text: "Block system")]
 
     let completion = LLM.OpenAICompatibleAPI.ChatCompletion(
         model: .claude45Opus,
         system: "String system", // Should be ignored when blocks are present
         systemBlocks: blocks,
-        messages: [LLM.OpenAICompatibleAPI.ChatMessage(content: "Hello", role: .user)]
+        messages: [LLM.OpenAICompatibleAPI.ChatMessage(content: "Hello", role: .user)],
     )
 
     let encoder = JSONEncoder()

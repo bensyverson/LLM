@@ -11,7 +11,7 @@ import Testing
 
 // MARK: - ResizeCacheKey Tests
 
-@Test func resizeCacheKey_equalityAndHashing() {
+@Test func `resize cache key equality and hashing`() {
     let key1 = LLM.ResizeCacheKey(dataHash: 123, targetWidth: 1024, targetHeight: 768)
     let key2 = LLM.ResizeCacheKey(dataHash: 123, targetWidth: 1024, targetHeight: 768)
     let key3 = LLM.ResizeCacheKey(dataHash: 456, targetWidth: 1024, targetHeight: 768)
@@ -23,7 +23,7 @@ import Testing
 
 // MARK: - Cache Tests
 
-@Test func resizeCache_storeAndRetrieve() async {
+@Test func `resize cache store and retrieve`() async {
     let llm = LLM(provider: .openAI(apiKey: "test"))
     let key = LLM.ResizeCacheKey(dataHash: 42, targetWidth: 100, targetHeight: 100)
     let data = Data([0x01, 0x02, 0x03])
@@ -34,7 +34,7 @@ import Testing
     #expect(cached == data)
 }
 
-@Test func resizeCache_missReturnsNil() async {
+@Test func `resize cache miss returns nil`() async {
     let llm = LLM(provider: .openAI(apiKey: "test"))
     let key = LLM.ResizeCacheKey(dataHash: 999, targetWidth: 100, targetHeight: 100)
 
@@ -42,7 +42,7 @@ import Testing
     #expect(cached == nil)
 }
 
-@Test func resizeCache_fifoEviction() async {
+@Test func `resize cache fifo eviction`() async {
     let llm = LLM(provider: .openAI(apiKey: "test"))
 
     // Fill cache to max (50 entries)
@@ -72,7 +72,7 @@ import Testing
 
 // MARK: - Resize Logic Tests
 
-@Test func resizingImages_noImages_returnsUnchanged() async throws {
+@Test func `resizing images no images returns unchanged`() async throws {
     let llm = LLM(provider: .openAI(apiKey: "test"))
 
     let conversation = LLM.Conversation(systemPrompt: "System")
@@ -84,7 +84,7 @@ import Testing
     #expect(result.messages[0].textContent == "Hello")
 }
 
-@Test func resizingImages_callsResizerForImages() async throws {
+@Test func `resizing images calls resizer for images`() async throws {
     let llm = LLM(provider: .openAI(apiKey: "test"))
 
     let resizer: @Sendable (Data, String, CGSize) async throws -> Data = { _, _, _ in

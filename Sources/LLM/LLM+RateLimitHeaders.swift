@@ -36,7 +36,7 @@ public extension LLM {
         /// - Returns: Parsed rate limit info, or `nil` if no recognized headers are present.
         public static func parse(
             from response: HTTPURLResponse,
-            provider: Provider
+            provider: Provider,
         ) -> RateLimitInfo? {
             func intHeader(_ key: String) -> Int? {
                 guard let value = response.value(forHTTPHeaderField: key) else { return nil }
@@ -55,7 +55,7 @@ public extension LLM {
                     requestLimit: reqLimit,
                     tokenLimit: tokLimit,
                     requestsRemaining: reqRemaining,
-                    tokensRemaining: tokRemaining
+                    tokensRemaining: tokRemaining,
                 )
             } else {
                 let reqLimit = intHeader("x-ratelimit-limit-requests")
@@ -69,7 +69,7 @@ public extension LLM {
                     requestLimit: reqLimit,
                     tokenLimit: tokLimit,
                     requestsRemaining: reqRemaining,
-                    tokensRemaining: tokRemaining
+                    tokensRemaining: tokRemaining,
                 )
             }
         }
@@ -86,7 +86,7 @@ public extension LLM {
         /// - Returns: Parsed rate limit info, or `nil` if no recognized headers are present.
         public static func parse(
             headerLookup: (String) -> String?,
-            provider: Provider
+            provider: Provider,
         ) -> RateLimitInfo? {
             func intHeader(_ key: String) -> Int? {
                 guard let value = headerLookup(key) else { return nil }
@@ -105,7 +105,7 @@ public extension LLM {
                     requestLimit: reqLimit,
                     tokenLimit: tokLimit,
                     requestsRemaining: reqRemaining,
-                    tokensRemaining: tokRemaining
+                    tokensRemaining: tokRemaining,
                 )
             } else {
                 let reqLimit = intHeader("x-ratelimit-limit-requests")
@@ -119,7 +119,7 @@ public extension LLM {
                     requestLimit: reqLimit,
                     tokenLimit: tokLimit,
                     requestsRemaining: reqRemaining,
-                    tokensRemaining: tokRemaining
+                    tokensRemaining: tokRemaining,
                 )
             }
         }

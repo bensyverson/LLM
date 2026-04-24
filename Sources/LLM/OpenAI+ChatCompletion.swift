@@ -80,7 +80,7 @@ public extension LLM.OpenAICompatibleAPI {
             public var budget_tokens: Int?
             public init(
                 type: ThinkingType = .enabled,
-                budget_tokens: Int? = 1024
+                budget_tokens: Int? = 1024,
             ) {
                 self.type = type
                 self.budget_tokens = budget_tokens
@@ -103,11 +103,11 @@ public extension LLM.OpenAICompatibleAPI {
             /// Maps our unified effort level to Anthropic's effort string.
             public var anthropicEffort: String {
                 switch self {
-                case .none, .minimal, .low: return "low"
-                case .medium: return "medium"
-                case .high: return "high"
-                case .xhigh: return "xhigh"
-                case .max: return "max"
+                case .none, .minimal, .low: "low"
+                case .medium: "medium"
+                case .high: "high"
+                case .xhigh: "xhigh"
+                case .max: "max"
                 }
             }
         }
@@ -168,7 +168,7 @@ public extension LLM.OpenAICompatibleAPI {
             output_config: OutputConfig? = nil,
             tools: [ToolDefinition]? = nil,
             tool_choice: ToolChoice? = nil,
-            parallel_tool_calls: Bool? = nil
+            parallel_tool_calls: Bool? = nil,
         ) {
             self.model = model
             self.system = system
@@ -206,7 +206,7 @@ public extension LLM.OpenAICompatibleAPI {
             // Otherwise use standard string system prompt
             if let blocks = systemBlocks {
                 try container.encode(blocks, forKey: .system)
-            } else if let system = system {
+            } else if let system {
                 try container.encode(system, forKey: .system)
             }
 
@@ -275,7 +275,7 @@ public extension LLM.OpenAICompatibleAPI {
             name: String? = nil,
             tool_calls: [ToolCall]? = nil,
             tool_call_id: String? = nil,
-            reasoning_content: String? = nil
+            reasoning_content: String? = nil,
         ) {
             self.content = content
             self.role = role
@@ -292,7 +292,7 @@ public extension LLM.OpenAICompatibleAPI {
             name: String? = nil,
             tool_calls: [ToolCall]? = nil,
             tool_call_id: String? = nil,
-            reasoning_content: String? = nil
+            reasoning_content: String? = nil,
         ) {
             self.content = content.map { [.text($0)] } ?? []
             self.role = role
@@ -306,7 +306,7 @@ public extension LLM.OpenAICompatibleAPI {
         public init(
             content: String,
             role: Role,
-            name: String? = nil
+            name: String? = nil,
         ) {
             self.content = [.text(content)]
             self.role = role
@@ -478,7 +478,7 @@ public extension LLM.OpenAICompatibleAPI {
                 output_tokens: Int? = nil,
                 cache_creation_input_tokens: Int? = nil,
                 cache_read_input_tokens: Int? = nil,
-                prompt_tokens_details: PromptTokensDetails? = nil
+                prompt_tokens_details: PromptTokensDetails? = nil,
             ) {
                 self.prompt_tokens = prompt_tokens
                 self.completion_tokens = completion_tokens
@@ -534,7 +534,7 @@ public extension LLM.OpenAICompatibleAPI {
             model: String = "",
             created: Date? = nil,
             choices: [Choice]? = nil,
-            content: [Content]? = nil
+            content: [Content]? = nil,
         ) {
             self.id = id
             self.object = object

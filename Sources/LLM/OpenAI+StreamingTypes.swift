@@ -259,7 +259,7 @@ extension LLM.OpenAICompatibleAPI {
             let completedToolCalls: [ToolCall]? = sortedToolCalls.isEmpty ? nil : sortedToolCalls.map { _, acc in
                 ToolCall(
                     id: acc.id,
-                    function: FunctionCall(name: acc.name, arguments: acc.arguments)
+                    function: FunctionCall(name: acc.name, arguments: acc.arguments),
                 )
             }
 
@@ -269,30 +269,29 @@ extension LLM.OpenAICompatibleAPI {
                     contentBlocks.append(ChatCompletionResponse.Content(
                         type: .thinking,
                         text: nil,
-                        thinking: thinking
+                        thinking: thinking,
                     ))
                 }
                 if !text.isEmpty {
                     contentBlocks.append(ChatCompletionResponse.Content(
                         type: .text,
-                        text: text
+                        text: text,
                     ))
                 }
                 if let tcs = completedToolCalls {
                     for tc in tcs {
-                        let inputDict: [String: JSONValue]?
-                        if let data = tc.function.arguments.data(using: .utf8),
-                           let decoded = try? JSONDecoder().decode([String: JSONValue].self, from: data)
+                        let inputDict: [String: JSONValue]? = if let data = tc.function.arguments.data(using: .utf8),
+                                                                 let decoded = try? JSONDecoder().decode([String: JSONValue].self, from: data)
                         {
-                            inputDict = decoded
+                            decoded
                         } else {
-                            inputDict = nil
+                            nil
                         }
                         contentBlocks.append(ChatCompletionResponse.Content(
                             type: .tool_use,
                             id: tc.id,
                             name: tc.function.name,
-                            input: inputDict
+                            input: inputDict,
                         ))
                     }
                 }
@@ -305,7 +304,7 @@ extension LLM.OpenAICompatibleAPI {
                     output_tokens: outputTokens,
                     cache_creation_input_tokens: cacheCreationInputTokens,
                     cache_read_input_tokens: cacheReadInputTokens,
-                    prompt_tokens_details: nil
+                    prompt_tokens_details: nil,
                 )
                 return ChatCompletionResponse(
                     id: id,
@@ -315,7 +314,7 @@ extension LLM.OpenAICompatibleAPI {
                     model: model,
                     created: nil,
                     choices: nil,
-                    content: contentBlocks.isEmpty ? nil : contentBlocks
+                    content: contentBlocks.isEmpty ? nil : contentBlocks,
                 )
             } else {
                 // OpenAI format
@@ -323,12 +322,12 @@ extension LLM.OpenAICompatibleAPI {
                     content: text.isEmpty ? nil : text,
                     role: .assistant,
                     tool_calls: completedToolCalls,
-                    reasoning_content: thinking.isEmpty ? nil : thinking
+                    reasoning_content: thinking.isEmpty ? nil : thinking,
                 )
                 let choice = ChatCompletionResponse.Choice(
                     index: 0,
                     message: message,
-                    finish_reason: finishReason
+                    finish_reason: finishReason,
                 )
                 let usage = ChatCompletionResponse.Usage(
                     prompt_tokens: promptTokens,
@@ -338,7 +337,7 @@ extension LLM.OpenAICompatibleAPI {
                     output_tokens: nil,
                     cache_creation_input_tokens: nil,
                     cache_read_input_tokens: nil,
-                    prompt_tokens_details: nil
+                    prompt_tokens_details: nil,
                 )
                 return ChatCompletionResponse(
                     id: id,
@@ -348,7 +347,7 @@ extension LLM.OpenAICompatibleAPI {
                     model: model,
                     created: nil,
                     choices: [choice],
-                    content: nil
+                    content: nil,
                 )
             }
         }

@@ -18,7 +18,7 @@ public extension LLM {
     func embedding(
         input: String,
         model: ModelType = .fast,
-        dimensions: Int? = nil
+        dimensions: Int? = nil,
     ) async throws -> [Float] {
         let api = providerApi
 
@@ -28,7 +28,7 @@ public extension LLM {
             input: input,
             model: model == .flagship ? .textEmbedding3Large : .textEmbedding3Small,
             encoding_format: .float,
-            dimensions: dimensions
+            dimensions: dimensions,
         )
         let json = try requestEncoder.encode(request)
         return try await api.embedding(for: json)
@@ -51,7 +51,7 @@ public extension LLM {
         if let info = RateLimitInfo.parse(from: httpResponse, provider: provider) {
             await chatRateLimiter.updateLimits(
                 maxRequests: info.requestLimit,
-                maxTokens: info.tokenLimit
+                maxTokens: info.tokenLimit,
             )
         }
 
@@ -97,7 +97,7 @@ public extension LLM {
         var warnings: [String] = []
         var effectiveConversation = conversation
 
-        if hasMedia && model.supportsVision == false {
+        if hasMedia, model.supportsVision == false {
             effectiveConversation = try await strippingMedia(conversation, using: imageDescriber)
             warnings.append("Images were converted to text descriptions because \(model.rawValue) does not support vision.")
         } else if hasMedia, let maxEdge = model.maxImageLongEdge, let resizer = imageResizer {
@@ -112,7 +112,7 @@ public extension LLM {
         if let info = RateLimitInfo.parse(from: httpResponse, provider: provider) {
             await chatRateLimiter.updateLimits(
                 maxRequests: info.requestLimit,
-                maxTokens: info.tokenLimit
+                maxTokens: info.tokenLimit,
             )
         }
 
@@ -128,7 +128,7 @@ public extension LLM {
         let toolCalls: [OpenAICompatibleAPI.ToolCall] = Self.extractToolCalls(from: response)
 
         // If we got neither text nor tool calls, the response is unparseable
-        if text == nil && toolCalls.isEmpty {
+        if text == nil, toolCalls.isEmpty {
             throw LLMError.parseResponse(response)
         }
 
@@ -151,7 +151,7 @@ public extension LLM {
             toolCalls: toolCalls,
             conversation: updatedConversation,
             rawResponse: response,
-            warnings: warnings
+            warnings: warnings,
         )
     }
 
@@ -164,7 +164,7 @@ public extension LLM {
     /// - Parameter response: The raw chat completion response.
     /// - Returns: An array of tool calls, or an empty array if none were found.
     static func extractToolCalls(
-        from response: OpenAICompatibleAPI.ChatCompletionResponse
+        from response: OpenAICompatibleAPI.ChatCompletionResponse,
     ) -> [OpenAICompatibleAPI.ToolCall] {
         // OpenAI format: tool_calls on the message in choices
         if let openAIToolCalls = response.choices?.first?.message.tool_calls, !openAIToolCalls.isEmpty {
@@ -189,8 +189,8 @@ public extension LLM {
                         id: id,
                         function: OpenAICompatibleAPI.FunctionCall(
                             name: name,
-                            arguments: argumentsJSON
-                        )
+                            arguments: argumentsJSON,
+                        ),
                     )
                 }
             }
@@ -209,12 +209,12 @@ public extension LLM {
     func startConversation(
         systemPrompt: String,
         userMessage: String,
-        configuration: ConversationConfiguration = .init()
+        configuration: ConversationConfiguration = .init(),
     ) async throws -> ConversationResponse {
         let conversation = Conversation(
             systemPrompt: systemPrompt,
             messages: [OpenAICompatibleAPI.ChatMessage(content: userMessage, role: .user)],
-            configuration: configuration
+            configuration: configuration,
         )
         return try await chat(conversation: conversation)
     }
@@ -227,7 +227,7 @@ public extension LLM {
     /// - Returns: A ``ConversationResponse`` with the model's reply and updated conversation.
     func continueConversation(
         _ conversation: Conversation,
-        userMessage: String
+        userMessage: String,
     ) async throws -> ConversationResponse {
         let updated = conversation.addingUserMessage(userMessage)
         return try await chat(conversation: updated)
@@ -243,12 +243,12 @@ public extension LLM {
     func startConversation(
         systemPrompt: String,
         userMessage: [OpenAICompatibleAPI.ContentPart],
-        configuration: ConversationConfiguration = .init()
+        configuration: ConversationConfiguration = .init(),
     ) async throws -> ConversationResponse {
         let conversation = Conversation(
             systemPrompt: systemPrompt,
             messages: [OpenAICompatibleAPI.ChatMessage(content: userMessage, role: .user)],
-            configuration: configuration
+            configuration: configuration,
         )
         return try await chat(conversation: conversation)
     }
@@ -261,7 +261,7 @@ public extension LLM {
     /// - Returns: A ``ConversationResponse`` with the model's reply and updated conversation.
     func continueConversation(
         _ conversation: Conversation,
-        userMessage: [OpenAICompatibleAPI.ContentPart]
+        userMessage: [OpenAICompatibleAPI.ContentPart],
     ) async throws -> ConversationResponse {
         let updated = conversation.addingUserMessage(userMessage)
         return try await chat(conversation: updated)

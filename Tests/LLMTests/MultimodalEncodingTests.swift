@@ -11,7 +11,7 @@ import Testing
 
 // MARK: - OpenAI Encoding Tests
 
-@Test func openAIEncoding_textOnlyMessage_encodesAsString() throws {
+@Test func `open AI encoding text only message encodes as string`() throws {
     let msg = LLM.OpenAICompatibleAPI.ChatMessage(content: "Hello", role: .user)
 
     let data = try JSONEncoder().encode(msg)
@@ -22,7 +22,7 @@ import Testing
     #expect(json["role"] as? String == "user")
 }
 
-@Test func openAIEncoding_nilContent_encodesAsNull() throws {
+@Test func `open AI encoding nil content encodes as null`() throws {
     let msg = LLM.OpenAICompatibleAPI.ChatMessage(content: nil, role: .assistant, tool_calls: [])
 
     let data = try JSONEncoder().encode(msg)
@@ -32,14 +32,14 @@ import Testing
     #expect(json["content"] is NSNull)
 }
 
-@Test func openAIEncoding_multimodalMessage_encodesAsArray() throws {
+@Test func `open AI encoding multimodal message encodes as array`() throws {
     let imageData = Data([0xFF, 0xD8, 0xFF, 0xE0])
     let msg = LLM.OpenAICompatibleAPI.ChatMessage(
         content: [
             .text("Describe this image"),
             .image(data: imageData, mediaType: "image/jpeg"),
         ],
-        role: .user
+        role: .user,
     )
 
     let data = try JSONEncoder().encode(msg)
@@ -61,11 +61,11 @@ import Testing
     #expect(imageURL["detail"] as? String == "auto")
 }
 
-@Test func openAIEncoding_imageDataURI_correctBase64() throws {
+@Test func `open AI encoding image data URI correct base 64`() throws {
     let imageData = Data([0x01, 0x02, 0x03])
     let msg = LLM.OpenAICompatibleAPI.ChatMessage(
         content: [.image(data: imageData, mediaType: "image/png")],
-        role: .user
+        role: .user,
     )
 
     let data = try JSONEncoder().encode(msg)
@@ -78,10 +78,10 @@ import Testing
     #expect(url == "data:image/png;base64,\(expectedBase64)")
 }
 
-@Test func openAIEncoding_pdfContent_encodedAsTextPlaceholder() throws {
+@Test func `open AI encoding pdf content encoded as text placeholder`() throws {
     let msg = LLM.OpenAICompatibleAPI.ChatMessage(
         content: [.pdf(data: Data([0x25, 0x50]), title: "doc.pdf")],
-        role: .user
+        role: .user,
     )
 
     let data = try JSONEncoder().encode(msg)
@@ -94,11 +94,11 @@ import Testing
 
 // MARK: - Decoding Tests
 
-@Test func openAIDecoding_stringContent_decodesCorrectly() throws {
+@Test func `open AI decoding string content decodes correctly`() throws {
     let jsonStr = #"{"content":"Hello","role":"user"}"#
     let msg = try JSONDecoder().decode(
         LLM.OpenAICompatibleAPI.ChatMessage.self,
-        from: Data(jsonStr.utf8)
+        from: Data(jsonStr.utf8),
     )
 
     #expect(msg.textContent == "Hello")
@@ -106,36 +106,36 @@ import Testing
     #expect(msg.role == .user)
 }
 
-@Test func openAIDecoding_arrayContent_decodesTextParts() throws {
+@Test func `open AI decoding array content decodes text parts`() throws {
     let jsonStr = #"{"content":[{"type":"text","text":"Hello"},{"type":"text","text":" world"}],"role":"user"}"#
     let msg = try JSONDecoder().decode(
         LLM.OpenAICompatibleAPI.ChatMessage.self,
-        from: Data(jsonStr.utf8)
+        from: Data(jsonStr.utf8),
     )
 
     #expect(msg.content.count == 2)
     #expect(msg.textContent == "Hello world")
 }
 
-@Test func openAIDecoding_nullContent_decodesAsEmpty() throws {
+@Test func `open AI decoding null content decodes as empty`() throws {
     let jsonStr = #"{"content":null,"role":"assistant"}"#
     let msg = try JSONDecoder().decode(
         LLM.OpenAICompatibleAPI.ChatMessage.self,
-        from: Data(jsonStr.utf8)
+        from: Data(jsonStr.utf8),
     )
 
     #expect(msg.content.isEmpty)
     #expect(msg.textContent == nil)
 }
 
-@Test func openAIDecoding_imageURLContent_decodesAsImage() throws {
+@Test func `open AI decoding image URL content decodes as image`() throws {
     let base64 = Data([0xFF, 0xD8]).base64EncodedString()
     let jsonStr = """
     {"content":[{"type":"image_url","image_url":{"url":"data:image/jpeg;base64,\(base64)","detail":"auto"}}],"role":"user"}
     """
     let msg = try JSONDecoder().decode(
         LLM.OpenAICompatibleAPI.ChatMessage.self,
-        from: Data(jsonStr.utf8)
+        from: Data(jsonStr.utf8),
     )
 
     #expect(msg.content.count == 1)
@@ -149,7 +149,7 @@ import Testing
 
 // MARK: - Round-trip Tests
 
-@Test func openAIEncoding_textOnlyRoundTrip() throws {
+@Test func `open AI encoding text only round trip`() throws {
     let original = LLM.OpenAICompatibleAPI.ChatMessage(content: "Hello", role: .user, name: "test")
     let data = try JSONEncoder().encode(original)
     let decoded = try JSONDecoder().decode(LLM.OpenAICompatibleAPI.ChatMessage.self, from: data)
@@ -159,14 +159,14 @@ import Testing
     #expect(decoded.name == original.name)
 }
 
-@Test func openAIEncoding_multimodalRoundTrip() throws {
+@Test func `open AI encoding multimodal round trip`() throws {
     let imageData = Data([0xFF, 0xD8, 0xFF, 0xE0])
     let original = LLM.OpenAICompatibleAPI.ChatMessage(
         content: [
             .text("Look at this"),
             .image(data: imageData, mediaType: "image/jpeg", filename: "test.jpg", description: "A test"),
         ],
-        role: .user
+        role: .user,
     )
 
     let data = try JSONEncoder().encode(original)

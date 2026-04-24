@@ -11,7 +11,7 @@ import Testing
 
 // MARK: - Conversation Helper Tests
 
-@Test func conversation_addingUserMessage_appendsMessage() {
+@Test func `conversation adding user message appends message`() {
     let conversation = LLM.Conversation(systemPrompt: "You are a helpful assistant.")
     let updated = conversation.addingUserMessage("Hello!")
 
@@ -20,7 +20,7 @@ import Testing
     #expect(updated.messages[0].role == .user)
 }
 
-@Test func conversation_addingUserMessage_preservesExisting() {
+@Test func `conversation adding user message preserves existing`() {
     var conversation = LLM.Conversation(systemPrompt: "System")
     conversation = conversation.addingUserMessage("First")
     conversation = conversation.addingUserMessage("Second")
@@ -30,7 +30,7 @@ import Testing
     #expect(conversation.messages[1].textContent == "Second")
 }
 
-@Test func conversation_addingAssistantMessage_appendsMessage() {
+@Test func `conversation adding assistant message appends message`() {
     let conversation = LLM.Conversation(systemPrompt: "System")
     let updated = conversation.addingAssistantMessage("Hello, how can I help?")
 
@@ -39,7 +39,7 @@ import Testing
     #expect(updated.messages[0].role == .assistant)
 }
 
-@Test func conversation_addingAssistantMessage_preservesExisting() {
+@Test func `conversation adding assistant message preserves existing`() {
     var conversation = LLM.Conversation(systemPrompt: "System")
     conversation = conversation.addingUserMessage("Hi")
     conversation = conversation.addingAssistantMessage("Hello!")
@@ -49,7 +49,7 @@ import Testing
     #expect(conversation.messages[1].role == .assistant)
 }
 
-@Test func conversation_chaining_userAssistantUser() {
+@Test func `conversation chaining user assistant user`() {
     let conversation = LLM.Conversation(systemPrompt: "System")
         .addingUserMessage("Question 1")
         .addingAssistantMessage("Answer 1")
@@ -64,29 +64,29 @@ import Testing
     #expect(conversation.messages[2].textContent == "Question 2")
 }
 
-@Test func conversation_originalNotMutated() {
+@Test func `conversation original not mutated`() {
     let original = LLM.Conversation(systemPrompt: "System")
     _ = original.addingUserMessage("New message")
 
     #expect(original.messages.isEmpty)
 }
 
-@Test func conversation_preservesSystemPrompt() {
+@Test func `conversation preserves system prompt`() {
     let conversation = LLM.Conversation(systemPrompt: "Be helpful")
         .addingUserMessage("Hi")
 
     #expect(conversation.systemPrompt == "Be helpful")
 }
 
-@Test func conversation_preservesConfiguration() {
+@Test func `conversation preserves configuration`() {
     let config = LLM.ConversationConfiguration(
         modelType: .flagship,
         inference: .reasoning,
-        temperature: 0.7
+        temperature: 0.7,
     )
     let conversation = LLM.Conversation(
         systemPrompt: "System",
-        configuration: config
+        configuration: config,
     ).addingUserMessage("Hi")
 
     #expect(conversation.configuration.modelType == .flagship)
@@ -96,7 +96,7 @@ import Testing
 
 // MARK: - Conversation.request(for:) - OpenAI Tests
 
-@Test func conversationRequest_openAI_systemMessageIncludedInMessages() {
+@Test func `conversation request open AI system message included in messages`() {
     let conversation = LLM.Conversation(systemPrompt: "You are helpful")
         .addingUserMessage("Hello")
 
@@ -112,11 +112,11 @@ import Testing
     #expect(request.messages[1].textContent == "Hello")
 }
 
-@Test func conversationRequest_openAI_usesMaxCompletionTokens() {
+@Test func `conversation request open AI uses max completion tokens`() {
     let config = LLM.ConversationConfiguration(maxTokens: 500)
     let conversation = LLM.Conversation(
         systemPrompt: "System",
-        configuration: config
+        configuration: config,
     ).addingUserMessage("Hi")
 
     let provider = LLM.Provider.openAI(apiKey: "test")
@@ -126,12 +126,12 @@ import Testing
     #expect(request.max_completion_tokens == 500)
 }
 
-@Test func conversationRequest_openAI_usesStop() {
+@Test func `conversation request open AI uses stop`() {
     // GPT-5 models skip the stop parameter
     let config = LLM.ConversationConfiguration(stopTokens: ["END", "STOP"])
     let conversation = LLM.Conversation(
         systemPrompt: "System",
-        configuration: config
+        configuration: config,
     ).addingUserMessage("Hi")
 
     let provider = LLM.Provider.openAI(apiKey: "test")
@@ -141,14 +141,14 @@ import Testing
     #expect(request.stop_sequences == nil)
 }
 
-@Test func conversationRequest_openAI_reasoning_autoSetsReasoningEffort() {
+@Test func `conversation request open AI reasoning auto sets reasoning effort`() {
     let config = LLM.ConversationConfiguration(
         modelType: .flagship,
-        inference: .reasoning
+        inference: .reasoning,
     )
     let conversation = LLM.Conversation(
         systemPrompt: "System",
-        configuration: config
+        configuration: config,
     ).addingUserMessage("Think about this")
 
     let provider = LLM.Provider.openAI(apiKey: "test")
@@ -158,15 +158,15 @@ import Testing
     #expect(request.reasoning_effort == .high)
 }
 
-@Test func conversationRequest_openAI_reasoning_skipsTemperatureAndTopP() {
+@Test func `conversation request open AI reasoning skips temperature and top P`() {
     let config = LLM.ConversationConfiguration(
         inference: .reasoning,
         temperature: 0.5,
-        topP: 0.9
+        topP: 0.9,
     )
     let conversation = LLM.Conversation(
         systemPrompt: "System",
-        configuration: config
+        configuration: config,
     ).addingUserMessage("Hi")
 
     let provider = LLM.Provider.openAI(apiKey: "test")
@@ -176,16 +176,16 @@ import Testing
     #expect(request.top_p == nil)
 }
 
-@Test func conversationRequest_openAI_direct_includesTemperatureAndTopP() {
+@Test func `conversation request open AI direct includes temperature and top P`() {
     // GPT-5 models (default .fast) skip temperature and topP
     let config = LLM.ConversationConfiguration(
         inference: .direct,
         temperature: 0.5,
-        topP: 0.9
+        topP: 0.9,
     )
     let conversation = LLM.Conversation(
         systemPrompt: "System",
-        configuration: config
+        configuration: config,
     ).addingUserMessage("Hi")
 
     let provider = LLM.Provider.openAI(apiKey: "test")
@@ -195,11 +195,11 @@ import Testing
     #expect(request.top_p == nil)
 }
 
-@Test func conversationRequest_openAI_noThinking() {
+@Test func `conversation request open AI no thinking`() {
     let config = LLM.ConversationConfiguration(inference: .reasoning)
     let conversation = LLM.Conversation(
         systemPrompt: "System",
-        configuration: config
+        configuration: config,
     ).addingUserMessage("Hi")
 
     let provider = LLM.Provider.openAI(apiKey: "test")
@@ -211,7 +211,7 @@ import Testing
 
 // MARK: - Conversation.request(for:) - Anthropic Tests
 
-@Test func conversationRequest_anthropic_systemFieldPopulated() {
+@Test func `conversation request anthropic system field populated`() {
     let conversation = LLM.Conversation(systemPrompt: "You are helpful")
         .addingUserMessage("Hello")
 
@@ -228,11 +228,11 @@ import Testing
     #expect(request.messages[0].role == .user)
 }
 
-@Test func conversationRequest_anthropic_usesMaxTokens() {
+@Test func `conversation request anthropic uses max tokens`() {
     let config = LLM.ConversationConfiguration(maxTokens: 500)
     let conversation = LLM.Conversation(
         systemPrompt: "System",
-        configuration: config
+        configuration: config,
     ).addingUserMessage("Hi")
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -242,11 +242,11 @@ import Testing
     #expect(request.max_completion_tokens == nil)
 }
 
-@Test func conversationRequest_anthropic_usesStopSequences() {
+@Test func `conversation request anthropic uses stop sequences`() {
     let config = LLM.ConversationConfiguration(stopTokens: ["END", "STOP"])
     let conversation = LLM.Conversation(
         systemPrompt: "System",
-        configuration: config
+        configuration: config,
     ).addingUserMessage("Hi")
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -256,11 +256,11 @@ import Testing
     #expect(request.stop_sequences == ["END", "STOP"])
 }
 
-@Test func conversationRequest_anthropic_skipsFrequencyPenalty() {
+@Test func `conversation request anthropic skips frequency penalty`() {
     let config = LLM.ConversationConfiguration(frequencyPenalty: 0.5)
     let conversation = LLM.Conversation(
         systemPrompt: "System",
-        configuration: config
+        configuration: config,
     ).addingUserMessage("Hi")
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -269,14 +269,14 @@ import Testing
     #expect(request.frequency_penalty == nil)
 }
 
-@Test func conversationRequest_anthropic_reasoning_includesThinking() {
+@Test func `conversation request anthropic reasoning includes thinking`() {
     let config = LLM.ConversationConfiguration(
         inference: .reasoning,
-        maxReasoningTokens: 2048
+        maxReasoningTokens: 2048,
     )
     let conversation = LLM.Conversation(
         systemPrompt: "System",
-        configuration: config
+        configuration: config,
     ).addingUserMessage("Think about this")
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -287,11 +287,11 @@ import Testing
     #expect(request.thinking?.budget_tokens == 2048)
 }
 
-@Test func conversationRequest_anthropic_reasoning_noReasoningEffort() {
+@Test func `conversation request anthropic reasoning no reasoning effort`() {
     let config = LLM.ConversationConfiguration(inference: .reasoning)
     let conversation = LLM.Conversation(
         systemPrompt: "System",
-        configuration: config
+        configuration: config,
     ).addingUserMessage("Hi")
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -301,11 +301,11 @@ import Testing
     #expect(request.reasoning_effort == nil)
 }
 
-@Test func conversationRequest_anthropic_selectsCorrectModel_fastDirect() {
+@Test func `conversation request anthropic selects correct model fast direct`() {
     let config = LLM.ConversationConfiguration(modelType: .fast, inference: .direct)
     let conversation = LLM.Conversation(
         systemPrompt: "System",
-        configuration: config
+        configuration: config,
     ).addingUserMessage("Hi")
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -314,11 +314,11 @@ import Testing
     #expect(request.model == .claude45Haiku)
 }
 
-@Test func conversationRequest_anthropic_selectsCorrectModel_fastReasoning() {
+@Test func `conversation request anthropic selects correct model fast reasoning`() {
     let config = LLM.ConversationConfiguration(modelType: .fast, inference: .reasoning)
     let conversation = LLM.Conversation(
         systemPrompt: "System",
-        configuration: config
+        configuration: config,
     ).addingUserMessage("Hi")
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -327,11 +327,11 @@ import Testing
     #expect(request.model == .claude45Haiku)
 }
 
-@Test func conversationRequest_anthropic_selectsCorrectModel_flagship() {
+@Test func `conversation request anthropic selects correct model flagship`() {
     let config = LLM.ConversationConfiguration(modelType: .flagship, inference: .direct)
     let conversation = LLM.Conversation(
         systemPrompt: "System",
-        configuration: config
+        configuration: config,
     ).addingUserMessage("Hi")
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -342,7 +342,7 @@ import Testing
 
 // MARK: - Conversation JSON Serialization Tests
 
-@Test func conversationRequest_serializesToCorrectJSON_openAI() throws {
+@Test func `conversation request serializes to correct JSON open AI`() throws {
     let conversation = LLM.Conversation(systemPrompt: "You are a helpful assistant")
         .addingUserMessage("What is 2+2?")
         .addingAssistantMessage("4")
@@ -378,7 +378,7 @@ import Testing
     #expect(messages[3]["content"] as? String == "And 3+3?")
 }
 
-@Test func conversationRequest_serializesToCorrectJSON_anthropic() throws {
+@Test func `conversation request serializes to correct JSON anthropic`() throws {
     let conversation = LLM.Conversation(systemPrompt: "You are a helpful assistant")
         .addingUserMessage("What is 2+2?")
         .addingAssistantMessage("4")
@@ -420,16 +420,16 @@ import Testing
     #expect(content2.first?["text"] as? String == "And 3+3?")
 }
 
-@Test func conversationRequest_serializesToCorrectJSON_withReasoning() throws {
+@Test func `conversation request serializes to correct JSON with reasoning`() throws {
     let config = LLM.ConversationConfiguration(
         modelType: .flagship,
         inference: .reasoning,
         maxTokens: 1000,
-        maxReasoningTokens: 2048
+        maxReasoningTokens: 2048,
     )
     let conversation = LLM.Conversation(
         systemPrompt: "Think step by step",
-        configuration: config
+        configuration: config,
     ).addingUserMessage("Solve this puzzle")
 
     // Test OpenAI serialization
@@ -437,7 +437,7 @@ import Testing
     let openAIData = try JSONEncoder().encode(openAIRequest)
     let openAIJson = try #require(JSONSerialization.jsonObject(with: openAIData) as? [String: Any])
 
-    #expect(openAIJson["model"] as? String == "gpt-5.4")
+    #expect(openAIJson["model"] as? String == "gpt-5.5")
     #expect(openAIJson["reasoning_effort"] as? String == "high")
     #expect(openAIJson["max_completion_tokens"] as? Int == 3048) // 1000 + 2048
     #expect(openAIJson["thinking"] == nil || openAIJson["thinking"] is NSNull)
@@ -461,7 +461,7 @@ import Testing
 
 // MARK: - ConversationConfiguration Tests
 
-@Test func conversationConfiguration_defaults() {
+@Test func `conversation configuration defaults`() {
     let config = LLM.ConversationConfiguration()
 
     #expect(config.modelType == .fast)
@@ -475,7 +475,7 @@ import Testing
     #expect(config.stopTokens == nil)
 }
 
-@Test func conversationConfiguration_customValues() {
+@Test func `conversation configuration custom values`() {
     let config = LLM.ConversationConfiguration(
         modelType: .flagship,
         inference: .reasoning,
@@ -486,7 +486,7 @@ import Testing
         maxTokens: 1000,
         maxReasoningTokens: 500,
         reasoningEffort: .medium,
-        stopTokens: ["END"]
+        stopTokens: ["END"],
     )
 
     #expect(config.modelType == .flagship)
@@ -503,28 +503,28 @@ import Testing
 
 // MARK: - Caching Tests
 
-@Test func conversationConfiguration_cachingDefaults() {
+@Test func `conversation configuration caching defaults`() {
     let config = LLM.ConversationConfiguration()
 
     #expect(config.enableCaching == true)
     #expect(config.cacheTTL == nil)
 }
 
-@Test func conversationConfiguration_cachingEnabled() {
+@Test func `conversation configuration caching enabled`() {
     let config = LLM.ConversationConfiguration(
         enableCaching: true,
-        cacheTTL: .oneHour
+        cacheTTL: .oneHour,
     )
 
     #expect(config.enableCaching == true)
     #expect(config.cacheTTL == .oneHour)
 }
 
-@Test func conversationRequest_anthropic_cachingDisabled_usesStringSystem() {
+@Test func `conversation request anthropic caching disabled uses string system`() {
     let config = LLM.ConversationConfiguration(enableCaching: false)
     let conversation = LLM.Conversation(
         systemPrompt: "You are helpful",
-        configuration: config
+        configuration: config,
     ).addingUserMessage("Hello")
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -534,11 +534,11 @@ import Testing
     #expect(request.systemBlocks == nil)
 }
 
-@Test func conversationRequest_anthropic_cachingEnabled_usesSystemBlocks() {
+@Test func `conversation request anthropic caching enabled uses system blocks`() {
     let config = LLM.ConversationConfiguration(enableCaching: true)
     let conversation = LLM.Conversation(
         systemPrompt: "You are helpful",
-        configuration: config
+        configuration: config,
     ).addingUserMessage("Hello")
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -551,14 +551,14 @@ import Testing
     #expect(request.systemBlocks?[0].cache_control != nil)
 }
 
-@Test func conversationRequest_anthropic_cachingEnabled_withTTL() {
+@Test func `conversation request anthropic caching enabled with TTL`() {
     let config = LLM.ConversationConfiguration(
         enableCaching: true,
-        cacheTTL: .fiveMinutes
+        cacheTTL: .fiveMinutes,
     )
     let conversation = LLM.Conversation(
         systemPrompt: "System",
-        configuration: config
+        configuration: config,
     ).addingUserMessage("Hi")
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -567,7 +567,7 @@ import Testing
     #expect(request.systemBlocks?[0].cache_control?.ttl == .fiveMinutes)
 }
 
-@Test func conversationRequest_cachesConversationHistory_anthropic() throws {
+@Test func `conversation request caches conversation history anthropic`() throws {
     let conversation = LLM.Conversation(systemPrompt: "You are helpful")
         .addingUserMessage("What is 2+2?")
         .addingAssistantMessage("4")
@@ -597,11 +597,11 @@ import Testing
     }
 }
 
-@Test func conversationRequest_noCacheOnMessages_whenCachingDisabled() throws {
+@Test func `conversation request no cache on messages when caching disabled`() throws {
     let config = LLM.ConversationConfiguration(enableCaching: false)
     let conversation = LLM.Conversation(
         systemPrompt: "System",
-        configuration: config
+        configuration: config,
     )
     .addingUserMessage("Hello")
     .addingAssistantMessage("Hi")
@@ -623,7 +623,7 @@ import Testing
     }
 }
 
-@Test func conversationRequest_noCacheOnMessages_singleMessage() throws {
+@Test func `conversation request no cache on messages single message`() throws {
     let conversation = LLM.Conversation(systemPrompt: "System")
         .addingUserMessage("Hello")
 
@@ -641,14 +641,14 @@ import Testing
     }
 }
 
-@Test func conversationRequest_cachesToolResultTurn_anthropic() throws {
+@Test func `conversation request caches tool result turn anthropic`() throws {
     let toolCall = LLM.OpenAICompatibleAPI.ToolCall(
         id: "call_123",
         type: "function",
         function: LLM.OpenAICompatibleAPI.FunctionCall(
             name: "get_weather",
-            arguments: "{\"city\":\"Seattle\"}"
-        )
+            arguments: "{\"city\":\"Seattle\"}",
+        ),
     )
     let conversation = LLM.Conversation(systemPrompt: "You are helpful")
         .addingUserMessage("What's the weather?")
@@ -673,11 +673,11 @@ import Testing
     #expect(lastBlock["cache_control"] != nil)
 }
 
-@Test func conversationRequest_openAI_cachingHasNoEffect() {
+@Test func `conversation request open AI caching has no effect`() {
     let config = LLM.ConversationConfiguration(enableCaching: true)
     let conversation = LLM.Conversation(
         systemPrompt: "You are helpful",
-        configuration: config
+        configuration: config,
     ).addingUserMessage("Hello")
 
     let provider = LLM.Provider.openAI(apiKey: "test")

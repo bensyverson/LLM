@@ -40,7 +40,7 @@ public enum JSONValue: Friendly {
         } else {
             throw DecodingError.dataCorruptedError(
                 in: container,
-                debugDescription: "Cannot decode JSONValue"
+                debugDescription: "Cannot decode JSONValue",
             )
         }
     }
@@ -79,9 +79,9 @@ public enum JSONValue: Friendly {
 
     public var doubleValue: Double? {
         switch self {
-        case let .number(value): return value
-        case let .integer(value): return Double(value)
-        default: return nil
+        case let .number(value): value
+        case let .integer(value): Double(value)
+        default: nil
         }
     }
 

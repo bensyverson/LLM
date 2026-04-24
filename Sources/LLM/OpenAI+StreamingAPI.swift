@@ -20,7 +20,7 @@ import Foundation
         /// - Throws: ``OpenAIError/badResponse(_:)`` if the response isn't HTTP,
         ///   or ``OpenAIError/badResponseCode(_:)`` on non-200 status codes.
         func streamingChatCompletion(
-            with body: Data
+            with body: Data,
         ) async throws -> (SSEParser<AsyncLineSequence<URLSession.AsyncBytes>>, HTTPURLResponse, URLSession) {
             let url = baseURL.appending(path: chatEndpoint)
 

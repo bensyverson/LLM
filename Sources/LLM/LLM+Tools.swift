@@ -21,7 +21,7 @@ public extension LLM.OpenAICompatibleAPI {
 
         public init(
             type: ToolType = .function,
-            function: FunctionDefinition
+            function: FunctionDefinition,
         ) {
             self.type = type
             self.function = function
@@ -40,7 +40,7 @@ public extension LLM.OpenAICompatibleAPI {
         public init(
             name: String,
             description: String,
-            parameters: JSONSchema
+            parameters: JSONSchema,
         ) {
             self.name = name
             self.description = description
@@ -70,7 +70,7 @@ public extension LLM.OpenAICompatibleAPI {
             items: JSONSchema? = nil,
             required: [String]? = nil,
             description: String? = nil,
-            enum: [String]? = nil
+            enum: [String]? = nil,
         ) {
             self.type = type
             self.properties = properties
@@ -102,7 +102,7 @@ public extension LLM.OpenAICompatibleAPI {
         public static func object(
             properties: [String: JSONSchema],
             required: [String]? = nil,
-            description: String? = nil
+            description: String? = nil,
         ) -> JSONSchema {
             JSONSchema(type: .object, properties: properties, required: required, description: description)
         }
@@ -196,7 +196,7 @@ public extension LLM.OpenAICompatibleAPI {
         public init(
             id: String,
             type: String = "function",
-            function: FunctionCall
+            function: FunctionCall,
         ) {
             self.id = id
             self.type = type

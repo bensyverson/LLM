@@ -11,12 +11,12 @@ import Testing
 
 // MARK: - Provider.isOpenAI Tests
 
-@Test func provider_isOpenAI_trueForOpenAI() {
+@Test func `provider is open AI true for open AI`() {
     let provider = LLM.Provider.openAI(apiKey: "test")
     #expect(provider.isOpenAI == true)
 }
 
-@Test func provider_isOpenAI_falseForOthers() throws {
+@Test func `provider is open AI false for others`() throws {
     #expect(LLM.Provider.anthropic(apiKey: "test").isOpenAI == false)
     #expect(LLM.Provider.lmStudio.isOpenAI == false)
     #expect(LLM.Provider.localhost(port: 8080).isOpenAI == false)
@@ -25,12 +25,12 @@ import Testing
 
 // MARK: - Provider.isAnthropic Tests
 
-@Test func provider_isAnthropic_trueForAnthropic() {
+@Test func `provider is anthropic true for anthropic`() {
     let provider = LLM.Provider.anthropic(apiKey: "test")
     #expect(provider.isAnthropic == true)
 }
 
-@Test func provider_isAnthropic_falseForOthers() throws {
+@Test func `provider is anthropic false for others`() throws {
     #expect(LLM.Provider.openAI(apiKey: "test").isAnthropic == false)
     #expect(LLM.Provider.lmStudio.isAnthropic == false)
     #expect(LLM.Provider.localhost(port: 8080).isAnthropic == false)
@@ -39,7 +39,7 @@ import Testing
 
 // MARK: - Provider.simpleProvider Tests
 
-@Test func provider_simpleProvider_openAI() {
+@Test func `provider simple provider open AI`() {
     let provider = LLM.Provider.openAI(apiKey: "my-key")
     let simple = provider.simpleProvider
 
@@ -50,7 +50,7 @@ import Testing
     }
 }
 
-@Test func provider_simpleProvider_anthropic() {
+@Test func `provider simple provider anthropic`() {
     let provider = LLM.Provider.anthropic(apiKey: "my-key")
     let simple = provider.simpleProvider
 
@@ -61,7 +61,7 @@ import Testing
     }
 }
 
-@Test func provider_simpleProvider_lmStudio() {
+@Test func `provider simple provider lm studio`() {
     let provider = LLM.Provider.lmStudio
     let simple = provider.simpleProvider
 
@@ -72,7 +72,7 @@ import Testing
     }
 }
 
-@Test func provider_simpleProvider_localhost() {
+@Test func `provider simple provider localhost`() {
     let provider = LLM.Provider.localhost(port: 9000)
     let simple = provider.simpleProvider
 
@@ -83,7 +83,7 @@ import Testing
     }
 }
 
-@Test func provider_simpleProvider_other() throws {
+@Test func `provider simple provider other`() throws {
     let url = try #require(URL(string: "https://my-api.example.com"))
     let provider = LLM.Provider.other(url, apiKey: "key")
     let simple = provider.simpleProvider
@@ -97,7 +97,7 @@ import Testing
 
 // MARK: - SimpleProvider.fullProvider Tests
 
-@Test func simpleProvider_fullProvider_openAI() {
+@Test func `simple provider full provider open AI`() {
     let simple = LLM.SimpleProvider.openAI
     let full = simple.fullProvider(using: "my-api-key")
 
@@ -108,7 +108,7 @@ import Testing
     }
 }
 
-@Test func simpleProvider_fullProvider_anthropic() {
+@Test func `simple provider full provider anthropic`() {
     let simple = LLM.SimpleProvider.anthropic(baseURL: nil)
     let full = simple.fullProvider(using: "my-api-key")
 
@@ -119,7 +119,7 @@ import Testing
     }
 }
 
-@Test func simpleProvider_fullProvider_lmStudio() {
+@Test func `simple provider full provider lm studio`() {
     let simple = LLM.SimpleProvider.lmStudio
     let full = simple.fullProvider(using: "ignored-key")
 
@@ -130,7 +130,7 @@ import Testing
     }
 }
 
-@Test func simpleProvider_fullProvider_localhost() {
+@Test func `simple provider full provider localhost`() {
     let simple = LLM.SimpleProvider.localhost(port: 5000)
     let full = simple.fullProvider(using: "ignored-key")
 
@@ -141,7 +141,7 @@ import Testing
     }
 }
 
-@Test func simpleProvider_fullProvider_other() throws {
+@Test func `simple provider full provider other`() throws {
     let url = try #require(URL(string: "https://custom.api.com"))
     let simple = LLM.SimpleProvider.other(url)
     let full = simple.fullProvider(using: "my-key")
@@ -156,7 +156,7 @@ import Testing
 
 // MARK: - Round-trip Tests (Provider -> SimpleProvider -> Provider)
 
-@Test func provider_roundTrip_openAI() {
+@Test func `provider round trip open AI`() {
     let original = LLM.Provider.openAI(apiKey: "original-key")
     let simple = original.simpleProvider
     let restored = simple.fullProvider(using: "new-key")
@@ -168,7 +168,7 @@ import Testing
     }
 }
 
-@Test func provider_roundTrip_anthropic() {
+@Test func `provider round trip anthropic`() {
     let original = LLM.Provider.anthropic(apiKey: "original-key")
     let simple = original.simpleProvider
     let restored = simple.fullProvider(using: "new-key")
@@ -180,7 +180,7 @@ import Testing
     }
 }
 
-@Test func provider_roundTrip_localhost() {
+@Test func `provider round trip localhost`() {
     let original = LLM.Provider.localhost(port: 7777)
     let simple = original.simpleProvider
     let restored = simple.fullProvider(using: "any-key")
@@ -190,25 +190,4 @@ import Testing
     } else {
         Issue.record("Expected .localhost provider with correct port")
     }
-}
-
-// MARK: - Provider Rate Limiter Tests
-
-@Test func provider_chatLimiter_openAI() {
-    let provider = LLM.Provider.openAI(apiKey: "test")
-    let limiter = provider.chatLimiter
-    // Just verify we get a limiter - can't easily test its internals
-    #expect(limiter is LLM.RateLimiter)
-}
-
-@Test func provider_chatLimiter_anthropic() {
-    let provider = LLM.Provider.anthropic(apiKey: "test")
-    let limiter = provider.chatLimiter
-    #expect(limiter is LLM.RateLimiter)
-}
-
-@Test func provider_embeddingLimiter_openAI() {
-    let provider = LLM.Provider.openAI(apiKey: "test")
-    let limiter = provider.embeddingLimiter
-    #expect(limiter is LLM.RateLimiter)
 }

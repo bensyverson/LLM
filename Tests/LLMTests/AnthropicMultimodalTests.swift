@@ -11,14 +11,14 @@ import Testing
 
 // MARK: - Anthropic Image Encoding
 
-@Test func anthropicEncoding_imageBlock_encodesBase64Source() throws {
+@Test func `anthropic encoding image block encodes base 64 source`() throws {
     let imageData = Data([0xFF, 0xD8, 0xFF, 0xE0])
     let msg = LLM.OpenAICompatibleAPI.ChatMessage(
         content: [
             .text("Describe this"),
             .image(data: imageData, mediaType: "image/jpeg"),
         ],
-        role: .user
+        role: .user,
     )
 
     let messages = LLM.OpenAICompatibleAPI.AnthropicMessageConverter.convert([msg])
@@ -48,11 +48,11 @@ import Testing
 
 // MARK: - Anthropic Document Encoding
 
-@Test func anthropicEncoding_documentBlock_encodesWithTitle() throws {
+@Test func `anthropic encoding document block encodes with title`() throws {
     let pdfData = Data([0x25, 0x50, 0x44, 0x46])
     let msg = LLM.OpenAICompatibleAPI.ChatMessage(
         content: [.pdf(data: pdfData, title: "report.pdf")],
-        role: .user
+        role: .user,
     )
 
     let messages = LLM.OpenAICompatibleAPI.AnthropicMessageConverter.convert([msg])
@@ -71,7 +71,7 @@ import Testing
 
 // MARK: - Anthropic Tool Result with Images
 
-@Test func anthropicEncoding_toolResultWithImage_encodesContentArray() throws {
+@Test func `anthropic encoding tool result with image encodes content array`() throws {
     let imageData = Data([0x89, 0x50, 0x4E, 0x47])
     let msg = LLM.OpenAICompatibleAPI.ChatMessage(
         content: [
@@ -79,7 +79,7 @@ import Testing
             .image(data: imageData, mediaType: "image/png"),
         ],
         role: .tool,
-        tool_call_id: "call_123"
+        tool_call_id: "call_123",
     )
 
     let messages = LLM.OpenAICompatibleAPI.AnthropicMessageConverter.convert([msg])
@@ -105,11 +105,11 @@ import Testing
 
 // MARK: - Consecutive User Messages Merged
 
-@Test func anthropicEncoding_consecutiveUserMessages_merged() {
+@Test func `anthropic encoding consecutive user messages merged`() {
     let msg1 = LLM.OpenAICompatibleAPI.ChatMessage(content: "First", role: .user)
     let msg2 = LLM.OpenAICompatibleAPI.ChatMessage(
         content: [.text("Second"), .image(data: Data(), mediaType: "image/jpeg")],
-        role: .user
+        role: .user,
     )
 
     let messages = LLM.OpenAICompatibleAPI.AnthropicMessageConverter.convert([msg1, msg2])
@@ -121,7 +121,7 @@ import Testing
 
 // MARK: - Text-only Messages Still Work
 
-@Test func anthropicEncoding_textOnlyMessage_stillWorks() throws {
+@Test func `anthropic encoding text only message still works`() throws {
     let msg = LLM.OpenAICompatibleAPI.ChatMessage(content: "Hello", role: .user)
     let messages = LLM.OpenAICompatibleAPI.AnthropicMessageConverter.convert([msg])
 

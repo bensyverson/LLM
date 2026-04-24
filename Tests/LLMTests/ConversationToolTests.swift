@@ -11,14 +11,14 @@ import Testing
 
 // MARK: - ConversationConfiguration Tool Fields
 
-@Test func conversationConfiguration_toolsDefaultToNil() {
+@Test func `conversation configuration tools default to nil`() {
     let config = LLM.ConversationConfiguration()
 
     #expect(config.tools == nil)
     #expect(config.toolChoice == nil)
 }
 
-@Test func conversationConfiguration_toolsCanBeSet() {
+@Test func `conversation configuration tools can be set`() {
     let toolDef = LLM.OpenAICompatibleAPI.ToolDefinition(
         function: LLM.OpenAICompatibleAPI.FunctionDefinition(
             name: "get_weather",
@@ -27,13 +27,13 @@ import Testing
                 properties: [
                     "location": LLM.OpenAICompatibleAPI.JSONSchema.string(),
                 ],
-                required: ["location"]
-            )
-        )
+                required: ["location"],
+            ),
+        ),
     )
     let config = LLM.ConversationConfiguration(
         tools: [toolDef],
-        toolChoice: .auto
+        toolChoice: .auto,
     )
 
     #expect(config.tools?.count == 1)
@@ -43,21 +43,21 @@ import Testing
 
 // MARK: - Conversation.request(for:) passes tools
 
-@Test func conversationRequest_passesToolsToRequest() {
+@Test func `conversation request passes tools to request`() {
     let toolDef = LLM.OpenAICompatibleAPI.ToolDefinition(
         function: LLM.OpenAICompatibleAPI.FunctionDefinition(
             name: "search",
             description: "Search the web",
-            parameters: LLM.OpenAICompatibleAPI.JSONSchema.object(properties: [:])
-        )
+            parameters: LLM.OpenAICompatibleAPI.JSONSchema.object(properties: [:]),
+        ),
     )
     let config = LLM.ConversationConfiguration(
         tools: [toolDef],
-        toolChoice: .required
+        toolChoice: .required,
     )
     let conversation = LLM.Conversation(
         systemPrompt: "System",
-        configuration: config
+        configuration: config,
     ).addingUserMessage("Find something")
 
     let request = conversation.request(for: .openAI(apiKey: "test"))
@@ -67,11 +67,11 @@ import Testing
     #expect(request.tool_choice == .required)
 }
 
-@Test func conversationRequest_nilToolsNotIncluded() {
+@Test func `conversation request nil tools not included`() {
     let config = LLM.ConversationConfiguration()
     let conversation = LLM.Conversation(
         systemPrompt: "System",
-        configuration: config
+        configuration: config,
     ).addingUserMessage("Hello")
 
     let request = conversation.request(for: .openAI(apiKey: "test"))
@@ -82,7 +82,7 @@ import Testing
 
 // MARK: - Conversation Tool Call Helpers
 
-@Test func conversation_addingAssistantToolCallMessage_appendsMessage() {
+@Test func `conversation adding assistant tool call message appends message`() {
     let conversation = LLM.Conversation(systemPrompt: "System")
         .addingUserMessage("Do something")
 
@@ -91,8 +91,8 @@ import Testing
             id: "call_123",
             function: LLM.OpenAICompatibleAPI.FunctionCall(
                 name: "get_weather",
-                arguments: "{\"location\":\"NYC\"}"
-            )
+                arguments: "{\"location\":\"NYC\"}",
+            ),
         ),
     ]
 
@@ -106,13 +106,13 @@ import Testing
     #expect(updated.messages[1].tool_calls?[0].function.name == "get_weather")
 }
 
-@Test func conversation_addingToolResultMessage_appendsMessage() {
+@Test func `conversation adding tool result message appends message`() {
     let conversation = LLM.Conversation(systemPrompt: "System")
         .addingUserMessage("Do something")
 
     let updated = conversation.addingToolResultMessage(
         toolCallId: "call_123",
-        content: "The weather in NYC is sunny, 72°F"
+        content: "The weather in NYC is sunny, 72°F",
     )
 
     #expect(updated.messages.count == 2)
@@ -121,14 +121,14 @@ import Testing
     #expect(updated.messages[1].tool_call_id == "call_123")
 }
 
-@Test func conversation_toolCallRoundTrip_chainedMessages() {
+@Test func `conversation tool call round trip chained messages`() {
     let toolCalls = [
         LLM.OpenAICompatibleAPI.ToolCall(
             id: "call_abc",
             function: LLM.OpenAICompatibleAPI.FunctionCall(
                 name: "search",
-                arguments: "{\"query\":\"Swift concurrency\"}"
-            )
+                arguments: "{\"query\":\"Swift concurrency\"}",
+            ),
         ),
     ]
 
@@ -149,7 +149,7 @@ import Testing
 
 // MARK: - ConversationResponse Optional Text + ToolCalls
 
-@Test func conversationResponse_textCanBeNil() {
+@Test func `conversation response text can be nil`() {
     let response = LLM.ConversationResponse(
         text: nil,
         thinking: nil,
@@ -158,8 +158,8 @@ import Testing
                 id: "call_1",
                 function: LLM.OpenAICompatibleAPI.FunctionCall(
                     name: "test",
-                    arguments: "{}"
-                )
+                    arguments: "{}",
+                ),
             ),
         ],
         conversation: LLM.Conversation(systemPrompt: "System"),
@@ -175,20 +175,20 @@ import Testing
                 output_tokens: nil,
                 cache_creation_input_tokens: nil,
                 cache_read_input_tokens: nil,
-                prompt_tokens_details: nil
+                prompt_tokens_details: nil,
             ),
             model: "test",
             created: nil,
             choices: nil,
-            content: nil
-        )
+            content: nil,
+        ),
     )
 
     #expect(response.text == nil)
     #expect(response.toolCalls.count == 1)
 }
 
-@Test func conversationResponse_textWithNoToolCalls() {
+@Test func `conversation response text with no tool calls`() {
     let response = LLM.ConversationResponse(
         text: "Hello!",
         thinking: nil,
@@ -206,13 +206,13 @@ import Testing
                 output_tokens: nil,
                 cache_creation_input_tokens: nil,
                 cache_read_input_tokens: nil,
-                prompt_tokens_details: nil
+                prompt_tokens_details: nil,
             ),
             model: "test",
             created: nil,
             choices: nil,
-            content: nil
-        )
+            content: nil,
+        ),
     )
 
     #expect(response.text == "Hello!")
@@ -221,53 +221,53 @@ import Testing
 
 // MARK: - JSONValue Tests
 
-@Test func jsonValue_decodesString() throws {
+@Test func `json value decodes string`() throws {
     let json = "\"hello\"".data(using: .utf8)!
     let value = try JSONDecoder().decode(JSONValue.self, from: json)
     #expect(value == .string("hello"))
     #expect(value.stringValue == "hello")
 }
 
-@Test func jsonValue_decodesInteger() throws {
+@Test func `json value decodes integer`() throws {
     let json = "42".data(using: .utf8)!
     let value = try JSONDecoder().decode(JSONValue.self, from: json)
     #expect(value == .integer(42))
     #expect(value.intValue == 42)
 }
 
-@Test func jsonValue_decodesDouble() throws {
+@Test func `json value decodes double`() throws {
     let json = "3.14".data(using: .utf8)!
     let value = try JSONDecoder().decode(JSONValue.self, from: json)
     #expect(value == .number(3.14))
     #expect(value.doubleValue == 3.14)
 }
 
-@Test func jsonValue_decodesBool() throws {
+@Test func `json value decodes bool`() throws {
     let json = "true".data(using: .utf8)!
     let value = try JSONDecoder().decode(JSONValue.self, from: json)
     #expect(value == .bool(true))
     #expect(value.boolValue == true)
 }
 
-@Test func jsonValue_decodesNull() throws {
+@Test func `json value decodes null`() throws {
     let json = "null".data(using: .utf8)!
     let value = try JSONDecoder().decode(JSONValue.self, from: json)
     #expect(value == .null)
 }
 
-@Test func jsonValue_decodesArray() throws {
+@Test func `json value decodes array`() throws {
     let json = "[1, \"two\", true]".data(using: .utf8)!
     let value = try JSONDecoder().decode(JSONValue.self, from: json)
     #expect(value == .array([.integer(1), .string("two"), .bool(true)]))
 }
 
-@Test func jsonValue_decodesObject() throws {
+@Test func `json value decodes object`() throws {
     let json = "{\"name\": \"test\", \"count\": 5}".data(using: .utf8)!
     let value = try JSONDecoder().decode(JSONValue.self, from: json)
     #expect(value == .object(["name": .string("test"), "count": .integer(5)]))
 }
 
-@Test func jsonValue_roundTrips() throws {
+@Test func `json value round trips`() throws {
     let original: JSONValue = .object([
         "string": .string("hello"),
         "number": .integer(42),
@@ -280,7 +280,7 @@ import Testing
     #expect(decoded == original)
 }
 
-@Test func jsonValue_integerDoubleValue() {
+@Test func `json value integer double value`() {
     let value = JSONValue.integer(42)
     #expect(value.doubleValue == 42.0)
 }

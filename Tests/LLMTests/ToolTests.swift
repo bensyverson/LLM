@@ -11,7 +11,7 @@ import Testing
 
 // MARK: - JSONSchema Tests
 
-@Test func jsonSchema_convenienceInitializers() {
+@Test func `json schema convenience initializers`() {
     let stringSchema = LLM.OpenAICompatibleAPI.JSONSchema.string(description: "A name")
     #expect(stringSchema.type == .string)
     #expect(stringSchema.description == "A name")
@@ -29,16 +29,16 @@ import Testing
     #expect(booleanSchema.description == "Flag")
 }
 
-@Test func jsonSchema_stringWithEnum() {
+@Test func `json schema string with enum`() {
     let schema = LLM.OpenAICompatibleAPI.JSONSchema.string(
         description: "Weather unit",
-        enum: ["celsius", "fahrenheit"]
+        enum: ["celsius", "fahrenheit"],
     )
     #expect(schema.type == .string)
     #expect(schema.enum == ["celsius", "fahrenheit"])
 }
 
-@Test func jsonSchema_array() {
+@Test func `json schema array`() {
     let itemSchema = LLM.OpenAICompatibleAPI.JSONSchema.string(description: "A tag")
     let arraySchema = LLM.OpenAICompatibleAPI.JSONSchema.array(items: itemSchema, description: "List of tags")
 
@@ -47,14 +47,14 @@ import Testing
     #expect(arraySchema.description == "List of tags")
 }
 
-@Test func jsonSchema_object() {
+@Test func `json schema object`() {
     let schema = LLM.OpenAICompatibleAPI.JSONSchema.object(
         properties: [
             "name": .string(description: "The name"),
             "age": .integer(description: "The age"),
         ],
         required: ["name"],
-        description: "A person"
+        description: "A person",
     )
 
     #expect(schema.type == .object)
@@ -63,13 +63,13 @@ import Testing
     #expect(schema.description == "A person")
 }
 
-@Test func jsonSchema_nestedObject() {
+@Test func `json schema nested object`() {
     let addressSchema = LLM.OpenAICompatibleAPI.JSONSchema.object(
         properties: [
             "street": .string(),
             "city": .string(),
         ],
-        required: ["street", "city"]
+        required: ["street", "city"],
     )
 
     let personSchema = LLM.OpenAICompatibleAPI.JSONSchema.object(
@@ -77,7 +77,7 @@ import Testing
             "name": .string(),
             "address": addressSchema,
         ],
-        required: ["name"]
+        required: ["name"],
     )
 
     #expect(personSchema.type == .object)
@@ -85,13 +85,13 @@ import Testing
     #expect(personSchema.properties?["address"]?.properties?["street"]?.type == .string)
 }
 
-@Test func jsonSchema_equality_identicalSchemasEqual() {
+@Test func `json schema equality identical schemas equal`() {
     let schema1 = LLM.OpenAICompatibleAPI.JSONSchema.string(description: "test")
     let schema2 = LLM.OpenAICompatibleAPI.JSONSchema.string(description: "test")
     #expect(schema1 == schema2)
 }
 
-@Test func jsonSchema_equality_differentSchemaNotEqual() {
+@Test func `json schema equality different schema not equal`() {
     let schema1 = LLM.OpenAICompatibleAPI.JSONSchema.string(description: "test")
     let schema2 = LLM.OpenAICompatibleAPI.JSONSchema.string(description: "different")
     #expect(schema1 != schema2)
@@ -101,21 +101,21 @@ import Testing
     #expect(schema3 != schema4)
 }
 
-@Test func jsonSchema_hashable_equalObjectsHaveEqualHashes() {
+@Test func `json schema hashable equal objects have equal hashes`() {
     let schema1 = LLM.OpenAICompatibleAPI.JSONSchema.object(
         properties: ["name": .string()],
-        required: ["name"]
+        required: ["name"],
     )
     let schema2 = LLM.OpenAICompatibleAPI.JSONSchema.object(
         properties: ["name": .string()],
-        required: ["name"]
+        required: ["name"],
     )
 
     #expect(schema1 == schema2)
     #expect(schema1.hashValue == schema2.hashValue)
 }
 
-@Test func jsonSchema_hashable_canBeUsedInSet() {
+@Test func `json schema hashable can be used in set`() {
     let schema1 = LLM.OpenAICompatibleAPI.JSONSchema.string()
     let schema2 = LLM.OpenAICompatibleAPI.JSONSchema.string()
     let schema3 = LLM.OpenAICompatibleAPI.JSONSchema.integer()
@@ -128,13 +128,13 @@ import Testing
     #expect(set.count == 2)
 }
 
-@Test func jsonSchema_codable_roundTrip() throws {
+@Test func `json schema codable round trip`() throws {
     let schema = LLM.OpenAICompatibleAPI.JSONSchema.object(
         properties: [
             "location": .string(description: "City name"),
             "unit": .string(description: "Temperature unit", enum: ["celsius", "fahrenheit"]),
         ],
-        required: ["location"]
+        required: ["location"],
     )
 
     let encoder = JSONEncoder()
@@ -146,16 +146,16 @@ import Testing
     #expect(decoded == schema)
 }
 
-@Test func jsonSchema_codable_nestedRoundTrip() throws {
+@Test func `json schema codable nested round trip`() throws {
     let schema = LLM.OpenAICompatibleAPI.JSONSchema.object(
         properties: [
             "items": .array(items: .object(
                 properties: [
                     "id": .integer(),
                     "name": .string(),
-                ]
+                ],
             )),
-        ]
+        ],
     )
 
     let encoder = JSONEncoder()
@@ -169,7 +169,7 @@ import Testing
 
 // MARK: - ToolChoice Tests
 
-@Test func toolChoice_encodeAuto() throws {
+@Test func `tool choice encode auto`() throws {
     let choice = LLM.OpenAICompatibleAPI.ToolChoice.auto
     let encoder = JSONEncoder()
     let data = try encoder.encode(choice)
@@ -177,7 +177,7 @@ import Testing
     #expect(jsonString == "\"auto\"")
 }
 
-@Test func toolChoice_encodeRequired() throws {
+@Test func `tool choice encode required`() throws {
     let choice = LLM.OpenAICompatibleAPI.ToolChoice.required
     let encoder = JSONEncoder()
     let data = try encoder.encode(choice)
@@ -185,7 +185,7 @@ import Testing
     #expect(jsonString == "\"required\"")
 }
 
-@Test func toolChoice_encodeNone() throws {
+@Test func `tool choice encode none`() throws {
     let choice = LLM.OpenAICompatibleAPI.ToolChoice.none
     let encoder = JSONEncoder()
     let data = try encoder.encode(choice)
@@ -193,7 +193,7 @@ import Testing
     #expect(jsonString == "\"none\"")
 }
 
-@Test func toolChoice_encodeTool() throws {
+@Test func `tool choice encode tool`() throws {
     let choice = LLM.OpenAICompatibleAPI.ToolChoice.tool(name: "get_weather")
     let encoder = JSONEncoder()
     encoder.outputFormatting = .sortedKeys
@@ -206,7 +206,7 @@ import Testing
     #expect(jsonString.contains("\"name\":\"get_weather\""))
 }
 
-@Test func toolChoice_decodeFromString() throws {
+@Test func `tool choice decode from string`() throws {
     let decoder = JSONDecoder()
 
     let autoData = "\"auto\"".data(using: .utf8)!
@@ -222,7 +222,7 @@ import Testing
     #expect(none == .none)
 }
 
-@Test func toolChoice_decodeFromObject() throws {
+@Test func `tool choice decode from object`() throws {
     let json = """
     {"type":"function","function":{"name":"get_weather"}}
     """
@@ -236,7 +236,7 @@ import Testing
     }
 }
 
-@Test func toolChoice_roundTrip() throws {
+@Test func `tool choice round trip`() throws {
     let choices: [LLM.OpenAICompatibleAPI.ToolChoice] = [
         .auto,
         .required,
@@ -256,15 +256,15 @@ import Testing
 
 // MARK: - ToolDefinition Tests
 
-@Test func toolDefinition_construction() {
+@Test func `tool definition construction`() {
     let params = LLM.OpenAICompatibleAPI.JSONSchema.object(
         properties: ["query": .string()],
-        required: ["query"]
+        required: ["query"],
     )
     let funcDef = LLM.OpenAICompatibleAPI.FunctionDefinition(
         name: "search",
         description: "Search for information",
-        parameters: params
+        parameters: params,
     )
     let toolDef = LLM.OpenAICompatibleAPI.ToolDefinition(function: funcDef)
 
@@ -273,18 +273,18 @@ import Testing
     #expect(toolDef.function.description == "Search for information")
 }
 
-@Test func toolDefinition_codable_roundTrip() throws {
+@Test func `tool definition codable round trip`() throws {
     let params = LLM.OpenAICompatibleAPI.JSONSchema.object(
         properties: [
             "location": .string(description: "City name"),
             "unit": .string(enum: ["celsius", "fahrenheit"]),
         ],
-        required: ["location"]
+        required: ["location"],
     )
     let funcDef = LLM.OpenAICompatibleAPI.FunctionDefinition(
         name: "get_weather",
         description: "Get the current weather",
-        parameters: params
+        parameters: params,
     )
     let toolDef = LLM.OpenAICompatibleAPI.ToolDefinition(function: funcDef)
 
@@ -302,12 +302,12 @@ import Testing
 
 // MARK: - FunctionDefinition Tests
 
-@Test func functionDefinition_construction() {
+@Test func `function definition construction`() {
     let params = LLM.OpenAICompatibleAPI.JSONSchema.object(properties: [:])
     let funcDef = LLM.OpenAICompatibleAPI.FunctionDefinition(
         name: "test_func",
         description: "A test function",
-        parameters: params
+        parameters: params,
     )
 
     #expect(funcDef.name == "test_func")
@@ -317,14 +317,14 @@ import Testing
 
 // MARK: - ToolCall Tests
 
-@Test func toolCall_construction() {
+@Test func `tool call construction`() {
     let funcCall = LLM.OpenAICompatibleAPI.FunctionCall(
         name: "get_weather",
-        arguments: "{\"location\":\"NYC\"}"
+        arguments: "{\"location\":\"NYC\"}",
     )
     let toolCall = LLM.OpenAICompatibleAPI.ToolCall(
         id: "call_123",
-        function: funcCall
+        function: funcCall,
     )
 
     #expect(toolCall.id == "call_123")
@@ -333,15 +333,15 @@ import Testing
     #expect(toolCall.function.arguments == "{\"location\":\"NYC\"}")
 }
 
-@Test func toolCall_codable_roundTrip() throws {
+@Test func `tool call codable round trip`() throws {
     let funcCall = LLM.OpenAICompatibleAPI.FunctionCall(
         name: "search",
-        arguments: "{\"query\":\"swift testing\"}"
+        arguments: "{\"query\":\"swift testing\"}",
     )
     let toolCall = LLM.OpenAICompatibleAPI.ToolCall(
         id: "call_abc",
         type: "function",
-        function: funcCall
+        function: funcCall,
     )
 
     let encoder = JSONEncoder()
@@ -358,20 +358,20 @@ import Testing
 
 // MARK: - FunctionCall Tests
 
-@Test func functionCall_construction() {
+@Test func `function call construction`() {
     let funcCall = LLM.OpenAICompatibleAPI.FunctionCall(
         name: "calculate",
-        arguments: "{\"a\":1,\"b\":2}"
+        arguments: "{\"a\":1,\"b\":2}",
     )
 
     #expect(funcCall.name == "calculate")
     #expect(funcCall.arguments == "{\"a\":1,\"b\":2}")
 }
 
-@Test func functionCall_codable_roundTrip() throws {
+@Test func `function call codable round trip`() throws {
     let funcCall = LLM.OpenAICompatibleAPI.FunctionCall(
         name: "format_date",
-        arguments: "{\"date\":\"2024-01-01\",\"format\":\"iso\"}"
+        arguments: "{\"date\":\"2024-01-01\",\"format\":\"iso\"}",
     )
 
     let encoder = JSONEncoder()
@@ -386,13 +386,13 @@ import Testing
 
 // MARK: - ToolType Tests
 
-@Test func toolType_rawValue() {
+@Test func `tool type raw value`() {
     #expect(LLM.OpenAICompatibleAPI.ToolType.function.rawValue == "function")
 }
 
 // MARK: - SchemaType Tests
 
-@Test func schemaType_rawValues() {
+@Test func `schema type raw values`() {
     #expect(LLM.OpenAICompatibleAPI.JSONSchema.SchemaType.object.rawValue == "object")
     #expect(LLM.OpenAICompatibleAPI.JSONSchema.SchemaType.array.rawValue == "array")
     #expect(LLM.OpenAICompatibleAPI.JSONSchema.SchemaType.string.rawValue == "string")

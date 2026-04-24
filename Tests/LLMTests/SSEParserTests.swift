@@ -11,7 +11,7 @@ import Testing
 
 // MARK: - SSE Parser Tests
 
-@Test func sseParser_parsesDataLines() async throws {
+@Test func `sse parser parses data lines`() async throws {
     let lines = [
         "data: hello world",
         "",
@@ -25,7 +25,7 @@ import Testing
     #expect(events[1].data == "second event")
 }
 
-@Test func sseParser_parsesEventAndData() async throws {
+@Test func `sse parser parses event and data`() async throws {
     let lines = [
         "event: message_start",
         "data: {\"type\":\"message_start\"}",
@@ -41,7 +41,7 @@ import Testing
     #expect(events[1].event == "content_block_delta")
 }
 
-@Test func sseParser_skipsComments() async throws {
+@Test func `sse parser skips comments`() async throws {
     let lines = [
         ": this is a comment",
         "data: actual data",
@@ -52,7 +52,7 @@ import Testing
     #expect(events[0].data == "actual data")
 }
 
-@Test func sseParser_handlesDoneSignal() async throws {
+@Test func `sse parser handles done signal`() async throws {
     let lines = [
         "data: {\"content\":\"hello\"}",
         "",
@@ -64,7 +64,7 @@ import Testing
     #expect(events[0].data == "{\"content\":\"hello\"}")
 }
 
-@Test func sseParser_handlesMultiLineData() async throws {
+@Test func `sse parser handles multi line data`() async throws {
     let lines = [
         "data: line one",
         "data: line two",
@@ -75,7 +75,7 @@ import Testing
     #expect(events[0].data == "line one\nline two")
 }
 
-@Test func sseParser_skipsEmptyDataBlocks() async throws {
+@Test func `sse parser skips empty data blocks`() async throws {
     let lines = [
         "",
         "",
@@ -87,7 +87,7 @@ import Testing
     #expect(events[0].data == "after empty lines")
 }
 
-@Test func sseParser_ignoresIdAndRetryFields() async throws {
+@Test func `sse parser ignores id and retry fields`() async throws {
     let lines = [
         "id: 123",
         "retry: 5000",
@@ -99,7 +99,7 @@ import Testing
     #expect(events[0].data == "the data")
 }
 
-@Test func sseParser_handlesTrailingDataWithoutBlankLine() async throws {
+@Test func `sse parser handles trailing data without blank line`() async throws {
     let lines = [
         "data: trailing",
     ]
@@ -108,7 +108,7 @@ import Testing
     #expect(events[0].data == "trailing")
 }
 
-@Test func sseParser_doneInTrailingPosition() async throws {
+@Test func `sse parser done in trailing position`() async throws {
     let lines = [
         "data: [DONE]",
     ]
@@ -116,7 +116,7 @@ import Testing
     #expect(events.count == 0)
 }
 
-@Test func sseParser_multipleEventsWithDone() async throws {
+@Test func `sse parser multiple events with done`() async throws {
     let lines = [
         "data: {\"id\":\"1\"}",
         "",
@@ -134,7 +134,7 @@ import Testing
     #expect(events[2].data == "{\"id\":\"3\"}")
 }
 
-@Test func sseParser_eventFieldResetsAfterDispatch() async throws {
+@Test func `sse parser event field resets after dispatch`() async throws {
     let lines = [
         "event: first_type",
         "data: first data",

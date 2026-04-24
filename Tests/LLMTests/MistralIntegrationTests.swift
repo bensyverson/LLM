@@ -11,7 +11,7 @@ import Testing
 
 // MARK: - Integration Tests (require real API key)
 
-@Test func mistral_integration_basicChat() async throws {
+@Test func `mistral integration basic chat`() async throws {
     #if canImport(FoundationNetworking)
         try? await Task.sleep(nanoseconds: 100_000_000) // Avoid rate limiting
 
@@ -25,7 +25,7 @@ import Testing
 
         let response = try await llm.startConversation(
             systemPrompt: "You are a helpful assistant.",
-            userMessage: "What is the capital of France?"
+            userMessage: "What is the capital of France?",
         )
 
         #expect(response.text?.lowercased().contains("paris") == true, "Should mention Paris")
@@ -33,7 +33,7 @@ import Testing
     #endif
 }
 
-@Test func mistral_integration_withTools() async throws {
+@Test func `mistral integration with tools`() async throws {
     #if canImport(FoundationNetworking)
         try? await Task.sleep(nanoseconds: 100_000_000) // Avoid rate limiting
 
@@ -55,9 +55,9 @@ import Testing
                             "location": LLM.OpenAICompatibleAPI.JSONSchema.string(description: "The city and state"),
                         ],
                         required: ["location"],
-                        description: "Weather query parameters"
-                    )
-                )
+                        description: "Weather query parameters",
+                    ),
+                ),
             ),
         ]
 
@@ -69,7 +69,7 @@ import Testing
         let response = try await llm.startConversation(
             systemPrompt: "You are a helpful assistant with access to weather tools.",
             userMessage: "What's the weather in San Francisco?",
-            configuration: config
+            configuration: config,
         )
 
         // The model should either call the tool or explain it can't
@@ -84,7 +84,7 @@ import Testing
     #endif
 }
 
-@Test func mistral_integration_requestEncoding() throws {
+@Test func `mistral integration request encoding`() throws {
     #if canImport(FoundationNetworking)
         guard ProcessInfo.processInfo.environment["MISTRAL_API_KEY"] != nil else {
             print("Skipping Mistral integration test: MISTRAL_API_KEY not set")
@@ -95,7 +95,7 @@ import Testing
         let conversation = LLM.Conversation(
             systemPrompt: "You are a helpful assistant.",
             messages: [.init(content: "Hello from Mistral!", role: .user)],
-            configuration: LLM.ConversationConfiguration()
+            configuration: LLM.ConversationConfiguration(),
         )
 
         let request = conversation.request(for: provider)

@@ -29,7 +29,7 @@ public extension LLM.OpenAICompatibleAPI {
             input: String,
             model: EmbeddingModel,
             encoding_format: EncodingFormat,
-            dimensions: Int? = nil
+            dimensions: Int? = nil,
         ) {
             self.input = input
             self.model = model

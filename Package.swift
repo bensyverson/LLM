@@ -1,4 +1,4 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 6.3
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -12,7 +12,7 @@ let package = Package(
     products: [
         .library(
             name: "LLM",
-            targets: ["LLM"]
+            targets: ["LLM"],
         ),
     ],
     dependencies: [
@@ -25,19 +25,19 @@ let package = Package(
             dependencies: [
                 .product(name: "AsyncHTTPClient", package: "async-http-client",
                          condition: .when(platforms: [.linux])),
-            ]
+            ],
         ),
         .executableTarget(
             name: "llm-cli",
-            dependencies: ["LLM"]
+            dependencies: ["LLM"],
         ),
         .testTarget(
             name: "LLMTests",
             dependencies: ["LLM"],
             resources: [
                 .copy("Fixtures"),
-            ]
+            ],
         ),
     ],
-    swiftLanguageModes: [.v6]
+    swiftLanguageModes: [.v6],
 )

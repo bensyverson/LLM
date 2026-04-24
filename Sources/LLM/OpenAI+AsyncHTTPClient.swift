@@ -98,10 +98,10 @@
         /// - Throws: ``OpenAIError/badResponseCode(_:)`` on non-200 status codes.
         func streamingChatCompletionLinux(
             with body: Data,
-            provider: LLM.Provider
+            provider: LLM.Provider,
         ) async throws -> (
             SSEParser<ByteBufferLineSequence<HTTPClientResponse.Body>>,
-            LLM.RateLimitInfo?
+            LLM.RateLimitInfo?,
         ) {
             let url = baseURL.appending(path: chatEndpoint).absoluteString
 
@@ -138,7 +138,7 @@
             // Parse rate limit headers
             let rateLimitInfo = LLM.RateLimitInfo.parse(
                 headerLookup: { response.headers.first(name: $0) },
-                provider: provider
+                provider: provider,
             )
 
             let lineSequence = ByteBufferLineSequence(body: response.body)

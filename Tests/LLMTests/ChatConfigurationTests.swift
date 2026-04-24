@@ -11,12 +11,12 @@ import Testing
 
 // MARK: - ChatConfiguration Construction Tests
 
-@Test func chatConfiguration_construction() {
+@Test func `chat configuration construction`() {
     let config = LLM.ChatConfiguration(
         systemPrompt: "You are helpful",
         user: "Hello!",
         modelType: .fast,
-        inference: .direct
+        inference: .direct,
     )
 
     #expect(config.systemPrompt == "You are helpful")
@@ -25,7 +25,7 @@ import Testing
     #expect(config.inference == .direct)
 }
 
-@Test func chatConfiguration_optionalParameters() {
+@Test func `chat configuration optional parameters`() {
     let config = LLM.ChatConfiguration(
         systemPrompt: "System",
         user: "User",
@@ -38,7 +38,7 @@ import Testing
         maxTokens: 1000,
         maxReasoningTokens: 500,
         reasoningEffort: .high,
-        stopTokens: ["###", "END"]
+        stopTokens: ["###", "END"],
     )
 
     #expect(config.temperature == 0.7)
@@ -53,12 +53,12 @@ import Testing
 
 // MARK: - ChatConfiguration.request(for:) - OpenAI Tests
 
-@Test func chatConfigRequest_openAI_systemAsMessage() {
+@Test func `chat config request open AI system as message`() {
     let config = LLM.ChatConfiguration(
         systemPrompt: "You are helpful",
         user: "Hello!",
         modelType: .fast,
-        inference: .direct
+        inference: .direct,
     )
 
     let provider = LLM.Provider.openAI(apiKey: "test")
@@ -73,13 +73,13 @@ import Testing
     #expect(request.messages[1].textContent == "Hello!")
 }
 
-@Test func chatConfigRequest_openAI_usesMaxCompletionTokens() {
+@Test func `chat config request open AI uses max completion tokens`() {
     let config = LLM.ChatConfiguration(
         systemPrompt: "System",
         user: "User",
         modelType: .fast,
         inference: .direct,
-        maxTokens: 500
+        maxTokens: 500,
     )
 
     let provider = LLM.Provider.openAI(apiKey: "test")
@@ -89,14 +89,14 @@ import Testing
     #expect(request.max_completion_tokens == 500)
 }
 
-@Test func chatConfigRequest_openAI_usesStop() {
+@Test func `chat config request open AI uses stop`() {
     // GPT-5 models skip the stop parameter, so stop tokens are nil for OpenAI GPT-5
     let config = LLM.ChatConfiguration(
         systemPrompt: "System",
         user: "User",
         modelType: .fast,
         inference: .direct,
-        stopTokens: ["END"]
+        stopTokens: ["END"],
     )
 
     let provider = LLM.Provider.openAI(apiKey: "test")
@@ -106,12 +106,12 @@ import Testing
     #expect(request.stop_sequences == nil)
 }
 
-@Test func chatConfigRequest_openAI_reasoning_autoSetsReasoningEffort() {
+@Test func `chat config request open AI reasoning auto sets reasoning effort`() {
     let config = LLM.ChatConfiguration(
         systemPrompt: "System",
         user: "Think hard",
         modelType: .flagship,
-        inference: .reasoning
+        inference: .reasoning,
     )
 
     let provider = LLM.Provider.openAI(apiKey: "test")
@@ -121,13 +121,13 @@ import Testing
     #expect(request.reasoning_effort == .high)
 }
 
-@Test func chatConfigRequest_openAI_reasoning_respectsExplicitReasoningEffort() {
+@Test func `chat config request open AI reasoning respects explicit reasoning effort`() {
     let config = LLM.ChatConfiguration(
         systemPrompt: "System",
         user: "Think",
         modelType: .flagship,
         inference: .reasoning,
-        reasoningEffort: .medium
+        reasoningEffort: .medium,
     )
 
     let provider = LLM.Provider.openAI(apiKey: "test")
@@ -137,14 +137,14 @@ import Testing
     #expect(request.reasoning_effort == .medium)
 }
 
-@Test func chatConfigRequest_openAI_reasoning_skipsTemperatureAndTopP() {
+@Test func `chat config request open AI reasoning skips temperature and top P`() {
     let config = LLM.ChatConfiguration(
         systemPrompt: "System",
         user: "User",
         modelType: .fast,
         inference: .reasoning,
         temperature: 0.5,
-        topP: 0.9
+        topP: 0.9,
     )
 
     let provider = LLM.Provider.openAI(apiKey: "test")
@@ -154,7 +154,7 @@ import Testing
     #expect(request.top_p == nil)
 }
 
-@Test func chatConfigRequest_openAI_direct_includesTemperatureAndTopP() {
+@Test func `chat config request open AI direct includes temperature and top P`() {
     // GPT-5 models skip temperature and topP — they only support default values
     let config = LLM.ChatConfiguration(
         systemPrompt: "System",
@@ -162,7 +162,7 @@ import Testing
         modelType: .fast,
         inference: .direct,
         temperature: 0.5,
-        topP: 0.9
+        topP: 0.9,
     )
 
     let provider = LLM.Provider.openAI(apiKey: "test")
@@ -172,13 +172,13 @@ import Testing
     #expect(request.top_p == nil)
 }
 
-@Test func chatConfigRequest_openAI_includesFrequencyPenalty() {
+@Test func `chat config request open AI includes frequency penalty`() {
     let config = LLM.ChatConfiguration(
         systemPrompt: "System",
         user: "User",
         modelType: .fast,
         inference: .direct,
-        frequencyPenalty: 0.3
+        frequencyPenalty: 0.3,
     )
 
     let provider = LLM.Provider.openAI(apiKey: "test")
@@ -187,12 +187,12 @@ import Testing
     #expect(request.frequency_penalty == 0.3)
 }
 
-@Test func chatConfigRequest_openAI_noThinking() {
+@Test func `chat config request open AI no thinking`() {
     let config = LLM.ChatConfiguration(
         systemPrompt: "System",
         user: "User",
         modelType: .fast,
-        inference: .reasoning
+        inference: .reasoning,
     )
 
     let provider = LLM.Provider.openAI(apiKey: "test")
@@ -202,28 +202,28 @@ import Testing
     #expect(request.thinking == nil)
 }
 
-@Test func chatConfigRequest_openAI_selectsCorrectModel() {
+@Test func `chat config request open AI selects correct model`() {
     let fastConfig = LLM.ChatConfiguration(
-        systemPrompt: "S", user: "U", modelType: .fast, inference: .direct
+        systemPrompt: "S", user: "U", modelType: .fast, inference: .direct,
     )
     let flagshipConfig = LLM.ChatConfiguration(
-        systemPrompt: "S", user: "U", modelType: .flagship, inference: .direct
+        systemPrompt: "S", user: "U", modelType: .flagship, inference: .direct,
     )
 
     let provider = LLM.Provider.openAI(apiKey: "test")
 
     #expect(fastConfig.request(for: provider).model == .gpt54Nano)
-    #expect(flagshipConfig.request(for: provider).model == .gpt54)
+    #expect(flagshipConfig.request(for: provider).model == .gpt55)
 }
 
 // MARK: - ChatConfiguration.request(for:) - Anthropic Tests
 
-@Test func chatConfigRequest_anthropic_systemFieldPopulated() {
+@Test func `chat config request anthropic system field populated`() {
     let config = LLM.ChatConfiguration(
         systemPrompt: "You are helpful",
         user: "Hello!",
         modelType: .fast,
-        inference: .direct
+        inference: .direct,
     )
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -239,13 +239,13 @@ import Testing
     #expect(request.messages[0].role == .user)
 }
 
-@Test func chatConfigRequest_anthropic_usesMaxTokens() {
+@Test func `chat config request anthropic uses max tokens`() {
     let config = LLM.ChatConfiguration(
         systemPrompt: "System",
         user: "User",
         modelType: .fast,
         inference: .direct,
-        maxTokens: 500
+        maxTokens: 500,
     )
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -255,13 +255,13 @@ import Testing
     #expect(request.max_completion_tokens == nil)
 }
 
-@Test func chatConfigRequest_anthropic_usesStopSequences() {
+@Test func `chat config request anthropic uses stop sequences`() {
     let config = LLM.ChatConfiguration(
         systemPrompt: "System",
         user: "User",
         modelType: .fast,
         inference: .direct,
-        stopTokens: ["END"]
+        stopTokens: ["END"],
     )
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -271,13 +271,13 @@ import Testing
     #expect(request.stop_sequences == ["END"])
 }
 
-@Test func chatConfigRequest_anthropic_skipsFrequencyPenalty() {
+@Test func `chat config request anthropic skips frequency penalty`() {
     let config = LLM.ChatConfiguration(
         systemPrompt: "System",
         user: "User",
         modelType: .fast,
         inference: .direct,
-        frequencyPenalty: 0.5
+        frequencyPenalty: 0.5,
     )
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -286,13 +286,13 @@ import Testing
     #expect(request.frequency_penalty == nil)
 }
 
-@Test func chatConfigRequest_anthropic_reasoning_includesThinking() {
+@Test func `chat config request anthropic reasoning includes thinking`() {
     let config = LLM.ChatConfiguration(
         systemPrompt: "System",
         user: "Think about this",
         modelType: .fast,
         inference: .reasoning,
-        maxReasoningTokens: 2048
+        maxReasoningTokens: 2048,
     )
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -303,12 +303,12 @@ import Testing
     #expect(request.thinking?.budget_tokens == 2048)
 }
 
-@Test func chatConfigRequest_anthropic_reasoning_defaultBudget() {
+@Test func `chat config request anthropic reasoning default budget`() {
     let config = LLM.ChatConfiguration(
         systemPrompt: "System",
         user: "Think",
         modelType: .fast,
-        inference: .reasoning
+        inference: .reasoning,
         // No maxReasoningTokens - should default to 1024
     )
 
@@ -318,13 +318,13 @@ import Testing
     #expect(request.thinking?.budget_tokens == 1024)
 }
 
-@Test func chatConfigRequest_anthropic_reasoning_noReasoningEffort() {
+@Test func `chat config request anthropic reasoning no reasoning effort`() {
     let config = LLM.ChatConfiguration(
         systemPrompt: "System",
         user: "User",
         modelType: .fast,
         inference: .reasoning,
-        reasoningEffort: .high // Should be ignored for Anthropic
+        reasoningEffort: .high, // Should be ignored for Anthropic
     )
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -334,9 +334,9 @@ import Testing
     #expect(request.reasoning_effort == nil)
 }
 
-@Test func chatConfigRequest_anthropic_selectsCorrectModel_fastDirect() {
+@Test func `chat config request anthropic selects correct model fast direct`() {
     let config = LLM.ChatConfiguration(
-        systemPrompt: "S", user: "U", modelType: .fast, inference: .direct
+        systemPrompt: "S", user: "U", modelType: .fast, inference: .direct,
     )
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -345,9 +345,9 @@ import Testing
     #expect(request.model == .claude45Haiku)
 }
 
-@Test func chatConfigRequest_anthropic_selectsCorrectModel_fastReasoning() {
+@Test func `chat config request anthropic selects correct model fast reasoning`() {
     let config = LLM.ChatConfiguration(
-        systemPrompt: "S", user: "U", modelType: .fast, inference: .reasoning
+        systemPrompt: "S", user: "U", modelType: .fast, inference: .reasoning,
     )
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -356,9 +356,9 @@ import Testing
     #expect(request.model == .claude45Haiku)
 }
 
-@Test func chatConfigRequest_anthropic_selectsCorrectModel_flagship() {
+@Test func `chat config request anthropic selects correct model flagship`() {
     let config = LLM.ChatConfiguration(
-        systemPrompt: "S", user: "U", modelType: .flagship, inference: .direct
+        systemPrompt: "S", user: "U", modelType: .flagship, inference: .direct,
     )
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -369,14 +369,14 @@ import Testing
 
 // MARK: - Token Calculation Tests
 
-@Test func chatConfigRequest_tokenCalculation_withReasoningTokens() {
+@Test func `chat config request token calculation with reasoning tokens`() {
     let config = LLM.ChatConfiguration(
         systemPrompt: "S",
         user: "U",
         modelType: .fast,
         inference: .reasoning,
         maxTokens: 1000,
-        maxReasoningTokens: 500
+        maxReasoningTokens: 500,
     )
 
     let openAIProvider = LLM.Provider.openAI(apiKey: "test")
@@ -391,13 +391,13 @@ import Testing
     #expect(anthropicRequest.max_tokens == 1000)
 }
 
-@Test func chatConfigRequest_tokenCalculation_noMaxTokens() {
+@Test func `chat config request token calculation no max tokens`() {
     let config = LLM.ChatConfiguration(
         systemPrompt: "S",
         user: "U",
         modelType: .fast,
         inference: .reasoning,
-        maxReasoningTokens: 500
+        maxReasoningTokens: 500,
     )
 
     let openAIProvider = LLM.Provider.openAI(apiKey: "test")
@@ -414,12 +414,12 @@ import Testing
 
 // MARK: - Caching Tests
 
-@Test func chatConfiguration_cachingDefaults() {
+@Test func `chat configuration caching defaults`() {
     let config = LLM.ChatConfiguration(
         systemPrompt: "System",
         user: "User",
         modelType: .fast,
-        inference: .direct
+        inference: .direct,
     )
 
     // Caching should be enabled by default
@@ -427,27 +427,27 @@ import Testing
     #expect(config.cacheTTL == nil)
 }
 
-@Test func chatConfiguration_cachingEnabled() {
+@Test func `chat configuration caching enabled`() {
     let config = LLM.ChatConfiguration(
         systemPrompt: "System",
         user: "User",
         modelType: .fast,
         inference: .direct,
         enableCaching: true,
-        cacheTTL: .oneHour
+        cacheTTL: .oneHour,
     )
 
     #expect(config.enableCaching == true)
     #expect(config.cacheTTL == .oneHour)
 }
 
-@Test func chatConfigRequest_anthropic_cachingDisabled_usesStringSystem() {
+@Test func `chat config request anthropic caching disabled uses string system`() {
     let config = LLM.ChatConfiguration(
         systemPrompt: "You are helpful",
         user: "Hello!",
         modelType: .fast,
         inference: .direct,
-        enableCaching: false
+        enableCaching: false,
     )
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -458,13 +458,13 @@ import Testing
     #expect(request.systemBlocks == nil)
 }
 
-@Test func chatConfigRequest_anthropic_cachingEnabled_usesSystemBlocks() {
+@Test func `chat config request anthropic caching enabled uses system blocks`() {
     let config = LLM.ChatConfiguration(
         systemPrompt: "You are helpful",
         user: "Hello!",
         modelType: .fast,
         inference: .direct,
-        enableCaching: true
+        enableCaching: true,
     )
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -477,14 +477,14 @@ import Testing
     #expect(request.systemBlocks?[0].cache_control != nil)
 }
 
-@Test func chatConfigRequest_anthropic_cachingEnabled_withTTL() {
+@Test func `chat config request anthropic caching enabled with TTL`() {
     let config = LLM.ChatConfiguration(
         systemPrompt: "System",
         user: "User",
         modelType: .fast,
         inference: .direct,
         enableCaching: true,
-        cacheTTL: .oneHour
+        cacheTTL: .oneHour,
     )
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -493,13 +493,13 @@ import Testing
     #expect(request.systemBlocks?[0].cache_control?.ttl == .oneHour)
 }
 
-@Test func chatConfigRequest_openAI_cachingHasNoEffect() {
+@Test func `chat config request open AI caching has no effect`() {
     let config = LLM.ChatConfiguration(
         systemPrompt: "You are helpful",
         user: "Hello!",
         modelType: .fast,
         inference: .direct,
-        enableCaching: true // Should have no effect for OpenAI
+        enableCaching: true, // Should have no effect for OpenAI
     )
 
     let provider = LLM.Provider.openAI(apiKey: "test")

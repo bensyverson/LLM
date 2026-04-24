@@ -22,17 +22,17 @@ public extension LLM {
         public func fullProvider(using apiKey: String) -> LLM.Provider {
             switch self {
             case .openAI:
-                return .openAI(apiKey: apiKey)
+                .openAI(apiKey: apiKey)
             case let .anthropic(baseURL):
-                return .anthropic(apiKey: apiKey, baseURL: baseURL)
+                .anthropic(apiKey: apiKey, baseURL: baseURL)
             case .mistral:
-                return .mistral(apiKey: apiKey)
+                .mistral(apiKey: apiKey)
             case .lmStudio:
-                return .lmStudio
+                .lmStudio
             case let .localhost(port: port):
-                return .localhost(port: port)
+                .localhost(port: port)
             case let .other(url):
-                return .other(url, apiKey: apiKey)
+                .other(url, apiKey: apiKey)
             }
         }
     }
@@ -43,17 +43,17 @@ public extension LLM.Provider {
     var simpleProvider: LLM.SimpleProvider {
         switch self {
         case .openAI(apiKey: _):
-            return .openAI
+            .openAI
         case let .anthropic(_, baseURL):
-            return .anthropic(baseURL: baseURL)
+            .anthropic(baseURL: baseURL)
         case .mistral(apiKey: _):
-            return .mistral
+            .mistral
         case .lmStudio:
-            return .lmStudio
+            .lmStudio
         case let .localhost(port: port):
-            return .localhost(port: port)
+            .localhost(port: port)
         case .other(let url, apiKey: _):
-            return .other(url)
+            .other(url)
         }
     }
 

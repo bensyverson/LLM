@@ -31,43 +31,43 @@ public extension LLM.Provider {
     /// Returns the concrete model name for this provider given a model tier and inference type.
     func model(
         type: LLM.ModelType,
-        inference _: LLM.InferenceType
+        inference _: LLM.InferenceType,
     ) -> LLM.OpenAICompatibleAPI.ModelName {
         switch self {
         case .openAI(apiKey: _):
             // GPT-5 models have native reasoning via reasoning_effort parameter
             switch type {
             case .fast:
-                return .gpt54Nano
+                .gpt54Nano
             case .standard:
-                return .gpt54Mini
+                .gpt54Mini
             case .flagship:
-                return .gpt54
+                .gpt55
             }
         case .anthropic(apiKey: _, baseURL: _):
             switch type {
             case .fast:
-                return .claude45Haiku
+                .claude45Haiku
             case .standard:
-                return .claude46Sonnet
+                .claude46Sonnet
             case .flagship:
-                return .claude47Opus
+                .claude47Opus
             }
         case .mistral(apiKey: _):
             switch type {
             case .fast:
-                return .mistralSmall
+                .mistralSmall
             case .standard:
-                return .mistralMedium
+                .mistralMedium
             case .flagship:
-                return .mistralLarge
+                .mistralLarge
             }
         case .lmStudio:
-            return .placeholder
+            .placeholder
         case .localhost(port: _):
-            return .placeholder
+            .placeholder
         case .other(_, apiKey: _):
-            return .placeholder
+            .placeholder
         }
     }
 }

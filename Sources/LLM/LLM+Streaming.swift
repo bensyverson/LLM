@@ -41,12 +41,12 @@ public extension LLM {
     func streamConversation(
         systemPrompt: String,
         userMessage: String,
-        configuration: ConversationConfiguration = .init()
+        configuration: ConversationConfiguration = .init(),
     ) -> AsyncThrowingStream<StreamEvent, Error> {
         let conversation = Conversation(
             systemPrompt: systemPrompt,
             messages: [OpenAICompatibleAPI.ChatMessage(content: userMessage, role: .user)],
-            configuration: configuration
+            configuration: configuration,
         )
         return streamChat(conversation: conversation)
     }
@@ -59,7 +59,7 @@ public extension LLM {
     /// - Returns: A stream of events representing the model's incremental response.
     func streamContinueConversation(
         _ conversation: Conversation,
-        userMessage: String
+        userMessage: String,
     ) -> AsyncThrowingStream<StreamEvent, Error> {
         let updated = conversation.addingUserMessage(userMessage)
         return streamChat(conversation: updated)
@@ -69,12 +69,12 @@ public extension LLM {
     func streamConversation(
         systemPrompt: String,
         userMessage: [OpenAICompatibleAPI.ContentPart],
-        configuration: ConversationConfiguration = .init()
+        configuration: ConversationConfiguration = .init(),
     ) -> AsyncThrowingStream<StreamEvent, Error> {
         let conversation = Conversation(
             systemPrompt: systemPrompt,
             messages: [OpenAICompatibleAPI.ChatMessage(content: userMessage, role: .user)],
-            configuration: configuration
+            configuration: configuration,
         )
         return streamChat(conversation: conversation)
     }
@@ -82,7 +82,7 @@ public extension LLM {
     /// Continues an existing conversation with multimodal content, streaming the response.
     func streamContinueConversation(
         _ conversation: Conversation,
-        userMessage: [OpenAICompatibleAPI.ContentPart]
+        userMessage: [OpenAICompatibleAPI.ContentPart],
     ) -> AsyncThrowingStream<StreamEvent, Error> {
         let updated = conversation.addingUserMessage(userMessage)
         return streamChat(conversation: updated)
@@ -94,7 +94,7 @@ public extension LLM {
 extension LLM {
     private func _streamChat(
         conversation: Conversation,
-        continuation: AsyncThrowingStream<StreamEvent, Error>.Continuation
+        continuation: AsyncThrowingStream<StreamEvent, Error>.Continuation,
     ) async throws {
         let api = providerApi
         let isAnthropic = provider.isAnthropic
@@ -129,29 +129,29 @@ extension LLM {
         // Platform-conditional streaming setup
         #if canImport(AsyncHTTPClient)
             let (parser, rateLimitInfo) = try await api.streamingChatCompletionLinux(
-                with: jsonData, provider: provider
+                with: jsonData, provider: provider,
             )
             if let info = rateLimitInfo {
                 await chatRateLimiter.updateLimits(
                     maxRequests: info.requestLimit,
-                    maxTokens: info.tokenLimit
+                    maxTokens: info.tokenLimit,
                 )
             }
             try await processStream(
                 parser: parser, isAnthropic: isAnthropic,
-                continuation: continuation, conversation: conversation
+                continuation: continuation, conversation: conversation,
             )
         #else
             let (parser, httpResponse, _) = try await api.streamingChatCompletion(with: jsonData)
             if let info = RateLimitInfo.parse(from: httpResponse, provider: provider) {
                 await chatRateLimiter.updateLimits(
                     maxRequests: info.requestLimit,
-                    maxTokens: info.tokenLimit
+                    maxTokens: info.tokenLimit,
                 )
             }
             try await processStream(
                 parser: parser, isAnthropic: isAnthropic,
-                continuation: continuation, conversation: conversation
+                continuation: continuation, conversation: conversation,
             )
         #endif
     }
@@ -164,7 +164,7 @@ extension LLM {
         parser: OpenAICompatibleAPI.SSEParser<Lines>,
         isAnthropic: Bool,
         continuation: AsyncThrowingStream<StreamEvent, Error>.Continuation,
-        conversation: Conversation
+        conversation: Conversation,
     ) async throws where Lines.Element == String {
         var accumulator = OpenAICompatibleAPI.StreamAccumulator()
 
@@ -204,7 +204,7 @@ extension LLM {
             thinking: thinking,
             toolCalls: toolCalls,
             conversation: updatedConversation,
-            rawResponse: rawResponse
+            rawResponse: rawResponse,
         )
         continuation.yield(.completed(conversationResponse))
         continuation.finish()
@@ -213,7 +213,7 @@ extension LLM {
     private func processOpenAIStream<Lines: AsyncSequence>(
         parser: OpenAICompatibleAPI.SSEParser<Lines>,
         accumulator: inout OpenAICompatibleAPI.StreamAccumulator,
-        continuation: AsyncThrowingStream<StreamEvent, Error>.Continuation
+        continuation: AsyncThrowingStream<StreamEvent, Error>.Continuation,
     ) async throws where Lines.Element == String {
         let decoder = JSONDecoder()
 
@@ -248,7 +248,7 @@ extension LLM {
                                 index: tc.index,
                                 id: tc.id,
                                 name: tc.function?.name,
-                                argumentsFragment: tc.function?.arguments ?? ""
+                                argumentsFragment: tc.function?.arguments ?? "",
                             )
                             continuation.yield(.toolCallDelta(delta))
                         }
@@ -263,7 +263,7 @@ extension LLM {
     private func processAnthropicStream<Lines: AsyncSequence>(
         parser: OpenAICompatibleAPI.SSEParser<Lines>,
         accumulator: inout OpenAICompatibleAPI.StreamAccumulator,
-        continuation: AsyncThrowingStream<StreamEvent, Error>.Continuation
+        continuation: AsyncThrowingStream<StreamEvent, Error>.Continuation,
     ) async throws where Lines.Element == String {
         let decoder = JSONDecoder()
 
@@ -296,7 +296,7 @@ extension LLM {
                                 index: idx,
                                 id: nil,
                                 name: nil,
-                                argumentsFragment: json
+                                argumentsFragment: json,
                             )
                             continuation.yield(.toolCallDelta(tcDelta))
                         }
@@ -311,7 +311,7 @@ extension LLM {
                         index: idx,
                         id: block.id,
                         name: block.name,
-                        argumentsFragment: ""
+                        argumentsFragment: "",
                     )
                     continuation.yield(.toolCallDelta(tcDelta))
                 }

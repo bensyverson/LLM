@@ -70,6 +70,8 @@ public extension LLM {
             public static let gpt54Mini = ModelName(rawValue: "gpt-5.4-mini")
             public static let gpt54Nano = ModelName(rawValue: "gpt-5.4-nano")
 
+            public static let gpt55 = ModelName(rawValue: "gpt-5.5")
+
             // MARK: - Anthropic Claude 4.7
 
             public static let claude47Opus = ModelName(rawValue: "claude-opus-4-7")
@@ -143,7 +145,7 @@ public extension LLM {
         public static func openAI(apiKey: String) -> Self {
             .init(
                 baseURL: URL(string: "https://api.openai.com/")!,
-                authMethod: .bearer(apiKey: apiKey)
+                authMethod: .bearer(apiKey: apiKey),
             )
         }
 
@@ -156,7 +158,7 @@ public extension LLM {
                 headers: [
                     "anthropic-version": "2023-06-01",
                     "anthropic-beta": "prompt-caching-2024-07-31",
-                ]
+                ],
             )
         }
 
@@ -164,7 +166,7 @@ public extension LLM {
         public static func mistral(apiKey: String) -> Self {
             .init(
                 baseURL: URL(string: "https://api.mistral.ai/")!,
-                authMethod: .bearer(apiKey: apiKey)
+                authMethod: .bearer(apiKey: apiKey),
             )
         }
 
@@ -177,7 +179,7 @@ public extension LLM {
             baseURL: URL,
             authMethod: AuthenticationMethod = .none,
             chatEndpoint: String = "v1/chat/completions",
-            headers: [String: String]? = nil
+            headers: [String: String]? = nil,
         ) {
             self.baseURL = baseURL
             authenticationMethod = authMethod

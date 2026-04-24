@@ -11,6 +11,7 @@ public extension LLM.OpenAICompatibleAPI.ModelName {
         if self == .gpt41 || self == .gpt41Mini || self == .gpt41Nano { return true }
         if self == .gpt52 || self == .gpt5Mini || self == .gpt5Nano { return true }
         if self == .gpt54 || self == .gpt54Mini || self == .gpt54Nano { return true }
+        if self == .gpt55 { return true }
         if self == .o1 || self == .o3 || self == .o3mini || self == .o4mini { return true }
         // All Claude 3+ models support vision
         if rawValue.hasPrefix("claude-") { return true }

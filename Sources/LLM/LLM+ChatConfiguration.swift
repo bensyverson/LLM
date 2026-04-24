@@ -50,7 +50,7 @@ public extension LLM {
             reasoningEffort: LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort? = nil,
             stopTokens: [String]? = nil,
             enableCaching: Bool = true,
-            cacheTTL: LLM.OpenAICompatibleAPI.CacheControl.TTL? = nil
+            cacheTTL: LLM.OpenAICompatibleAPI.CacheControl.TTL? = nil,
         ) {
             self.systemPrompt = systemPrompt
             self.user = user
@@ -96,7 +96,7 @@ public extension LLM.ChatConfiguration {
                 // Treat 0 as unset since Anthropic requires max_tokens >= 1
                 if let maxTokens, maxTokens > 0 { return maxTokens }
                 return model.maxOutputTokens ?? 16384
-            } else if isGPT5 && inference == .reasoning && maxTokens == nil {
+            } else if isGPT5, inference == .reasoning, maxTokens == nil {
                 // GPT-5 with reasoning: if user doesn't specify maxTokens, don't set a limit
                 return 0
             } else {
@@ -105,7 +105,7 @@ public extension LLM.ChatConfiguration {
             }
         }()
         let thinking: LLM.OpenAICompatibleAPI.ChatCompletion.Thinking? = {
-            guard isAnthropic && inference == .reasoning else { return nil }
+            guard isAnthropic, inference == .reasoning else { return nil }
             if model.supportsAdaptiveThinking {
                 return .init(type: .adaptive, budget_tokens: nil)
             }
@@ -113,14 +113,14 @@ public extension LLM.ChatConfiguration {
         }()
 
         let outputConfig: LLM.OpenAICompatibleAPI.ChatCompletion.OutputConfig? = {
-            guard isAnthropic && inference == .reasoning && model.supportsAdaptiveThinking else { return nil }
+            guard isAnthropic, inference == .reasoning, model.supportsAdaptiveThinking else { return nil }
             return .init(effort: (reasoningEffort ?? .high).anthropicEffort)
         }()
 
         // For GPT-5 models with .reasoning inference, auto-set reasoning_effort if not specified
         // Clamp .max to .xhigh for OpenAI (max is Anthropic-only)
         let effectiveReasoningEffort: LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort? = {
-            if isOpenAI && inference == .reasoning && isGPT5 {
+            if isOpenAI, inference == .reasoning, isGPT5 {
                 let effort = reasoningEffort ?? .high
                 return effort == .max ? .xhigh : effort
             }
@@ -139,7 +139,7 @@ public extension LLM.ChatConfiguration {
         let systemBlocks: [LLM.OpenAICompatibleAPI.SystemContentBlock]? = (isAnthropic && enableCaching) ? [
             LLM.OpenAICompatibleAPI.SystemContentBlock(
                 text: systemPrompt,
-                cache_control: LLM.OpenAICompatibleAPI.CacheControl(ttl: cacheTTL)
+                cache_control: LLM.OpenAICompatibleAPI.CacheControl(ttl: cacheTTL),
             ),
         ] : nil
 
@@ -158,7 +158,7 @@ public extension LLM.ChatConfiguration {
             stop_sequences: isAnthropic ? stopTokens : nil,
             thinking: thinking,
             reasoning_effort: isAnthropic ? nil : effectiveReasoningEffort,
-            output_config: outputConfig
+            output_config: outputConfig,
         )
     }
 }

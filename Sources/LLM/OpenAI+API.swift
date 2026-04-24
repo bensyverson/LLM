@@ -95,14 +95,14 @@ public extension LLM.OpenAICompatibleAPI {
     static func oneShot(
         model: ModelName = .gpt4oMini,
         systemMessage: String,
-        prompt: String
+        prompt: String,
     ) -> ChatCompletion {
         ChatCompletion(
             model: model,
             messages: [
                 ChatMessage(content: systemMessage, role: .system),
                 ChatMessage(content: prompt, role: .user),
-            ]
+            ],
         )
     }
 }

@@ -11,13 +11,13 @@ import Testing
 
 // MARK: - ModelName Tests
 
-@Test func modelNameIsGPT5_returnsTrue_forGPT5Models() {
+@Test func `model name is GPT 5 returns true for GPT 5 models`() {
     #expect(LLM.OpenAICompatibleAPI.ModelName.gpt52.isGPT5 == true)
     #expect(LLM.OpenAICompatibleAPI.ModelName.gpt5Mini.isGPT5 == true)
     #expect(LLM.OpenAICompatibleAPI.ModelName.gpt5Nano.isGPT5 == true)
 }
 
-@Test func modelNameIsGPT5_returnsFalse_forNonGPT5Models() {
+@Test func `model name is GPT 5 returns false for non GPT 5 models`() {
     // OpenAI non-GPT5 models
     #expect(LLM.OpenAICompatibleAPI.ModelName.gpt4o.isGPT5 == false)
     #expect(LLM.OpenAICompatibleAPI.ModelName.gpt4oMini.isGPT5 == false)
@@ -34,7 +34,7 @@ import Testing
     #expect(LLM.OpenAICompatibleAPI.ModelName.placeholder.isGPT5 == false)
 }
 
-@Test func modelNameCodable_roundTrip() throws {
+@Test func `model name codable round trip`() throws {
     let models: [LLM.OpenAICompatibleAPI.ModelName] = [
         .gpt52, .gpt5Mini, .gpt4o, .claude45Opus, .o3, .placeholder,
     ]
@@ -49,7 +49,7 @@ import Testing
     }
 }
 
-@Test func modelNameRawValues_matchAPIStrings() {
+@Test func `model name raw values match API strings`() {
     #expect(LLM.OpenAICompatibleAPI.ModelName.gpt52.rawValue == "gpt-5.2")
     #expect(LLM.OpenAICompatibleAPI.ModelName.gpt5Mini.rawValue == "gpt-5-mini")
     #expect(LLM.OpenAICompatibleAPI.ModelName.gpt5Nano.rawValue == "gpt-5-nano")
@@ -60,69 +60,69 @@ import Testing
 
 // MARK: - ModelType Tests
 
-@Test func modelTypeRawValues() {
+@Test func `model type raw values`() {
     #expect(LLM.ModelType.fast.rawValue == "fast")
     #expect(LLM.ModelType.flagship.rawValue == "flagship")
 }
 
 // MARK: - InferenceType Tests
 
-@Test func inferenceTypeRawValues() {
+@Test func `inference type raw values`() {
     #expect(LLM.InferenceType.direct.rawValue == "direct")
     #expect(LLM.InferenceType.reasoning.rawValue == "reasoning")
 }
 
 // MARK: - Provider.model(type:inference:) Tests
 
-@Test func providerModel_openAI_fast_direct() {
+@Test func `provider model open AI fast direct`() {
     let provider = LLM.Provider.openAI(apiKey: "test-key")
     let model = provider.model(type: .fast, inference: .direct)
     #expect(model == .gpt54Nano)
 }
 
-@Test func providerModel_openAI_flagship_direct() {
+@Test func `provider model open AI flagship direct`() {
     let provider = LLM.Provider.openAI(apiKey: "test-key")
     let model = provider.model(type: .flagship, inference: .direct)
-    #expect(model == .gpt54)
+    #expect(model == .gpt55)
 }
 
-@Test func providerModel_openAI_fast_reasoning() {
+@Test func `provider model open AI fast reasoning`() {
     let provider = LLM.Provider.openAI(apiKey: "test-key")
     let model = provider.model(type: .fast, inference: .reasoning)
     #expect(model == .gpt54Nano)
 }
 
-@Test func providerModel_openAI_flagship_reasoning() {
+@Test func `provider model open AI flagship reasoning`() {
     let provider = LLM.Provider.openAI(apiKey: "test-key")
     let model = provider.model(type: .flagship, inference: .reasoning)
-    #expect(model == .gpt54)
+    #expect(model == .gpt55)
 }
 
-@Test func providerModel_anthropic_fast_direct() {
+@Test func `provider model anthropic fast direct`() {
     let provider = LLM.Provider.anthropic(apiKey: "test-key")
     let model = provider.model(type: .fast, inference: .direct)
     #expect(model == .claude45Haiku)
 }
 
-@Test func providerModel_anthropic_fast_reasoning() {
+@Test func `provider model anthropic fast reasoning`() {
     let provider = LLM.Provider.anthropic(apiKey: "test-key")
     let model = provider.model(type: .fast, inference: .reasoning)
     #expect(model == .claude45Haiku)
 }
 
-@Test func providerModel_anthropic_flagship_direct() {
+@Test func `provider model anthropic flagship direct`() {
     let provider = LLM.Provider.anthropic(apiKey: "test-key")
     let model = provider.model(type: .flagship, inference: .direct)
     #expect(model == .claude47Opus)
 }
 
-@Test func providerModel_anthropic_flagship_reasoning() {
+@Test func `provider model anthropic flagship reasoning`() {
     let provider = LLM.Provider.anthropic(apiKey: "test-key")
     let model = provider.model(type: .flagship, inference: .reasoning)
     #expect(model == .claude47Opus)
 }
 
-@Test func providerModel_lmStudio_returnsPlaceholder() {
+@Test func `provider model lm studio returns placeholder`() {
     let provider = LLM.Provider.lmStudio
     #expect(provider.model(type: .fast, inference: .direct) == .placeholder)
     #expect(provider.model(type: .flagship, inference: .direct) == .placeholder)
@@ -130,13 +130,13 @@ import Testing
     #expect(provider.model(type: .flagship, inference: .reasoning) == .placeholder)
 }
 
-@Test func providerModel_localhost_returnsPlaceholder() {
+@Test func `provider model localhost returns placeholder`() {
     let provider = LLM.Provider.localhost(port: 8080)
     #expect(provider.model(type: .fast, inference: .direct) == .placeholder)
     #expect(provider.model(type: .flagship, inference: .reasoning) == .placeholder)
 }
 
-@Test func providerModel_other_returnsPlaceholder() throws {
+@Test func `provider model other returns placeholder`() throws {
     let provider = try LLM.Provider.other(#require(URL(string: "https://example.com")), apiKey: "key")
     #expect(provider.model(type: .fast, inference: .direct) == .placeholder)
     #expect(provider.model(type: .flagship, inference: .reasoning) == .placeholder)

@@ -27,7 +27,7 @@ enum FixtureError: Error {
 
 // MARK: - OpenAI Response Parsing Tests
 
-@Test func parseOpenAIChatResponse() throws {
+@Test func `parse open AI chat response`() throws {
     let json = """
     {
       "id": "chatcmpl-abc123def456",
@@ -75,7 +75,7 @@ enum FixtureError: Error {
     #expect(choice.finish_reason == "stop")
 }
 
-@Test func parseOpenAIToolCallResponse() throws {
+@Test func `parse open AI tool call response`() throws {
     let json = """
     {
       "id": "chatcmpl-xyz789",
@@ -140,7 +140,7 @@ enum FixtureError: Error {
 
 // MARK: - Anthropic Response Parsing Tests
 
-@Test func parseAnthropicChatResponse() throws {
+@Test func `parse anthropic chat response`() throws {
     let json = """
     {
       "id": "msg_01abc123def456",
@@ -175,7 +175,7 @@ enum FixtureError: Error {
     #expect(content.text == "Hello! I'm Claude, an AI assistant. How can I help you today?")
 }
 
-@Test func parseAnthropicThinkingResponse() throws {
+@Test func `parse anthropic thinking response`() throws {
     let json = """
     {
       "id": "msg_thinking123",
@@ -214,7 +214,7 @@ enum FixtureError: Error {
     #expect(textContent.text == "The capital of France is Paris.")
 }
 
-@Test func parseAnthropicToolUseResponse() throws {
+@Test func `parse anthropic tool use response`() throws {
     let json = """
     {
       "id": "msg_tool456",
@@ -259,7 +259,7 @@ enum FixtureError: Error {
 
 // MARK: - ChatCompletionResponse Usage Tests
 
-@Test func chatCompletionResponse_usageFields_openAIFormat() throws {
+@Test func `chat completion response usage fields open AI format`() throws {
     let json = """
     {
       "id": "test",
@@ -283,7 +283,7 @@ enum FixtureError: Error {
     #expect(response.usage.output_tokens == nil)
 }
 
-@Test func chatCompletionResponse_usageFields_anthropicFormat() throws {
+@Test func `chat completion response usage fields anthropic format`() throws {
     let json = """
     {
       "id": "test",
@@ -308,7 +308,7 @@ enum FixtureError: Error {
 
 // MARK: - Content Type Tests
 
-@Test func contentType_allCases() {
+@Test func `content type all cases`() {
     #expect(LLM.OpenAICompatibleAPI.ChatCompletionResponse.Content.ContentType.text.rawValue == "text")
     #expect(LLM.OpenAICompatibleAPI.ChatCompletionResponse.Content.ContentType.thinking.rawValue == "thinking")
     #expect(LLM.OpenAICompatibleAPI.ChatCompletionResponse.Content.ContentType.redacted_thinking.rawValue == "redacted_thinking")
@@ -318,7 +318,7 @@ enum FixtureError: Error {
 
 // MARK: - Real Fixture File Tests
 
-@Test func parseRealOpenAIChatFixture() throws {
+@Test func `parse real open AI chat fixture`() throws {
     let url = try #require(Bundle.module.url(forResource: "openai_chat_response", withExtension: "json", subdirectory: "Fixtures"))
     let data = try Data(contentsOf: url)
     let decoder = JSONDecoder()
@@ -332,7 +332,7 @@ enum FixtureError: Error {
     #expect(response.usage.total_tokens == 22)
 }
 
-@Test func parseRealOpenAIToolCallFixture() throws {
+@Test func `parse real open AI tool call fixture`() throws {
     let url = try #require(Bundle.module.url(forResource: "openai_tool_call_response", withExtension: "json", subdirectory: "Fixtures"))
     let data = try Data(contentsOf: url)
     let decoder = JSONDecoder()
@@ -345,7 +345,7 @@ enum FixtureError: Error {
     #expect(toolCall?.function.arguments.contains("San Francisco") == true)
 }
 
-@Test func parseRealAnthropicChatFixture() throws {
+@Test func `parse real anthropic chat fixture`() throws {
     let url = try #require(Bundle.module.url(forResource: "anthropic_chat_response", withExtension: "json", subdirectory: "Fixtures"))
     let data = try Data(contentsOf: url)
     let decoder = JSONDecoder()
@@ -359,7 +359,7 @@ enum FixtureError: Error {
     #expect(response.usage.output_tokens == 11)
 }
 
-@Test func parseRealAnthropicThinkingFixture() throws {
+@Test func `parse real anthropic thinking fixture`() throws {
     let url = try #require(Bundle.module.url(forResource: "anthropic_thinking_response", withExtension: "json", subdirectory: "Fixtures"))
     let data = try Data(contentsOf: url)
     let decoder = JSONDecoder()
@@ -378,7 +378,7 @@ enum FixtureError: Error {
     #expect(textContent?.text == "15 + 27 = 42")
 }
 
-@Test func parseRealAnthropicToolUseFixture() throws {
+@Test func `parse real anthropic tool use fixture`() throws {
     let url = try #require(Bundle.module.url(forResource: "anthropic_tool_use_response", withExtension: "json", subdirectory: "Fixtures"))
     let data = try Data(contentsOf: url)
     let decoder = JSONDecoder()
@@ -393,7 +393,7 @@ enum FixtureError: Error {
 
 // MARK: - Edge Cases
 
-@Test func parseResponse_withMinimalFields() throws {
+@Test func `parse response with minimal fields`() throws {
     let json = """
     {
       "model": "test-model",
@@ -410,7 +410,7 @@ enum FixtureError: Error {
     #expect(response.content == nil)
 }
 
-@Test func parseResponse_multipleChoices() throws {
+@Test func `parse response multiple choices`() throws {
     let json = """
     {
       "id": "test",
@@ -439,7 +439,7 @@ enum FixtureError: Error {
     #expect(response.choices?[1].message.textContent == "Response 2")
 }
 
-@Test func parseResponse_multipleToolCalls() throws {
+@Test func `parse response multiple tool calls`() throws {
     let json = """
     {
       "id": "test",
@@ -481,7 +481,7 @@ enum FixtureError: Error {
 
 // MARK: - Cache Usage Tests
 
-@Test func chatCompletionResponse_anthropicCacheUsage() throws {
+@Test func `chat completion response anthropic cache usage`() throws {
     let json = """
     {
       "id": "msg_cache_test",
@@ -510,7 +510,7 @@ enum FixtureError: Error {
     #expect(response.usage.cache_read_input_tokens == 20)
 }
 
-@Test func chatCompletionResponse_openAICacheUsage() throws {
+@Test func `chat completion response open AI cache usage`() throws {
     let json = """
     {
       "id": "chatcmpl-cache",
@@ -542,7 +542,7 @@ enum FixtureError: Error {
     #expect(response.usage.prompt_tokens_details?.cached_tokens == 80)
 }
 
-@Test func chatCompletionResponse_noCacheUsage() throws {
+@Test func `chat completion response no cache usage`() throws {
     let json = """
     {
       "id": "test",

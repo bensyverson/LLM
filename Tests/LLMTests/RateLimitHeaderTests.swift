@@ -11,7 +11,7 @@ import Testing
 
 // MARK: - RateLimitInfo Parsing: Anthropic Headers
 
-@Test func rateLimitInfo_parsesAnthropicHeaders() throws {
+@Test func `rate limit info parses anthropic headers`() throws {
     let url = try #require(URL(string: "https://api.anthropic.com/v1/messages"))
     let response = try #require(HTTPURLResponse(
         url: url,
@@ -22,7 +22,7 @@ import Testing
             "anthropic-ratelimit-tokens-limit": "80000",
             "anthropic-ratelimit-requests-remaining": "999",
             "anthropic-ratelimit-tokens-remaining": "79500",
-        ]
+        ],
     ))
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -34,7 +34,7 @@ import Testing
     #expect(info.tokensRemaining == 79500)
 }
 
-@Test func rateLimitInfo_parsesAnthropicPartialHeaders() throws {
+@Test func `rate limit info parses anthropic partial headers`() throws {
     let url = try #require(URL(string: "https://api.anthropic.com/v1/messages"))
     let response = try #require(HTTPURLResponse(
         url: url,
@@ -42,7 +42,7 @@ import Testing
         httpVersion: "HTTP/1.1",
         headerFields: [
             "anthropic-ratelimit-requests-limit": "500",
-        ]
+        ],
     ))
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -54,13 +54,13 @@ import Testing
     #expect(info.tokensRemaining == nil)
 }
 
-@Test func rateLimitInfo_returnsNilForAnthropicWithNoHeaders() throws {
+@Test func `rate limit info returns nil for anthropic with no headers`() throws {
     let url = try #require(URL(string: "https://api.anthropic.com/v1/messages"))
     let response = try #require(HTTPURLResponse(
         url: url,
         statusCode: 200,
         httpVersion: "HTTP/1.1",
-        headerFields: [:]
+        headerFields: [:],
     ))
 
     let provider = LLM.Provider.anthropic(apiKey: "test")
@@ -71,7 +71,7 @@ import Testing
 
 // MARK: - RateLimitInfo Parsing: OpenAI Headers
 
-@Test func rateLimitInfo_parsesOpenAIHeaders() throws {
+@Test func `rate limit info parses open AI headers`() throws {
     let url = try #require(URL(string: "https://api.openai.com/v1/chat/completions"))
     let response = try #require(HTTPURLResponse(
         url: url,
@@ -82,7 +82,7 @@ import Testing
             "x-ratelimit-limit-tokens": "600000",
             "x-ratelimit-remaining-requests": "4999",
             "x-ratelimit-remaining-tokens": "599000",
-        ]
+        ],
     ))
 
     let provider = LLM.Provider.openAI(apiKey: "test")
@@ -94,7 +94,7 @@ import Testing
     #expect(info.tokensRemaining == 599_000)
 }
 
-@Test func rateLimitInfo_parsesOpenAIPartialHeaders() throws {
+@Test func `rate limit info parses open AI partial headers`() throws {
     let url = try #require(URL(string: "https://api.openai.com/v1/chat/completions"))
     let response = try #require(HTTPURLResponse(
         url: url,
@@ -102,7 +102,7 @@ import Testing
         httpVersion: "HTTP/1.1",
         headerFields: [
             "x-ratelimit-limit-tokens": "300000",
-        ]
+        ],
     ))
 
     let provider = LLM.Provider.openAI(apiKey: "test")
@@ -112,13 +112,13 @@ import Testing
     #expect(info.tokenLimit == 300_000)
 }
 
-@Test func rateLimitInfo_returnsNilForOpenAIWithNoHeaders() throws {
+@Test func `rate limit info returns nil for open AI with no headers`() throws {
     let url = try #require(URL(string: "https://api.openai.com/v1/chat/completions"))
     let response = try #require(HTTPURLResponse(
         url: url,
         statusCode: 200,
         httpVersion: "HTTP/1.1",
-        headerFields: [:]
+        headerFields: [:],
     ))
 
     let provider = LLM.Provider.openAI(apiKey: "test")
@@ -129,7 +129,7 @@ import Testing
 
 // MARK: - RateLimitInfo Parsing: Non-numeric values
 
-@Test func rateLimitInfo_ignoresNonNumericValues() throws {
+@Test func `rate limit info ignores non numeric values`() throws {
     let url = try #require(URL(string: "https://api.openai.com/v1/chat/completions"))
     let response = try #require(HTTPURLResponse(
         url: url,
@@ -138,7 +138,7 @@ import Testing
         headerFields: [
             "x-ratelimit-limit-requests": "not-a-number",
             "x-ratelimit-limit-tokens": "500000",
-        ]
+        ],
     ))
 
     let provider = LLM.Provider.openAI(apiKey: "test")
@@ -150,12 +150,12 @@ import Testing
 
 // MARK: - RateLimitInfo Codable Conformance
 
-@Test func rateLimitInfo_roundTripsJSON() throws {
+@Test func `rate limit info round trips JSON`() throws {
     let original = LLM.RateLimitInfo(
         requestLimit: 100,
         tokenLimit: 50000,
         requestsRemaining: 99,
-        tokensRemaining: 49000
+        tokensRemaining: 49000,
     )
 
     let data = try JSONEncoder().encode(original)
@@ -166,7 +166,7 @@ import Testing
 
 // MARK: - RateLimiter.updateLimits
 
-@Test func rateLimiter_updateLimits_updatesMaxRequests() async {
+@Test func `rate limiter update limits updates max requests`() async {
     let limiter = LLM.RateLimiter(maxRequests: 10, maxTokens: 1000)
 
     await limiter.updateLimits(maxRequests: 500)
@@ -177,7 +177,7 @@ import Testing
     #expect(maxTokens == 1000) // unchanged
 }
 
-@Test func rateLimiter_updateLimits_updatesMaxTokens() async {
+@Test func `rate limiter update limits updates max tokens`() async {
     let limiter = LLM.RateLimiter(maxRequests: 10, maxTokens: 1000)
 
     await limiter.updateLimits(maxTokens: 200_000)
@@ -188,7 +188,7 @@ import Testing
     #expect(maxTokens == 200_000)
 }
 
-@Test func rateLimiter_updateLimits_updatesBoth() async {
+@Test func `rate limiter update limits updates both`() async {
     let limiter = LLM.RateLimiter(maxRequests: 10, maxTokens: 1000)
 
     await limiter.updateLimits(maxRequests: 8000, maxTokens: 1_500_000)
@@ -199,7 +199,7 @@ import Testing
     #expect(maxTokens == 1_500_000)
 }
 
-@Test func rateLimiter_updateLimits_nilDoesNotChange() async {
+@Test func `rate limiter update limits nil does not change`() async {
     let limiter = LLM.RateLimiter(maxRequests: 42, maxTokens: 9999)
 
     await limiter.updateLimits()
@@ -212,7 +212,7 @@ import Testing
 
 // MARK: - RateLimiter Default Values
 
-@Test func rateLimiter_defaultsAreConservative() async {
+@Test func `rate limiter defaults are conservative`() async {
     let limiter = LLM.RateLimiter()
 
     let maxRequests = await limiter.maxRequests
@@ -223,7 +223,7 @@ import Testing
 
 // MARK: - Provider Rate Limiter Defaults
 
-@Test func provider_cloudLimiters_useConservativeDefaults() async {
+@Test func `provider cloud limiters use conservative defaults`() async {
     let openAI = LLM.Provider.openAI(apiKey: "test")
     let anthropic = LLM.Provider.anthropic(apiKey: "test")
 
@@ -235,7 +235,7 @@ import Testing
     #expect(anthropicReqs == 50)
 }
 
-@Test func provider_localLimiters_arePermissive() async {
+@Test func `provider local limiters are permissive`() async {
     let lmStudio = LLM.Provider.lmStudio
     let localhost = LLM.Provider.localhost(port: 8080)
 
@@ -246,7 +246,7 @@ import Testing
     #expect(localReqs == 100_000)
 }
 
-@Test func provider_isLocal() {
+@Test func `provider is local`() {
     #expect(LLM.Provider.lmStudio.isLocal == true)
     #expect(LLM.Provider.localhost(port: 8080).isLocal == true)
     #expect(LLM.Provider.openAI(apiKey: "test").isLocal == false)

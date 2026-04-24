@@ -11,12 +11,12 @@ import Testing
 
 // MARK: - Provider.isMistral Tests
 
-@Test func provider_isMistral_trueForMistral() {
+@Test func `provider is mistral true for mistral`() {
     let provider = LLM.Provider.mistral(apiKey: "test")
     #expect(provider.isMistral == true)
 }
 
-@Test func provider_isMistral_falseForOthers() throws {
+@Test func `provider is mistral false for others`() throws {
     #expect(LLM.Provider.openAI(apiKey: "test").isMistral == false)
     #expect(LLM.Provider.anthropic(apiKey: "test").isMistral == false)
     #expect(LLM.Provider.lmStudio.isMistral == false)
@@ -26,7 +26,7 @@ import Testing
 
 // MARK: - Provider.simpleProvider Tests for Mistral
 
-@Test func provider_simpleProvider_mistral() {
+@Test func `provider simple provider mistral`() {
     let provider = LLM.Provider.mistral(apiKey: "my-key")
     let simple = provider.simpleProvider
 
@@ -39,7 +39,7 @@ import Testing
 
 // MARK: - SimpleProvider.fullProvider Tests for Mistral
 
-@Test func simpleProvider_fullProvider_mistral() {
+@Test func `simple provider full provider mistral`() {
     let simple = LLM.SimpleProvider.mistral
     let full = simple.fullProvider(using: "my-api-key")
 
@@ -52,7 +52,7 @@ import Testing
 
 // MARK: - Round-trip Tests for Mistral
 
-@Test func provider_roundTrip_mistral() {
+@Test func `provider round trip mistral`() {
     let original = LLM.Provider.mistral(apiKey: "original-key")
     let simple = original.simpleProvider
     let restored = simple.fullProvider(using: "new-key")
@@ -66,19 +66,19 @@ import Testing
 
 // MARK: - Model Mapping Tests for Mistral
 
-@Test func provider_model_mistral_fast() {
+@Test func `provider model mistral fast`() {
     let provider = LLM.Provider.mistral(apiKey: "test")
     let model = provider.model(type: .fast, inference: .direct)
     #expect(model == .mistralSmall)
 }
 
-@Test func provider_model_mistral_standard() {
+@Test func `provider model mistral standard`() {
     let provider = LLM.Provider.mistral(apiKey: "test")
     let model = provider.model(type: .standard, inference: .direct)
     #expect(model == .mistralMedium)
 }
 
-@Test func provider_model_mistral_flagship() {
+@Test func `provider model mistral flagship`() {
     let provider = LLM.Provider.mistral(apiKey: "test")
     let model = provider.model(type: .flagship, inference: .direct)
     #expect(model == .mistralLarge)
@@ -86,7 +86,7 @@ import Testing
 
 // MARK: - API Client Tests for Mistral
 
-@Test func api_client_mistral() {
+@Test func `api client mistral`() {
     let api = LLM.OpenAICompatibleAPI.mistral(apiKey: "test-key")
     #expect(api.baseURL.absoluteString == "https://api.mistral.ai/")
     if case let .bearer(apiKey) = api.authenticationMethod {
@@ -99,7 +99,7 @@ import Testing
 
 // MARK: - Chat Completion Request Encoding Tests for Mistral
 
-@Test func chatCompletion_encoding_mistral_parallelToolCalls() throws {
+@Test func `chat completion encoding mistral parallel tool calls`() throws {
     let messages = [
         LLM.OpenAICompatibleAPI.ChatMessage(content: "Hello", role: .user),
     ]
@@ -112,12 +112,12 @@ import Testing
                 function: LLM.OpenAICompatibleAPI.FunctionDefinition(
                     name: "get_weather",
                     description: "Get weather information",
-                    parameters: .object(properties: [:], required: [])
-                )
+                    parameters: .object(properties: [:], required: []),
+                ),
             ),
         ],
         tool_choice: .auto,
-        parallel_tool_calls: true
+        parallel_tool_calls: true,
     )
     completion.useMistralFormat = true
 
@@ -132,7 +132,7 @@ import Testing
 
 // MARK: - Conversation Configuration Tests for Mistral
 
-@Test func conversation_configuration_mistral_parallelToolCalls() {
+@Test func `conversation configuration mistral parallel tool calls`() {
     var config = LLM.ConversationConfiguration()
     config.parallelToolCalls = true
 

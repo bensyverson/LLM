@@ -11,34 +11,34 @@ import Testing
 
 // MARK: - XML Stub Generation
 
-@Test func imageStub_noFilenameOrDescription() {
+@Test func `image stub no filename or description`() {
     let stub = LLM.imageStub(number: 1, filename: nil, description: nil)
     #expect(stub == #"<image number="1"/>"#)
 }
 
-@Test func imageStub_withFilename() {
+@Test func `image stub with filename`() {
     let stub = LLM.imageStub(number: 2, filename: "DSC1234.jpg", description: nil)
     #expect(stub == #"<image number="2" name="DSC1234.jpg"/>"#)
 }
 
-@Test func imageStub_withFilenameAndDescription() {
+@Test func `image stub with filename and description`() {
     let stub = LLM.imageStub(number: 3, filename: "photo.jpg", description: "A dog with a stick")
     #expect(stub == #"<image number="3" name="photo.jpg" alt="A dog with a stick"/>"#)
 }
 
-@Test func documentStub_noTitle() {
+@Test func `document stub no title`() {
     let stub = LLM.documentStub(number: 1, title: nil)
     #expect(stub == #"<document number="1"/>"#)
 }
 
-@Test func documentStub_withTitle() {
+@Test func `document stub with title`() {
     let stub = LLM.documentStub(number: 1, title: "report.pdf")
     #expect(stub == #"<document number="1" title="report.pdf"/>"#)
 }
 
 // MARK: - Conversation Stripping
 
-@Test func strippingMedia_singleImage_replacesWithStub() async throws {
+@Test func `stripping media single image replaces with stub`() async throws {
     let llm = LLM(provider: .openAI(apiKey: "test"))
 
     let conversation = LLM.Conversation(systemPrompt: "System")
@@ -56,7 +56,7 @@ import Testing
     #expect(stripped.messages[0].hasMedia == false)
 }
 
-@Test func strippingMedia_numberedAcrossMessages() async throws {
+@Test func `stripping media numbered across messages`() async throws {
     let llm = LLM(provider: .openAI(apiKey: "test"))
 
     let conversation = LLM.Conversation(systemPrompt: "System")
@@ -72,7 +72,7 @@ import Testing
     #expect(stripped.messages[2].content[0].textContent == #"<image number="2" name="chart.png"/>"#)
 }
 
-@Test func strippingMedia_withDescription_includesAlt() async throws {
+@Test func `stripping media with description includes alt`() async throws {
     let llm = LLM(provider: .openAI(apiKey: "test"))
 
     let conversation = LLM.Conversation(systemPrompt: "System")
@@ -85,7 +85,7 @@ import Testing
     #expect(stripped.messages[0].content[0].textContent == #"<image number="1" name="photo.jpg" alt="A sunset"/>"#)
 }
 
-@Test func strippingMedia_pdf_replacesWithDocumentStub() async throws {
+@Test func `stripping media pdf replaces with document stub`() async throws {
     let llm = LLM(provider: .openAI(apiKey: "test"))
 
     let conversation = LLM.Conversation(systemPrompt: "System")
@@ -99,7 +99,7 @@ import Testing
     #expect(stripped.messages[0].content[1].textContent == #"<document number="1" title="report.pdf"/>"#)
 }
 
-@Test func strippingMedia_mixedImageAndPdf_separateCounters() async throws {
+@Test func `stripping media mixed image and pdf separate counters`() async throws {
     let llm = LLM(provider: .openAI(apiKey: "test"))
 
     let conversation = LLM.Conversation(systemPrompt: "System")
@@ -116,7 +116,7 @@ import Testing
     #expect(stripped.messages[0].content[2].textContent == #"<image number="2"/>"#)
 }
 
-@Test func strippingMedia_describerCalled_forUndescribedImages() async throws {
+@Test func `stripping media describer called for undescribed images`() async throws {
     let llm = LLM(provider: .openAI(apiKey: "test"))
 
     let describer: @Sendable (Data, String) async throws -> String = { _, _ in
@@ -133,7 +133,7 @@ import Testing
     #expect(stripped.messages[0].content[0].textContent == #"<image number="1" name="test.jpg" alt="A generated description"/>"#)
 }
 
-@Test func strippingMedia_textOnlyConversation_unchanged() async throws {
+@Test func `stripping media text only conversation unchanged`() async throws {
     let llm = LLM(provider: .openAI(apiKey: "test"))
 
     let conversation = LLM.Conversation(systemPrompt: "System")

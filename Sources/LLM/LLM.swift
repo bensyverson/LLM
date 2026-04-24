@@ -85,7 +85,7 @@ public actor LLM {
         provider: LLM.Provider = .lmStudio,
         chatLimiter: LLM.RateLimiter? = nil,
         embeddingLimiter: LLM.RateLimiter? = nil,
-        timeout: TimeInterval = 120
+        timeout: TimeInterval = 120,
     ) {
         self.provider = provider
         chatRateLimiter = chatLimiter ?? provider.chatLimiter

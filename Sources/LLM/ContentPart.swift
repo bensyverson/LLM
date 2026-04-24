@@ -36,17 +36,17 @@ public extension LLM.OpenAICompatibleAPI {
         /// Whether this part contains media (image, PDF, audio, or video).
         public var isMedia: Bool {
             switch self {
-            case .text: return false
-            default: return true
+            case .text: false
+            default: true
             }
         }
 
         /// The filename for images or title for PDFs, `nil` for other types.
         public var filename: String? {
             switch self {
-            case let .image(_, _, filename, _): return filename
-            case let .pdf(_, title): return title
-            default: return nil
+            case let .image(_, _, filename, _): filename
+            case let .pdf(_, title): title
+            default: nil
             }
         }
     }
@@ -139,12 +139,12 @@ extension LLM.OpenAICompatibleAPI.ContentPart {
     /// Maps a file extension to a MIME type.
     static func mediaType(forExtension ext: String) -> String? {
         switch ext.lowercased() {
-        case "jpg", "jpeg": return "image/jpeg"
-        case "png": return "image/png"
-        case "gif": return "image/gif"
-        case "webp": return "image/webp"
-        case "pdf": return "application/pdf"
-        default: return nil
+        case "jpg", "jpeg": "image/jpeg"
+        case "png": "image/png"
+        case "gif": "image/gif"
+        case "webp": "image/webp"
+        case "pdf": "application/pdf"
+        default: nil
         }
     }
 }

@@ -23,7 +23,7 @@ public extension LLM {
         public init(
             systemPrompt: String,
             messages: [OpenAICompatibleAPI.ChatMessage] = [],
-            configuration: ConversationConfiguration = .init()
+            configuration: ConversationConfiguration = .init(),
         ) {
             self.systemPrompt = systemPrompt
             self.messages = messages
@@ -57,7 +57,7 @@ public extension LLM {
             copy.messages.append(OpenAICompatibleAPI.ChatMessage(
                 content: nil,
                 role: .assistant,
-                tool_calls: toolCalls
+                tool_calls: toolCalls,
             ))
             return copy
         }
@@ -68,7 +68,7 @@ public extension LLM {
             copy.messages.append(OpenAICompatibleAPI.ChatMessage(
                 content: content,
                 role: .tool,
-                tool_call_id: toolCallId
+                tool_call_id: toolCallId,
             ))
             return copy
         }
@@ -79,7 +79,7 @@ public extension LLM {
             copy.messages.append(OpenAICompatibleAPI.ChatMessage(
                 content: content,
                 role: .tool,
-                tool_call_id: toolCallId
+                tool_call_id: toolCallId,
             ))
             return copy
         }
@@ -122,7 +122,7 @@ public extension LLM {
             cacheTTL: LLM.OpenAICompatibleAPI.CacheControl.TTL? = nil,
             tools: [LLM.OpenAICompatibleAPI.ToolDefinition]? = nil,
             toolChoice: LLM.OpenAICompatibleAPI.ToolChoice? = nil,
-            parallelToolCalls: Bool? = nil
+            parallelToolCalls: Bool? = nil,
         ) {
             self.modelType = modelType
             self.inference = inference
@@ -167,7 +167,7 @@ public extension LLM {
             toolCalls: [OpenAICompatibleAPI.ToolCall],
             conversation: Conversation,
             rawResponse: OpenAICompatibleAPI.ChatCompletionResponse,
-            warnings: [String] = []
+            warnings: [String] = [],
         ) {
             self.text = text
             self.thinking = thinking
@@ -204,7 +204,7 @@ public extension LLM.Conversation {
                 // Treat 0 as unset since Anthropic requires max_tokens >= 1
                 if let maxTokens = configuration.maxTokens, maxTokens > 0 { return maxTokens }
                 return model.maxOutputTokens ?? 16384
-            } else if isGPT5 && configuration.inference == .reasoning && configuration.maxTokens == nil {
+            } else if isGPT5, configuration.inference == .reasoning, configuration.maxTokens == nil {
                 // GPT-5 with reasoning: if user doesn't specify maxTokens, don't set a limit
                 return 0
             } else {
@@ -213,7 +213,7 @@ public extension LLM.Conversation {
             }
         }()
         let thinking: LLM.OpenAICompatibleAPI.ChatCompletion.Thinking? = {
-            guard isAnthropic && configuration.inference == .reasoning else { return nil }
+            guard isAnthropic, configuration.inference == .reasoning else { return nil }
             if model.supportsAdaptiveThinking {
                 return .init(type: .adaptive, budget_tokens: nil)
             }
@@ -221,14 +221,14 @@ public extension LLM.Conversation {
         }()
 
         let outputConfig: LLM.OpenAICompatibleAPI.ChatCompletion.OutputConfig? = {
-            guard isAnthropic && configuration.inference == .reasoning && model.supportsAdaptiveThinking else { return nil }
+            guard isAnthropic, configuration.inference == .reasoning, model.supportsAdaptiveThinking else { return nil }
             return .init(effort: (configuration.reasoningEffort ?? .high).anthropicEffort)
         }()
 
         // For GPT-5 models with .reasoning inference, auto-set reasoning_effort if not specified
         // Clamp .max to .xhigh for OpenAI (max is Anthropic-only)
         let effectiveReasoningEffort: LLM.OpenAICompatibleAPI.ChatCompletion.ReasoningEffort? = {
-            if isOpenAI && configuration.inference == .reasoning && isGPT5 {
+            if isOpenAI, configuration.inference == .reasoning, isGPT5 {
                 let effort = configuration.reasoningEffort ?? .high
                 return effort == .max ? .xhigh : effort
             }
@@ -247,7 +247,7 @@ public extension LLM.Conversation {
         let systemBlocks: [LLM.OpenAICompatibleAPI.SystemContentBlock]? = (isAnthropic && configuration.enableCaching) ? [
             LLM.OpenAICompatibleAPI.SystemContentBlock(
                 text: systemPrompt,
-                cache_control: LLM.OpenAICompatibleAPI.CacheControl(ttl: configuration.cacheTTL)
+                cache_control: LLM.OpenAICompatibleAPI.CacheControl(ttl: configuration.cacheTTL),
             ),
         ] : nil
 
@@ -269,7 +269,7 @@ public extension LLM.Conversation {
             output_config: outputConfig,
             tools: configuration.tools,
             tool_choice: configuration.toolChoice,
-            parallel_tool_calls: isMistral ? configuration.parallelToolCalls : nil
+            parallel_tool_calls: isMistral ? configuration.parallelToolCalls : nil,
         )
         completion.useAnthropicToolFormat = isAnthropic
         completion.useMistralFormat = isMistral

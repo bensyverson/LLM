@@ -27,7 +27,7 @@ struct OpenAIStreamingTests {
 
     /// Regression test for OpenRouter bundling multiple JSON objects into a single
     /// SSE event's data field, separated by newlines.
-    @Test func bundledSSEChunks_assemblesText() throws {
+    @Test func `bundled SSE chunks assembles text`() throws {
         // This is the exact shape of a real OpenRouter SSE event whose data field
         // contains two newline-joined JSON objects.
         let bundledData = """
@@ -52,7 +52,7 @@ struct OpenAIStreamingTests {
 
     /// Standard OpenAI streaming — one JSON object per SSE event, ending with a
     /// usage chunk and [DONE].
-    @Test func standardOpenAI_oneChunkPerEvent_assemblesText() throws {
+    @Test func `standard open AI one chunk per event assembles text`() throws {
         let chunks = [
             #"{"id":"chatcmpl-1","choices":[{"index":0,"delta":{"role":"assistant","content":"Hello"}}]}"#,
             #"{"id":"chatcmpl-1","choices":[{"index":0,"delta":{"content":" world"}}]}"#,
@@ -73,7 +73,7 @@ struct OpenAIStreamingTests {
 
     /// OpenRouter's reasoning models (e.g. Kimi K2.5) send reasoning in a `"reasoning"`
     /// field rather than `"reasoning_content"`. Both should be surfaced as thinking.
-    @Test func openRouter_reasoningField_capturedAsThinking() throws {
+    @Test func `open router reasoning field captured as thinking`() throws {
         let chunks = [
             #"{"id":"gen-2","choices":[{"index":0,"delta":{"role":"assistant","content":"","reasoning":"Let me think..."}}]}"#,
             #"{"id":"gen-2","choices":[{"index":0,"delta":{"content":"The answer is 42."}}]}"#,
@@ -91,7 +91,7 @@ struct OpenAIStreamingTests {
 
     /// Some providers (OpenRouter) attach a usage object to the final non-[DONE]
     /// chunk. Verify that token counts are recorded.
-    @Test func usageChunkAtEnd_recordsTokens() throws {
+    @Test func `usage chunk at end records tokens`() throws {
         let chunks = [
             #"{"id":"gen-3","choices":[{"index":0,"delta":{"content":"Hi"}}]}"#,
             #"{"id":"gen-3","choices":[],"usage":{"prompt_tokens":8,"completion_tokens":3,"total_tokens":11}}"#,
@@ -112,7 +112,7 @@ struct OpenAIStreamingTests {
     /// Chunks with `"content":""` (empty string, not null) must not cause the
     /// accumulator to append empty text. Text should remain as accumulated from
     /// non-empty chunks only.
-    @Test func emptyContentString_notAppendedToText() throws {
+    @Test func `empty content string not appended to text`() throws {
         let chunks = [
             // role chunk — content is empty string (common in OpenAI/OpenRouter)
             #"{"id":"chatcmpl-4","choices":[{"index":0,"delta":{"role":"assistant","content":""}}]}"#,

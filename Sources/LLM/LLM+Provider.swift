@@ -52,9 +52,9 @@ public extension LLM {
         public var isLocal: Bool {
             switch self {
             case .lmStudio, .localhost:
-                return true
+                true
             default:
-                return false
+                false
             }
         }
     }
@@ -63,24 +63,24 @@ public extension LLM {
     var providerApi: OpenAICompatibleAPI {
         switch provider {
         case let .openAI(apiKey):
-            return OpenAICompatibleAPI.openAI(apiKey: apiKey)
+            OpenAICompatibleAPI.openAI(apiKey: apiKey)
         case let .anthropic(apiKey, baseURL):
-            return OpenAICompatibleAPI.anthropic(apiKey: apiKey, baseURL: baseURL)
+            OpenAICompatibleAPI.anthropic(apiKey: apiKey, baseURL: baseURL)
         case let .mistral(apiKey):
-            return OpenAICompatibleAPI.mistral(apiKey: apiKey)
+            OpenAICompatibleAPI.mistral(apiKey: apiKey)
         case .lmStudio:
-            return OpenAICompatibleAPI.localhost(port: 1234)
+            OpenAICompatibleAPI.localhost(port: 1234)
         case let .other(url, apiKey: apiKey):
             if let apiKey {
-                return OpenAICompatibleAPI(
+                OpenAICompatibleAPI(
                     baseURL: url,
-                    authMethod: .bearer(apiKey: apiKey)
+                    authMethod: .bearer(apiKey: apiKey),
                 )
             } else {
-                return OpenAICompatibleAPI(baseURL: url)
+                OpenAICompatibleAPI(baseURL: url)
             }
         case let .localhost(port):
-            return OpenAICompatibleAPI.localhost(port: port)
+            OpenAICompatibleAPI.localhost(port: port)
         }
     }
 }

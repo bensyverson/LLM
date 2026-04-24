@@ -111,13 +111,13 @@ public extension LLM.OpenAICompatibleAPI {
                     try container.encode("image", forKey: .type)
                     try container.encode(
                         ImageSource(type: "base64", media_type: mediaType, data: data.base64EncodedString()),
-                        forKey: .source
+                        forKey: .source,
                     )
                 case let .document(data, mediaType, title):
                     try container.encode("document", forKey: .type)
                     try container.encode(
                         ImageSource(type: "base64", media_type: mediaType, data: data.base64EncodedString()),
-                        forKey: .source
+                        forKey: .source,
                     )
                     try container.encodeIfPresent(title, forKey: .title)
                 case let .toolUse(id, name, input):
@@ -152,13 +152,13 @@ public extension LLM.OpenAICompatibleAPI {
             parts.compactMap { part in
                 switch part {
                 case let .text(text):
-                    return .text(text)
+                    .text(text)
                 case let .image(data, mediaType, _, _):
-                    return .image(data: data, mediaType: mediaType)
+                    .image(data: data, mediaType: mediaType)
                 case let .pdf(data, title):
-                    return .document(data: data, mediaType: "application/pdf", title: title)
+                    .document(data: data, mediaType: "application/pdf", title: title)
                 case .audio, .video:
-                    return nil
+                    nil
                 }
             }
         }
@@ -188,7 +188,7 @@ public extension LLM.OpenAICompatibleAPI {
                             blocks.append(.toolUse(
                                 id: call.id,
                                 name: call.function.name,
-                                input: call.function.arguments
+                                input: call.function.arguments,
                             ))
                         }
                     }
@@ -203,7 +203,7 @@ public extension LLM.OpenAICompatibleAPI {
                     let effectiveContent = innerBlocks.isEmpty ? [ContentBlock.text("")] : innerBlocks
                     let block = ContentBlock.toolResult(
                         toolUseId: msg.tool_call_id ?? "",
-                        content: effectiveContent
+                        content: effectiveContent,
                     )
                     appendOrMerge(&result, role: "user", blocks: [block])
                 }

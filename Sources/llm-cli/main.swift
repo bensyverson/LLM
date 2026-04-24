@@ -136,7 +136,7 @@ let config = LLM.ConversationConfiguration(
     maxTokens: maxTokens,
     maxReasoningTokens: maxReasoningTokens,
     enableCaching: cachingEnabled,
-    cacheTTL: cacheTTL
+    cacheTTL: cacheTTL,
 )
 
 // MARK: - Pretty-Print JSON Helper
@@ -147,7 +147,7 @@ let prettyEncoder: JSONEncoder = {
     return encoder
 }()
 
-func prettyJSON<T: Encodable>(_ value: T) -> String {
+func prettyJSON(_ value: some Encodable) -> String {
     guard let data = try? prettyEncoder.encode(value),
           let string = String(data: data, encoding: .utf8)
     else {
@@ -162,7 +162,7 @@ if rawRequest {
     let conversation = LLM.Conversation(
         systemPrompt: systemPrompt,
         messages: [.init(content: message, role: .user)],
-        configuration: config
+        configuration: config,
     )
     let request = conversation.request(for: provider)
     print("── Raw Request ──")
@@ -178,7 +178,7 @@ do {
     let response = try await llm.startConversation(
         systemPrompt: systemPrompt,
         userMessage: message,
-        configuration: config
+        configuration: config,
     )
 
     // MARK: - Raw Response

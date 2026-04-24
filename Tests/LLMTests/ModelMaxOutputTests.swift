@@ -5,40 +5,40 @@ import Testing
 struct ModelMaxOutputTests {
     // MARK: - Anthropic models return correct values
 
-    @Test func claude46Opus_returns128k() {
+    @Test func `claude 46 opus returns 128 k`() {
         #expect(LLM.OpenAICompatibleAPI.ModelName.claude46Opus.maxOutputTokens == 128_000)
     }
 
-    @Test func claude46Sonnet_returns64k() {
+    @Test func `claude 46 sonnet returns 64 k`() {
         #expect(LLM.OpenAICompatibleAPI.ModelName.claude46Sonnet.maxOutputTokens == 64000)
     }
 
-    @Test func claude45Haiku_returns64k() {
+    @Test func `claude 45 haiku returns 64 k`() {
         #expect(LLM.OpenAICompatibleAPI.ModelName.claude45Haiku.maxOutputTokens == 64000)
     }
 
     // MARK: - OpenAI models return nil
 
-    @Test func openAI_models_returnNil() {
+    @Test func `open AI models return nil`() {
         #expect(LLM.OpenAICompatibleAPI.ModelName.gpt52.maxOutputTokens == nil)
         #expect(LLM.OpenAICompatibleAPI.ModelName.gpt5Mini.maxOutputTokens == nil)
         #expect(LLM.OpenAICompatibleAPI.ModelName.gpt4o.maxOutputTokens == nil)
         #expect(LLM.OpenAICompatibleAPI.ModelName.o3.maxOutputTokens == nil)
     }
 
-    @Test func placeholder_returnsNil() {
+    @Test func `placeholder returns nil`() {
         #expect(LLM.OpenAICompatibleAPI.ModelName.placeholder.maxOutputTokens == nil)
     }
 
     // MARK: - Conversation request uses model max when maxTokens is nil
 
-    @Test func conversationRequest_usesModelMax_whenMaxTokensNil() {
+    @Test func `conversation request uses model max when max tokens nil`() {
         var conversation = LLM.Conversation(
             systemPrompt: "Test",
             configuration: LLM.ConversationConfiguration(
                 modelType: .flagship,
-                inference: .direct
-            )
+                inference: .direct,
+            ),
         )
         conversation.configuration.maxTokens = nil
 
@@ -50,13 +50,13 @@ struct ModelMaxOutputTests {
 
     // MARK: - Conversation request uses explicit maxTokens when set
 
-    @Test func conversationRequest_usesExplicit_whenMaxTokensSet() {
+    @Test func `conversation request uses explicit when max tokens set`() {
         var conversation = LLM.Conversation(
             systemPrompt: "Test",
             configuration: LLM.ConversationConfiguration(
                 modelType: .flagship,
-                inference: .direct
-            )
+                inference: .direct,
+            ),
         )
         conversation.configuration.maxTokens = 2048
 
@@ -67,13 +67,13 @@ struct ModelMaxOutputTests {
 
     // MARK: - OpenAI max_tokens remains nil
 
-    @Test func conversationRequest_openAI_maxTokensNil() {
+    @Test func `conversation request open AI max tokens nil`() {
         var conversation = LLM.Conversation(
             systemPrompt: "Test",
             configuration: LLM.ConversationConfiguration(
                 modelType: .fast,
-                inference: .reasoning
-            )
+                inference: .reasoning,
+            ),
         )
         conversation.configuration.maxTokens = nil
 

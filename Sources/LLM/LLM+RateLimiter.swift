@@ -33,7 +33,7 @@ public extension LLM {
             maxRequests: Int = 50,
             maxTokens: Int = 40000,
             interval: TimeInterval = 60.0,
-            minDelay: TimeInterval = 0.01
+            minDelay: TimeInterval = 0.01,
         ) {
             self.maxRequests = maxRequests
             self.maxTokens = maxTokens

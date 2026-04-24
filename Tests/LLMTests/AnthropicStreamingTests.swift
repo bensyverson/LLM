@@ -27,7 +27,7 @@ struct AnthropicStreamingTests {
     /// Full happy-path sequence: message_start → content_block_start (text) →
     /// content_block_delta × N → message_delta (stop_reason + output_tokens) →
     /// message_stop.
-    @Test func fullConversation_assemblesText() throws {
+    @Test func `full conversation assembles text`() throws {
         let events = [
             #"{"type":"message_start","message":{"id":"msg_01","model":"claude-3-5-sonnet-20241022","usage":{"input_tokens":25,"output_tokens":0}}}"#,
             #"{"type":"content_block_start","index":0,"content_block":{"type":"text","text":""}}"#,
@@ -51,7 +51,7 @@ struct AnthropicStreamingTests {
 
     /// Extended thinking: a thinking block followed by a text block. Both
     /// accumulator fields should be populated independently.
-    @Test func thinkingBlock_then_text() throws {
+    @Test func `thinking block then text`() throws {
         let events = [
             #"{"type":"message_start","message":{"id":"msg_02","model":"claude-3-7-sonnet-20250219","usage":{"input_tokens":30,"output_tokens":0}}}"#,
             #"{"type":"content_block_start","index":0,"content_block":{"type":"thinking","text":""}}"#,
@@ -76,7 +76,7 @@ struct AnthropicStreamingTests {
 
     /// Tool-use sequence: content_block_start identifies the tool call (id + name),
     /// then input_json_delta events stream the argument JSON fragments.
-    @Test func toolUse_assemblesArguments() throws {
+    @Test func `tool use assembles arguments`() throws {
         let events = [
             #"{"type":"message_start","message":{"id":"msg_03","model":"claude-3-5-sonnet-20241022","usage":{"input_tokens":40,"output_tokens":0}}}"#,
             #"{"type":"content_block_start","index":0,"content_block":{"type":"tool_use","id":"toolu_01","name":"get_weather"}}"#,

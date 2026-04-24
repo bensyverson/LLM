@@ -11,7 +11,7 @@ import Testing
 
 // MARK: - Conversation API with ContentPart Tests
 
-@Test func conversation_addingUserMessage_contentParts() {
+@Test func `conversation adding user message content parts`() {
     let conversation = LLM.Conversation(systemPrompt: "System")
         .addingUserMessage([
             .text("Describe this"),
@@ -25,7 +25,7 @@ import Testing
     #expect(conversation.messages[0].hasMedia == true)
 }
 
-@Test func conversation_addingToolResultMessage_contentParts() {
+@Test func `conversation adding tool result message content parts`() {
     let conversation = LLM.Conversation(systemPrompt: "System")
         .addingToolResultMessage(toolCallId: "call_1", content: [
             .text("Result text"),
@@ -41,26 +41,26 @@ import Testing
 
 // MARK: - ConversationResponse Warnings
 
-@Test func conversationResponse_warnings_defaultEmpty() {
-    let response = LLM.ConversationResponse(
-        text: "Hello",
-        thinking: nil,
-        toolCalls: [],
-        conversation: LLM.Conversation(systemPrompt: "System"),
-        rawResponse: LLM.OpenAICompatibleAPI.ChatCompletionResponse(model: "test")
-    )
-
-    #expect(response.warnings.isEmpty)
-}
-
-@Test func conversationResponse_warnings_canBePopulated() {
+@Test func `conversation response warnings default empty`() {
     let response = LLM.ConversationResponse(
         text: "Hello",
         thinking: nil,
         toolCalls: [],
         conversation: LLM.Conversation(systemPrompt: "System"),
         rawResponse: LLM.OpenAICompatibleAPI.ChatCompletionResponse(model: "test"),
-        warnings: ["Images were stripped"]
+    )
+
+    #expect(response.warnings.isEmpty)
+}
+
+@Test func `conversation response warnings can be populated`() {
+    let response = LLM.ConversationResponse(
+        text: "Hello",
+        thinking: nil,
+        toolCalls: [],
+        conversation: LLM.Conversation(systemPrompt: "System"),
+        rawResponse: LLM.OpenAICompatibleAPI.ChatCompletionResponse(model: "test"),
+        warnings: ["Images were stripped"],
     )
 
     #expect(response.warnings.count == 1)
@@ -69,7 +69,7 @@ import Testing
 
 // MARK: - Model Vision Detection in Conversation Context
 
-@Test func conversation_withImages_nonVisionModel_strippedAtSendTime() async throws {
+@Test func `conversation with images non vision model stripped at send time`() async throws {
     // This tests the stripping logic directly (not the full API call)
     let llm = LLM(provider: .openAI(apiKey: "test"))
 
@@ -93,7 +93,7 @@ import Testing
     #expect(stripped.messages[0].content[1].textContent?.contains("photo.jpg") == true)
 }
 
-@Test func conversation_visionModel_passesThrough() {
+@Test func `conversation vision model passes through`() {
     // Vision models don't need stripping — the hasMedia + supportsVision check
     // ensures media passes through to the provider
     let model = LLM.OpenAICompatibleAPI.ModelName.gpt4o
@@ -109,7 +109,7 @@ import Testing
     #expect(conversation.messages[0].hasMedia == true)
 }
 
-@Test func conversation_unknownModel_defaultsToPassthrough() {
+@Test func `conversation unknown model defaults to passthrough`() {
     let model = LLM.OpenAICompatibleAPI.ModelName(rawValue: "my-custom-model")
     #expect(model.supportsVision == nil)
     // nil means unknown — we don't strip, we let the provider handle it
@@ -117,7 +117,7 @@ import Testing
 
 // MARK: - Multimodal JSON Serialization Tests
 
-@Test func conversationRequest_openAI_multimodalMessage_serializesCorrectly() throws {
+@Test func `conversation request open AI multimodal message serializes correctly`() throws {
     let imageData = Data([0xFF, 0xD8, 0xFF, 0xE0])
     let conversation = LLM.Conversation(systemPrompt: "You are helpful")
         .addingUserMessage([
@@ -141,7 +141,7 @@ import Testing
     #expect(userContent[1]["type"] as? String == "image_url")
 }
 
-@Test func conversationRequest_anthropic_multimodalMessage_serializesCorrectly() throws {
+@Test func `conversation request anthropic multimodal message serializes correctly`() throws {
     let imageData = Data([0xFF, 0xD8, 0xFF, 0xE0])
     let conversation = LLM.Conversation(systemPrompt: "You are helpful")
         .addingUserMessage([

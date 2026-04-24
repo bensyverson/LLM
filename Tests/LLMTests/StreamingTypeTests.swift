@@ -11,7 +11,7 @@ import Testing
 
 // MARK: - OpenAI Stream Chunk Decoding
 
-@Test func openAIStreamChunk_decodesTextDelta() throws {
+@Test func `open AI stream chunk decodes text delta`() throws {
     let json = """
     {"id":"chatcmpl-abc","object":"chat.completion.chunk","model":"gpt-5.2","choices":[{"index":0,"delta":{"content":"Hello"},"finish_reason":null}]}
     """.data(using: .utf8)!
@@ -23,7 +23,7 @@ import Testing
     #expect(chunk.choices?.first?.finish_reason == nil)
 }
 
-@Test func openAIStreamChunk_decodesReasoningContent() throws {
+@Test func `open AI stream chunk decodes reasoning content`() throws {
     let json = """
     {"id":"chatcmpl-r1","object":"chat.completion.chunk","model":"gpt-5.2","choices":[{"index":0,"delta":{"reasoning_content":"thinking..."},"finish_reason":null}]}
     """.data(using: .utf8)!
@@ -32,7 +32,7 @@ import Testing
     #expect(chunk.choices?.first?.delta.reasoning_content == "thinking...")
 }
 
-@Test func openAIStreamChunk_decodesToolCallDelta() throws {
+@Test func `open AI stream chunk decodes tool call delta`() throws {
     let json = """
     {"id":"chatcmpl-tc","object":"chat.completion.chunk","model":"gpt-5.2","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"id":"call_123","type":"function","function":{"name":"get_weather","arguments":""}}]},"finish_reason":null}]}
     """.data(using: .utf8)!
@@ -44,7 +44,7 @@ import Testing
     #expect(tc.function?.name == "get_weather")
 }
 
-@Test func openAIStreamChunk_decodesUsage() throws {
+@Test func `open AI stream chunk decodes usage`() throws {
     let json = """
     {"id":"chatcmpl-u","object":"chat.completion.chunk","model":"gpt-5.2","choices":[],"usage":{"prompt_tokens":10,"completion_tokens":5,"total_tokens":15}}
     """.data(using: .utf8)!
@@ -55,7 +55,7 @@ import Testing
     #expect(chunk.usage?.total_tokens == 15)
 }
 
-@Test func openAIStreamChunk_decodesFinishReason() throws {
+@Test func `open AI stream chunk decodes finish reason`() throws {
     let json = """
     {"id":"chatcmpl-f","object":"chat.completion.chunk","model":"gpt-5.2","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}
     """.data(using: .utf8)!
@@ -66,7 +66,7 @@ import Testing
 
 // MARK: - Anthropic Stream Event Decoding
 
-@Test func anthropicStreamEvent_decodesMessageStart() throws {
+@Test func `anthropic stream event decodes message start`() throws {
     let json = """
     {"type":"message_start","message":{"id":"msg_abc","model":"claude-opus-4-5","usage":{"input_tokens":12}}}
     """.data(using: .utf8)!
@@ -78,7 +78,7 @@ import Testing
     #expect(event.message?.usage?.input_tokens == 12)
 }
 
-@Test func anthropicStreamEvent_decodesContentBlockStart() throws {
+@Test func `anthropic stream event decodes content block start`() throws {
     let json = """
     {"type":"content_block_start","index":0,"content_block":{"type":"text","text":""}}
     """.data(using: .utf8)!
@@ -89,7 +89,7 @@ import Testing
     #expect(event.content_block?.type == "text")
 }
 
-@Test func anthropicStreamEvent_decodesToolUseBlockStart() throws {
+@Test func `anthropic stream event decodes tool use block start`() throws {
     let json = """
     {"type":"content_block_start","index":0,"content_block":{"type":"tool_use","id":"toolu_abc","name":"get_weather"}}
     """.data(using: .utf8)!
@@ -100,7 +100,7 @@ import Testing
     #expect(event.content_block?.name == "get_weather")
 }
 
-@Test func anthropicStreamEvent_decodesTextDelta() throws {
+@Test func `anthropic stream event decodes text delta`() throws {
     let json = """
     {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"Hello"}}
     """.data(using: .utf8)!
@@ -111,7 +111,7 @@ import Testing
     #expect(event.delta?.text == "Hello")
 }
 
-@Test func anthropicStreamEvent_decodesThinkingDelta() throws {
+@Test func `anthropic stream event decodes thinking delta`() throws {
     let json = """
     {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"Let me think..."}}
     """.data(using: .utf8)!
@@ -121,7 +121,7 @@ import Testing
     #expect(event.delta?.thinking == "Let me think...")
 }
 
-@Test func anthropicStreamEvent_decodesInputJsonDelta() throws {
+@Test func `anthropic stream event decodes input json delta`() throws {
     let json = """
     {"type":"content_block_delta","index":0,"delta":{"type":"input_json_delta","partial_json":"{\\\"loc"}}
     """.data(using: .utf8)!
@@ -131,7 +131,7 @@ import Testing
     #expect(event.delta?.partial_json == "{\"loc")
 }
 
-@Test func anthropicStreamEvent_decodesMessageDelta() throws {
+@Test func `anthropic stream event decodes message delta`() throws {
     let json = """
     {"type":"message_delta","delta":{"stop_reason":"end_turn"},"usage":{"output_tokens":15}}
     """.data(using: .utf8)!
@@ -144,7 +144,7 @@ import Testing
 
 // MARK: - Stream Accumulator Tests
 
-@Test func accumulator_openAI_textOnly() throws {
+@Test func `accumulator open AI text only`() throws {
     var acc = LLM.OpenAICompatibleAPI.StreamAccumulator()
     let decoder = JSONDecoder()
 
@@ -185,7 +185,7 @@ import Testing
     #expect(response.model == "gpt-5.2")
 }
 
-@Test func accumulator_openAI_toolCalls() throws {
+@Test func `accumulator open AI tool calls`() throws {
     var acc = LLM.OpenAICompatibleAPI.StreamAccumulator()
     let decoder = JSONDecoder()
 
@@ -221,7 +221,7 @@ import Testing
     #expect(toolCall.function.arguments == "{\"location\":\"NYC\"}")
 }
 
-@Test func accumulator_openAI_reasoning() throws {
+@Test func `accumulator open AI reasoning`() throws {
     var acc = LLM.OpenAICompatibleAPI.StreamAccumulator()
     let decoder = JSONDecoder()
 
@@ -253,7 +253,7 @@ import Testing
     #expect(response.choices?.first?.message.textContent == "Answer")
 }
 
-@Test func accumulator_anthropic_textOnly() throws {
+@Test func `accumulator anthropic text only`() throws {
     var acc = LLM.OpenAICompatibleAPI.StreamAccumulator()
     let decoder = JSONDecoder()
 
@@ -292,7 +292,7 @@ import Testing
     #expect(response.usage.output_tokens == 5)
 }
 
-@Test func accumulator_anthropic_thinking() throws {
+@Test func `accumulator anthropic thinking`() throws {
     var acc = LLM.OpenAICompatibleAPI.StreamAccumulator()
     let decoder = JSONDecoder()
 
@@ -329,7 +329,7 @@ import Testing
     #expect(textContent?.text == "Answer")
 }
 
-@Test func accumulator_anthropic_toolUse() throws {
+@Test func `accumulator anthropic tool use`() throws {
     var acc = LLM.OpenAICompatibleAPI.StreamAccumulator()
     let decoder = JSONDecoder()
 
@@ -367,7 +367,7 @@ import Testing
     #expect(toolUse.name == "get_weather")
 }
 
-@Test func accumulator_openAI_noUsage() throws {
+@Test func `accumulator open AI no usage`() throws {
     // Local servers may not send usage data
     var acc = LLM.OpenAICompatibleAPI.StreamAccumulator()
     let decoder = JSONDecoder()
@@ -392,7 +392,7 @@ import Testing
     #expect(response.usage.completion_tokens == nil)
 }
 
-@Test func accumulator_anthropic_cacheUsage() throws {
+@Test func `accumulator anthropic cache usage`() throws {
     var acc = LLM.OpenAICompatibleAPI.StreamAccumulator()
     let decoder = JSONDecoder()
 
@@ -422,7 +422,7 @@ import Testing
 
 // MARK: - StreamEvent Type Tests
 
-@Test func streamEvent_textDelta() {
+@Test func `stream event text delta`() {
     let event = LLM.StreamEvent.textDelta("hello")
     if case let .textDelta(text) = event {
         #expect(text == "hello")
@@ -431,7 +431,7 @@ import Testing
     }
 }
 
-@Test func streamEvent_thinkingDelta() {
+@Test func `stream event thinking delta`() {
     let event = LLM.StreamEvent.thinkingDelta("thinking...")
     if case let .thinkingDelta(text) = event {
         #expect(text == "thinking...")
@@ -440,7 +440,7 @@ import Testing
     }
 }
 
-@Test func toolCallDelta_properties() {
+@Test func `tool call delta properties`() {
     let delta = LLM.ToolCallDelta(index: 0, id: "call_1", name: "func", argumentsFragment: "{}")
     #expect(delta.index == 0)
     #expect(delta.id == "call_1")
@@ -448,7 +448,7 @@ import Testing
     #expect(delta.argumentsFragment == "{}")
 }
 
-@Test func toolCallDelta_subsequentChunk() {
+@Test func `tool call delta subsequent chunk`() {
     let delta = LLM.ToolCallDelta(index: 0, id: nil, name: nil, argumentsFragment: "partial")
     #expect(delta.id == nil)
     #expect(delta.name == nil)

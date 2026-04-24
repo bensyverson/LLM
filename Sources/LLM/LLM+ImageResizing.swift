@@ -34,7 +34,7 @@ public extension LLM {
     func resizingImages(
         in conversation: Conversation,
         maxLongEdge: Int,
-        using resizer: @escaping @Sendable (Data, String, CGSize) async throws -> Data
+        using resizer: @escaping @Sendable (Data, String, CGSize) async throws -> Data,
     ) async throws -> Conversation {
         // Collect all image parts that might need resizing
         typealias ImageRef = (msgIndex: Int, partIndex: Int, data: Data, mediaType: String)
@@ -59,11 +59,11 @@ public extension LLM {
                     let cacheKey = ResizeCacheKey(
                         dataHash: ref.data.hashValue,
                         targetWidth: maxLongEdge,
-                        targetHeight: maxLongEdge
+                        targetHeight: maxLongEdge,
                     )
 
                     // Check cache
-                    if let cached = await self.getCachedResize(for: cacheKey) {
+                    if let cached = await getCachedResize(for: cacheKey) {
                         return (ref.msgIndex, ref.partIndex, cached)
                     }
 
@@ -73,7 +73,7 @@ public extension LLM {
                     }
 
                     let resized = try await resizer(ref.data, ref.mediaType, targetSize)
-                    await self.cacheResize(resized, for: cacheKey)
+                    await cacheResize(resized, for: cacheKey)
                     return (ref.msgIndex, ref.partIndex, resized)
                 }
             }
@@ -171,7 +171,7 @@ extension LLM {
                       bitsPerComponent: 8,
                       bytesPerRow: 0,
                       space: colorSpace,
-                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue,
                   )
             else {
                 return data

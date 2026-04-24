@@ -11,12 +11,12 @@ import Testing
 
 // MARK: - Creation Tests
 
-@Test func contentPart_text_creation() {
+@Test func `content part text creation`() {
     let part = LLM.OpenAICompatibleAPI.ContentPart.text("Hello")
     #expect(part == .text("Hello"))
 }
 
-@Test func contentPart_image_creation() {
+@Test func `content part image creation`() {
     let data = Data([0xFF, 0xD8, 0xFF, 0xE0])
     let part = LLM.OpenAICompatibleAPI.ContentPart.image(data: data, mediaType: "image/jpeg")
     if case let .image(d, mt, fn, desc) = part {
@@ -29,11 +29,11 @@ import Testing
     }
 }
 
-@Test func contentPart_image_withFilenameAndDescription() {
+@Test func `content part image with filename and description`() {
     let data = Data([0xFF, 0xD8])
     let part = LLM.OpenAICompatibleAPI.ContentPart.image(
         data: data, mediaType: "image/jpeg",
-        filename: "photo.jpg", description: "A sunset"
+        filename: "photo.jpg", description: "A sunset",
     )
     if case let .image(_, _, fn, desc) = part {
         #expect(fn == "photo.jpg")
@@ -43,7 +43,7 @@ import Testing
     }
 }
 
-@Test func contentPart_pdf_creation() {
+@Test func `content part pdf creation`() {
     let data = Data([0x25, 0x50, 0x44, 0x46])
     let part = LLM.OpenAICompatibleAPI.ContentPart.pdf(data: data, title: "report.pdf")
     if case let .pdf(d, title) = part {
@@ -56,7 +56,7 @@ import Testing
 
 // MARK: - Equality Tests
 
-@Test func contentPart_equality_text() {
+@Test func `content part equality text`() {
     let a = LLM.OpenAICompatibleAPI.ContentPart.text("Hello")
     let b = LLM.OpenAICompatibleAPI.ContentPart.text("Hello")
     let c = LLM.OpenAICompatibleAPI.ContentPart.text("World")
@@ -64,7 +64,7 @@ import Testing
     #expect(a != c)
 }
 
-@Test func contentPart_equality_image() {
+@Test func `content part equality image`() {
     let data = Data([0xFF, 0xD8])
     let a = LLM.OpenAICompatibleAPI.ContentPart.image(data: data, mediaType: "image/jpeg")
     let b = LLM.OpenAICompatibleAPI.ContentPart.image(data: data, mediaType: "image/jpeg")
@@ -75,97 +75,97 @@ import Testing
 
 // MARK: - textContent Helper
 
-@Test func contentPart_textContent_returnsTextForTextPart() {
+@Test func `content part text content returns text for text part`() {
     let part = LLM.OpenAICompatibleAPI.ContentPart.text("Hello")
     #expect(part.textContent == "Hello")
 }
 
-@Test func contentPart_textContent_returnsNilForImagePart() {
+@Test func `content part text content returns nil for image part`() {
     let part = LLM.OpenAICompatibleAPI.ContentPart.image(data: Data(), mediaType: "image/jpeg")
     #expect(part.textContent == nil)
 }
 
-@Test func contentPart_textContent_returnsNilForPdfPart() {
+@Test func `content part text content returns nil for pdf part`() {
     let part = LLM.OpenAICompatibleAPI.ContentPart.pdf(data: Data())
     #expect(part.textContent == nil)
 }
 
 // MARK: - isMedia Helper
 
-@Test func contentPart_isMedia_falseForText() {
+@Test func `content part is media false for text`() {
     let part = LLM.OpenAICompatibleAPI.ContentPart.text("Hello")
     #expect(part.isMedia == false)
 }
 
-@Test func contentPart_isMedia_trueForImage() {
+@Test func `content part is media true for image`() {
     let part = LLM.OpenAICompatibleAPI.ContentPart.image(data: Data(), mediaType: "image/jpeg")
     #expect(part.isMedia == true)
 }
 
-@Test func contentPart_isMedia_trueForPdf() {
+@Test func `content part is media true for pdf`() {
     let part = LLM.OpenAICompatibleAPI.ContentPart.pdf(data: Data())
     #expect(part.isMedia == true)
 }
 
 // MARK: - filename Helper
 
-@Test func contentPart_filename_returnsFilenameForImage() {
+@Test func `content part filename returns filename for image`() {
     let part = LLM.OpenAICompatibleAPI.ContentPart.image(
-        data: Data(), mediaType: "image/jpeg", filename: "photo.jpg"
+        data: Data(), mediaType: "image/jpeg", filename: "photo.jpg",
     )
     #expect(part.filename == "photo.jpg")
 }
 
-@Test func contentPart_filename_returnsTitleForPdf() {
+@Test func `content part filename returns title for pdf`() {
     let part = LLM.OpenAICompatibleAPI.ContentPart.pdf(data: Data(), title: "report.pdf")
     #expect(part.filename == "report.pdf")
 }
 
-@Test func contentPart_filename_returnsNilForText() {
+@Test func `content part filename returns nil for text`() {
     let part = LLM.OpenAICompatibleAPI.ContentPart.text("Hello")
     #expect(part.filename == nil)
 }
 
-@Test func contentPart_filename_returnsNilForImageWithoutFilename() {
+@Test func `content part filename returns nil for image without filename`() {
     let part = LLM.OpenAICompatibleAPI.ContentPart.image(data: Data(), mediaType: "image/jpeg")
     #expect(part.filename == nil)
 }
 
 // MARK: - Media Type Inference
 
-@Test func contentPart_inferMediaType_jpeg() {
+@Test func `content part infer media type jpeg`() {
     let data = Data([0xFF, 0xD8, 0xFF, 0xE0])
     #expect(LLM.OpenAICompatibleAPI.ContentPart.inferMediaType(from: data) == "image/jpeg")
 }
 
-@Test func contentPart_inferMediaType_png() {
+@Test func `content part infer media type png`() {
     let data = Data([0x89, 0x50, 0x4E, 0x47])
     #expect(LLM.OpenAICompatibleAPI.ContentPart.inferMediaType(from: data) == "image/png")
 }
 
-@Test func contentPart_inferMediaType_gif() {
+@Test func `content part infer media type gif`() {
     let data = Data([0x47, 0x49, 0x46, 0x38])
     #expect(LLM.OpenAICompatibleAPI.ContentPart.inferMediaType(from: data) == "image/gif")
 }
 
-@Test func contentPart_inferMediaType_webp() {
+@Test func `content part infer media type webp`() {
     let data = Data([0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50])
     #expect(LLM.OpenAICompatibleAPI.ContentPart.inferMediaType(from: data) == "image/webp")
 }
 
-@Test func contentPart_inferMediaType_unknown() {
+@Test func `content part infer media type unknown`() {
     let data = Data([0x00, 0x01, 0x02, 0x03])
     #expect(LLM.OpenAICompatibleAPI.ContentPart.inferMediaType(from: data) == nil)
 }
 
-@Test func contentPart_inferMediaType_tooShort() {
+@Test func `content part infer media type too short`() {
     let data = Data([0xFF])
     #expect(LLM.OpenAICompatibleAPI.ContentPart.inferMediaType(from: data) == nil)
 }
 
 // MARK: - Media Type from Extension
 
-@Test func contentPart_mediaTypeForExtension_knownTypes() {
+@Test func `content part media type for extension known types`() {
     #expect(LLM.OpenAICompatibleAPI.ContentPart.mediaType(forExtension: "jpg") == "image/jpeg")
     #expect(LLM.OpenAICompatibleAPI.ContentPart.mediaType(forExtension: "jpeg") == "image/jpeg")
     #expect(LLM.OpenAICompatibleAPI.ContentPart.mediaType(forExtension: "png") == "image/png")
@@ -174,18 +174,18 @@ import Testing
     #expect(LLM.OpenAICompatibleAPI.ContentPart.mediaType(forExtension: "pdf") == "application/pdf")
 }
 
-@Test func contentPart_mediaTypeForExtension_caseInsensitive() {
+@Test func `content part media type for extension case insensitive`() {
     #expect(LLM.OpenAICompatibleAPI.ContentPart.mediaType(forExtension: "JPG") == "image/jpeg")
     #expect(LLM.OpenAICompatibleAPI.ContentPart.mediaType(forExtension: "PNG") == "image/png")
 }
 
-@Test func contentPart_mediaTypeForExtension_unknown() {
+@Test func `content part media type for extension unknown`() {
     #expect(LLM.OpenAICompatibleAPI.ContentPart.mediaType(forExtension: "xyz") == nil)
 }
 
 // MARK: - Data Convenience Init
 
-@Test func contentPart_imageFromData_infersJpeg() throws {
+@Test func `content part image from data infers jpeg`() throws {
     let data = Data([0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10])
     let part = try LLM.OpenAICompatibleAPI.ContentPart.image(data: data, filename: "test.jpg")
     if case let .image(_, mt, fn, _) = part {
@@ -196,7 +196,7 @@ import Testing
     }
 }
 
-@Test func contentPart_imageFromData_throwsForUnknown() {
+@Test func `content part image from data throws for unknown`() {
     let data = Data([0x00, 0x01, 0x02, 0x03])
     #expect(throws: LLM.OpenAICompatibleAPI.ContentPartError.self) {
         _ = try LLM.OpenAICompatibleAPI.ContentPart.image(data: data)
@@ -205,49 +205,49 @@ import Testing
 
 // MARK: - ChatMessage Multimodal Helpers
 
-@Test func chatMessage_textContent_singleText() {
+@Test func `chat message text content single text`() {
     let msg = LLM.OpenAICompatibleAPI.ChatMessage(content: "Hello", role: .user)
     #expect(msg.textContent == "Hello")
 }
 
-@Test func chatMessage_textContent_multipleTextParts() {
+@Test func `chat message text content multiple text parts`() {
     let msg = LLM.OpenAICompatibleAPI.ChatMessage(
         content: [.text("Hello "), .text("world")],
-        role: .user
+        role: .user,
     )
     #expect(msg.textContent == "Hello world")
 }
 
-@Test func chatMessage_textContent_nilForEmpty() {
+@Test func `chat message text content nil for empty`() {
     let msg = LLM.OpenAICompatibleAPI.ChatMessage(content: nil, role: .assistant)
     #expect(msg.textContent == nil)
 }
 
-@Test func chatMessage_textContent_nilForMediaOnly() {
+@Test func `chat message text content nil for media only`() {
     let msg = LLM.OpenAICompatibleAPI.ChatMessage(
         content: [.image(data: Data(), mediaType: "image/jpeg")],
-        role: .user
+        role: .user,
     )
     #expect(msg.textContent == nil)
 }
 
-@Test func chatMessage_hasMedia_falseForTextOnly() {
+@Test func `chat message has media false for text only`() {
     let msg = LLM.OpenAICompatibleAPI.ChatMessage(content: "Hello", role: .user)
     #expect(msg.hasMedia == false)
 }
 
-@Test func chatMessage_hasMedia_trueForImage() {
+@Test func `chat message has media true for image`() {
     let msg = LLM.OpenAICompatibleAPI.ChatMessage(
         content: [.text("Describe this"), .image(data: Data(), mediaType: "image/jpeg")],
-        role: .user
+        role: .user,
     )
     #expect(msg.hasMedia == true)
 }
 
-@Test func chatMessage_contentLength_sumsTextParts() {
+@Test func `chat message content length sums text parts`() {
     let msg = LLM.OpenAICompatibleAPI.ChatMessage(
         content: [.text("Hello"), .image(data: Data(), mediaType: "image/jpeg"), .text(" world")],
-        role: .user
+        role: .user,
     )
     #expect(msg.contentLength == 11)
 }
